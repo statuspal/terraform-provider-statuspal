@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -112,7 +113,9 @@ func TestAccStatusPageResource(t *testing.T) {
 
 	// Mock create response for resource
 	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages" response: %v`, err)
+		}
 		w.WriteHeader(http.StatusCreated)
 	})
 
@@ -123,7 +126,9 @@ func TestAccStatusPageResource(t *testing.T) {
 			responseBody = updatedResponseBody
 		}
 
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages/terraform-test" response: %v`, err)
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -136,7 +141,9 @@ func TestAccStatusPageResource(t *testing.T) {
 			responseBody = `""`
 		}
 
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages/terraform-test-updated" response: %v`, err)
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -281,7 +288,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateId:     "1 terraform-test",
-				// // The last_updated attribute does not exist in the HashiCups
+				// // The last_updated attribute does not exist in the StatusPal
 				// // API, therefore there is no value for it during import.
 				// ImportStateVerifyIgnore: []string{"last_updated"},
 			},

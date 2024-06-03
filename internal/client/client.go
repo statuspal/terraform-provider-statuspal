@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-// HostURL - Default StatusPal API URL
+// HostURL - Default StatusPal API URL.
 const HostURL string = "http://local.statuspal.io:4000/api/v2"
 
-// Client -
+// Client struct.
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
 	ApiKey     string
 }
 
-// NewClient -
+// NewClient function.
 func NewClient(api_key *string, region *string, test_url *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},

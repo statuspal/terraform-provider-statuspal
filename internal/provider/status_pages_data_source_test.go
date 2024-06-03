@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -14,7 +15,7 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
 		// Mock response for data source
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{
+		if _, err := w.Write([]byte(`{
 			"links": {
 				"next": null,
 				"prev": null
@@ -274,7 +275,9 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"noindex": false
 				}
 			]
-		}`))
+		}`)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages" response: %v`, err)
+		}
 	})
 	mockServer := httptest.NewServer(mux)
 	defer mockServer.Close()

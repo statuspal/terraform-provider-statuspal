@@ -1,6 +1,6 @@
 package statuspal
 
-// StatusPage -
+// StatusPage struct.
 type StatusPage struct {
 	Name                           string                 `json:"name"`
 	Url                            string                 `json:"url"`
@@ -94,7 +94,7 @@ type StatusPageThemeConfigs struct {
 	StatusMaintenanceColor string `json:"status_maintenance_color"`
 }
 
-// Service -
+// Service struct.
 type Service struct {
 	ID                                int64               `json:"id"`
 	Name                              string              `json:"name"`

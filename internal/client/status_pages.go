@@ -16,7 +16,7 @@ type statusPageResponse struct {
 	StatusPage StatusPage `json:"status_page"`
 }
 
-// GetStatusPages - Returns list of status pages from the organization
+// GetStatusPages - Returns list of status pages from the organization.
 func (c *Client) GetStatusPages(organizationID *string) (*[]StatusPage, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/orgs/%s/status_pages", c.HostURL, *organizationID), nil)
 	if err != nil {
@@ -37,7 +37,7 @@ func (c *Client) GetStatusPages(organizationID *string) (*[]StatusPage, error) {
 	return &response.StatusPages, nil
 }
 
-// GetStatusPage - Returns specific status page from the organization
+// GetStatusPage - Returns specific status page from the organization.
 func (c *Client) GetStatusPage(organizationID *string, statusPageSubdomain *string) (*StatusPage, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/orgs/%s/status_pages/%s", c.HostURL, *organizationID, *statusPageSubdomain), nil)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *Client) GetStatusPage(organizationID *string, statusPageSubdomain *stri
 	return &response.StatusPage, nil
 }
 
-// CreateStatusPage - Create new status page in the organization
+// CreateStatusPage - Create new status page in the organization.
 func (c *Client) CreateStatusPage(statusPage *StatusPage, organizationID *string) (*StatusPage, error) {
 	rb, err := json.Marshal(statusPageResponse{StatusPage: *statusPage})
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *Client) CreateStatusPage(statusPage *StatusPage, organizationID *string
 	return &response.StatusPage, nil
 }
 
-// UpdateStatusPage - Update a status page in the organization
+// UpdateStatusPage - Update a status page in the organization.
 func (c *Client) UpdateStatusPage(statusPage *StatusPage, organizationID *string, statusPageSubdomain *string) (*StatusPage, error) {
 	rb, err := json.Marshal(statusPageResponse{StatusPage: *statusPage})
 	if err != nil {
@@ -110,7 +110,7 @@ func (c *Client) UpdateStatusPage(statusPage *StatusPage, organizationID *string
 	return &response.StatusPage, nil
 }
 
-// DeleteStatusPage - Delete a status page in the organization
+// DeleteStatusPage - Delete a status page in the organization.
 func (c *Client) DeleteStatusPage(organizationID *string, statusPageSubdomain *string) error {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/orgs/%s/status_pages/%s", c.HostURL, *organizationID, *statusPageSubdomain), nil)
 	if err != nil {

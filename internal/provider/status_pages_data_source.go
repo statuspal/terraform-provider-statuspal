@@ -320,7 +320,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"current_incidents_position": schema.StringAttribute{
-							Description: `The incident postion displayed in the status page, it can be "below_services" and "above_services".`,
+							Description: `The incident position displayed in the status page, it can be "below_services" and "above_services".`,
 							Computed:    true,
 						},
 						"theme_selected": schema.StringAttribute{
@@ -435,7 +435,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"google_calendar_enabled": schema.BoolAttribute{
-							Description: "Allow your customers to import Google Calendar with Status Pages maintenence (business only).",
+							Description: "Allow your customers to import Google Calendar with Status Pages maintenance (business only).",
 							Computed:    true,
 						},
 						"subscribers_enabled": schema.BoolAttribute{
@@ -521,7 +521,7 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			Domain:                       types.StringValue(statusPage.Domain),
 			RestrictedIps:                types.StringValue(statusPage.RestrictedIps),
 			MemberRestricted:             types.BoolValue(statusPage.MemberRestricted),
-			ScheduledMaintenanceDays:     types.Int64Value(int64(statusPage.ScheduledMaintenanceDays)),
+			ScheduledMaintenanceDays:     types.Int64Value(statusPage.ScheduledMaintenanceDays),
 			CustomJs:                     types.StringValue(statusPage.CustomJs),
 			HeadCode:                     types.StringValue(statusPage.HeadCode),
 			DateFormat:                   types.StringValue(statusPage.DateFormat),
@@ -529,10 +529,10 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			DateFormatEnforceEverywhere:  types.BoolValue(statusPage.DateFormatEnforceEverywhere),
 			DisplayCalendar:              types.BoolValue(statusPage.DisplayCalendar),
 			HideWatermark:                types.BoolValue(statusPage.HideWatermark),
-			MinorNotificationHours:       types.Int64Value(int64(statusPage.MinorNotificationHours)),
-			MajorNotificationHours:       types.Int64Value(int64(statusPage.MajorNotificationHours)),
-			MaintenanceNotificationHours: types.Int64Value(int64(statusPage.MaintenanceNotificationHours)),
-			HistoryLimitDays:             types.Int64Value(int64(statusPage.HistoryLimitDays)),
+			MinorNotificationHours:       types.Int64Value(statusPage.MinorNotificationHours),
+			MajorNotificationHours:       types.Int64Value(statusPage.MajorNotificationHours),
+			MaintenanceNotificationHours: types.Int64Value(statusPage.MaintenanceNotificationHours),
+			HistoryLimitDays:             types.Int64Value(statusPage.HistoryLimitDays),
 			CustomIncidentTypesEnabled:   types.BoolValue(statusPage.CustomIncidentTypesEnabled),
 			InfoNoticesEnabled:           types.BoolValue(statusPage.InfoNoticesEnabled),
 			LockedWhenMaintenance:        types.BoolValue(statusPage.LockedWhenMaintenance),
@@ -544,7 +544,7 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
 			BgImage:                      types.StringValue(statusPage.BgImage),
 			DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
-			UptimeGraphDays:              types.Int64Value(int64(statusPage.UptimeGraphDays)),
+			UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
 			CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),
 			ThemeSelected:                types.StringValue(statusPage.ThemeSelected),
 			ThemeConfigs: statusPagesThemeConfigsModel{

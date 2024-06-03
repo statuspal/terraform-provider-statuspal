@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// GetService - Returns specific service from the organization
+// GetService - Returns specific service from the organization.
 func (c *Client) GetService(statusPageSubdomain *string, serviceID *string) (*Service, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/status_pages/%s/services/%s", c.HostURL, *statusPageSubdomain, *serviceID), nil)
 	if err != nil {
@@ -29,7 +29,7 @@ func (c *Client) GetService(statusPageSubdomain *string, serviceID *string) (*Se
 	return &service, nil
 }
 
-// CreateService - Create new service in the organization
+// CreateService - Create new service in the organization.
 func (c *Client) CreateService(service *Service, statusPageSubdomain *string) (*Service, error) {
 	rb, err := json.Marshal(*service)
 	if err != nil {
@@ -55,7 +55,7 @@ func (c *Client) CreateService(service *Service, statusPageSubdomain *string) (*
 	return &newService, nil
 }
 
-// UpdateService - Update a service in the organization
+// UpdateService - Update a service in the organization.
 func (c *Client) UpdateService(service *Service, statusPageSubdomain *string, serviceID *string) (*Service, error) {
 	rb, err := json.Marshal(*service)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *Client) UpdateService(service *Service, statusPageSubdomain *string, se
 	return &updatedService, nil
 }
 
-// DeleteService - Delete a service in the organization
+// DeleteService - Delete a service in the organization.
 func (c *Client) DeleteService(statusPageSubdomain *string, serviceID *string) error {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/status_pages/%s/services/%s", c.HostURL, *statusPageSubdomain, *serviceID), nil)
 	if err != nil {
