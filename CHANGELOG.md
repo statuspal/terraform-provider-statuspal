@@ -2,7 +2,7 @@
 
 All notable changes of the StatusPal Terraform provider will be documented in this file.
 
-## [0.2.1] - 2024-06-03
+## [0.1.0] - 2024-06-03
 
 ### Added
 
