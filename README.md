@@ -70,10 +70,10 @@ To generate or update documentation, run `go generate ./...` from the root direc
 >   }
 >   ```
 
-> [!IMPORTANT]
-> Run `golangci-lint run` before you push a commit and fix all the showed errors.
+### Create a provider release
 
-## Create a provider release
-
-- Add changes into [CHANGELOG.md](https://github.com/statuspal/terraform-provider-statuspal/blob/main/CHANGELOG.md) file.
+- Add tests based on the [Implement automated testing](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-acceptance-testing) section.
+- Make the documentation based on the [Implement documentation generation](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-documentation-generation) section.
+- Run `golangci-lint run` and fix all the showed errors.
+- Add changes to [CHANGELOG.md](https://github.com/statuspal/terraform-provider-statuspal/blob/main/CHANGELOG.md) file.
 - Follow the instructions in the [Create a provider release](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-release-publish#create-a-provider-release) section.
