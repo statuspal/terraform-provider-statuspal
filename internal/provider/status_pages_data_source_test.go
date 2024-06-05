@@ -28,6 +28,8 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"theme_selected": "default",
 					"scheduled_maintenance_days": 7,
 					"display_uptime_graph": true,
+					"inserted_at": "2024-04-15T11:20:35",
+					"updated_at": "2024-04-20T11:22:32",
 					"header_fg_color": "ffffff",
 					"history_limit_days": 90,
 					"head_code": null,
@@ -111,6 +113,8 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"theme_selected": "default",
 					"scheduled_maintenance_days": 7,
 					"display_uptime_graph": true,
+					"inserted_at": "2024-04-15T11:20:35",
+					"updated_at": "2024-04-20T11:22:32",
 					"header_fg_color": "ffffff",
 					"history_limit_days": null,
 					"head_code": null,
@@ -194,6 +198,8 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"theme_selected": "default",
 					"scheduled_maintenance_days": 7,
 					"display_uptime_graph": true,
+					"inserted_at": "2024-04-15T11:20:35",
+					"updated_at": "2024-04-20T11:22:32",
 					"header_fg_color": "ffffff",
 					"history_limit_days": 90,
 					"head_code": null,
@@ -277,6 +283,7 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 			]
 		}`)); err != nil {
 			log.Printf(`Error writing "/orgs/1/status_pages" response: %v`, err)
+			return
 		}
 	})
 	mockServer := httptest.NewServer(mux)
@@ -301,7 +308,7 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					// Verify number of status pages returned
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.#", "3"),
 					// Verify the first status page to ensure all attributes are set
-					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.%", "71"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.%", "73"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.theme_selected", "default"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.display_uptime_graph", "true"),
@@ -327,8 +334,10 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.subscribers_enabled", "true"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.display_about", "true"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.%", "2"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.en.%", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.en.header_logo_text", ""),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.en.public_company_name", "Public company name EN"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.fr.%", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.fr.header_logo_text", ""),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.translations.fr.public_company_name", "Public company name FR"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.tweet_by_default", "false"),
@@ -386,6 +395,8 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.reply_to_email", ""),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.noindex", "false"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.inserted_at", "2024-04-15T11:20:35"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.updated_at", "2024-04-20T11:22:32"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "id", "placeholder"),
 				),

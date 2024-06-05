@@ -108,6 +108,8 @@ type statusPagesModel struct {
 	EmailConfirmationTemplate      types.String                 `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String                 `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool                   `tfsdk:"email_templates_enabled"`
+	InsertedAt                     types.String                 `tfsdk:"inserted_at"`
+	UpdatedAt                      types.String                 `tfsdk:"updated_at"`
 }
 
 type statusPagesThemeConfigsModel struct {
@@ -273,18 +275,18 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"translations": schema.MapNestedAttribute{
-							MarkdownDescription: "A translations object. For example:\n```terraform" + `
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+							MarkdownDescription: "A translations object. For example:\n  ```terraform" + `
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-							` + "```",
+` + "  ```\n→ ",
 							Computed: true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
@@ -387,12 +389,12 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:            true,
 						},
 						"custom_header": schema.StringAttribute{
-							Description: `A custom header for the status page (e.g. "<header>...</header>")`,
-							Computed:    true,
+							MarkdownDescription: "A custom header for the status page (e.g. `\"<header>...</header>\"`)",
+							Computed:            true,
 						},
 						"custom_footer": schema.StringAttribute{
-							Description: `A custom header for the status page (e.g. "<footer>...</footer>")`,
-							Computed:    true,
+							MarkdownDescription: "A custom footer for the status page (e.g. `\"<footer>...</footer>\"`)",
+							Computed:            true,
 						},
 						"notify_by_default": schema.BoolAttribute{
 							Description: "Check the Notify subscribers checkbox by default.",
@@ -468,6 +470,14 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 						},
 						"email_templates_enabled": schema.BoolAttribute{
 							Description: "Enable custom email templates.",
+							Computed:    true,
+						},
+						"inserted_at": schema.StringAttribute{
+							Description: "Datetime at which the status page was inserted.",
+							Computed:    true,
+						},
+						"updated_at": schema.StringAttribute{
+							Description: "Datetime at which the status page was last updated.",
 							Computed:    true,
 						},
 					},
@@ -590,6 +600,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 			EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 			EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+			InsertedAt:                     types.StringValue(statusPage.InsertedAt),
+			UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 		}
 
 		state.StatusPages = append(state.StatusPages, statusPageState)

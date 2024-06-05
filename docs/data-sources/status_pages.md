@@ -43,8 +43,8 @@ Read-Only:
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
 - `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
-- `custom_footer` (String) A custom header for the status page (e.g. "<footer>...</footer>")
-- `custom_header` (String) A custom header for the status page (e.g. "<header>...</header>")
+- `custom_footer` (String) A custom footer for the status page (e.g. `"<footer>...</footer>"`)
+- `custom_header` (String) A custom header for the status page (e.g. `"<header>...</header>"`)
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
 - `custom_js` (String) We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.
 - `date_format` (String) Display timestamps of incidents and updates in this format.
@@ -72,6 +72,7 @@ Read-Only:
 - `incident_header_color` (String) Incidents header color in the status page.
 - `incident_link_color` (String) Incidents link color in the status page.
 - `info_notices_enabled` (Boolean) Enable information notices.
+- `inserted_at` (String) Datetime at which the status page was inserted.
 - `link_color` (String) The links color in the status page.
 - `locked_when_maintenance` (Boolean) Lock from adding incidents when under maintenance.
 - `maintenance_notification_hours` (Number) Long-running incident notification (Maintenance).
@@ -102,21 +103,23 @@ Read-Only:
 - `time_format` (String) Display timestamps of incidents and updates in this format.
 - `time_zone` (String) The primary timezone the status page uses to display incidents (e.g. "Europe/Berlin").
 - `translations` (Attributes Map) A translations object. For example:
-```terraform
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+  ```terraform
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-							``` (see [below for nested schema](#nestedatt--status_pages--translations))
+  ```
+→ (see [below for nested schema](#nestedatt--status_pages--translations))
 - `tweet_by_default` (Boolean) Check the Tweet checkbox by default.
 - `tweeting_enabled` (Boolean) Allows to send tweets when creating or updating an incident.
 - `twitter_public_screen_name` (String) Twitter handle name (e.g. yourcompany).
+- `updated_at` (String) Datetime at which the status page was last updated.
 - `uptime_graph_days` (Number) Uptime graph period.
 - `url` (String) The website to your company, project or service.
 

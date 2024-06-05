@@ -54,8 +54,8 @@ Optional:
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
 - `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
-- `custom_footer` (String) A custom header for the status page (e.g. "<footer>...</footer>")
-- `custom_header` (String) A custom header for the status page (e.g. "<header>...</header>")
+- `custom_footer` (String) A custom footer for the status page (e.g. `"<footer>...</footer>"`)
+- `custom_header` (String) A custom header for the status page (e.g. `"<header>...</header>"`)
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
 - `custom_js` (String) We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.
 - `date_format` (String) Display timestamps of incidents and updates in this format.
@@ -111,22 +111,28 @@ Optional:
 - `theme_selected` (String) The selected theme for state page, it can be "default" and "big-logo".
 - `time_format` (String) Display timestamps of incidents and updates in this format.
 - `translations` (Attributes Map) A translations object. For example:
-```terraform
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+  ```terraform
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-						``` (see [below for nested schema](#nestedatt--status_page--translations))
+  ```
+→ (see [below for nested schema](#nestedatt--status_page--translations))
 - `tweet_by_default` (Boolean) Check the Tweet checkbox by default.
 - `tweeting_enabled` (Boolean) Allows to send tweets when creating or updating an incident.
 - `twitter_public_screen_name` (String) Twitter handle name (e.g. yourcompany).
 - `uptime_graph_days` (Number) Uptime graph period.
+
+Read-Only:
+
+- `inserted_at` (String) Datetime at which the status page was inserted.
+- `updated_at` (String) Datetime at which the status page was last updated.
 
 <a id="nestedatt--status_page--theme_configs"></a>
 ### Nested Schema for `status_page.theme_configs`

@@ -11,11 +11,11 @@ provider "statuspal" {
   region  = "dev"
 }
 
-data "statuspal_status_pages" "edu" {
-  organization_id = "1"
+data "statuspal_services" "edu" {
+  status_page_subdomain = "example-com"
 }
 
 
-output "edu_status_pages" {
-  value = data.statuspal_status_pages.edu
+output "edu_statuspal_services" {
+  value = data.statuspal_services.edu
 }

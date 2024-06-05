@@ -195,6 +195,7 @@ func (p *statuspalProvider) Configure(ctx context.Context, req provider.Configur
 func (p *statuspalProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewStatusPagesDataSource,
+		NewServicesDataSource,
 	}
 }
 
@@ -202,6 +203,7 @@ func (p *statuspalProvider) DataSources(_ context.Context) []func() datasource.D
 func (p *statuspalProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewStatusPageResource,
+		NewServiceResource,
 	}
 }
 

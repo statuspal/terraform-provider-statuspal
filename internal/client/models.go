@@ -73,6 +73,8 @@ type StatusPage struct {
 	EmailConfirmationTemplate      string                 `json:"email_confirmation_template"`
 	EmailNotificationTemplate      string                 `json:"email_notification_template"`
 	EmailTemplatesEnabled          bool                   `json:"email_templates_enabled"`
+	InsertedAt                     string                 `json:"inserted_at"`
+	UpdatedAt                      string                 `json:"updated_at"`
 }
 
 type StatusPageTranslations map[string]StatusPageTranslation
@@ -99,6 +101,7 @@ type Service struct {
 	ID                                int64               `json:"id"`
 	Name                              string              `json:"name"`
 	Description                       string              `json:"description"`
+	PrivateDescription                string              `json:"private_description"`
 	CurrentIncidentType               string              `json:"current_incident_type"`
 	Monitoring                        string              `json:"monitoring"`
 	PingUrl                           string              `json:"ping_url"`
@@ -106,18 +109,22 @@ type Service struct {
 	ParentIncidentType                string              `json:"parent_incident_type"`
 	IsUp                              bool                `json:"is_up"`
 	PauseMonitoringDuringMaintenances bool                `json:"pause_monitoring_during_maintenances"`
+	InboundEmailID                    string              `json:"inbound_email_id"`
 	AutoIncident                      bool                `json:"auto_incident"`
 	AutoNotify                        bool                `json:"auto_notify"`
+	ChildrenIDs                       []int64             `json:"children_ids"`
 	Translations                      ServiceTranslations `json:"translations"`
 	Private                           bool                `json:"private"`
 	DisplayUptimeGraph                bool                `json:"display_uptime_graph"`
 	DisplayResponseTimeChart          bool                `json:"display_response_time_chart"`
 	Order                             int64               `json:"order"`
-}
-
-type ServiceTranslation struct {
-	PublicCompanyName string `json:"public_company_name"`
-	HeaderLogoText    string `json:"header_logo_text"`
+	InsertedAt                        string              `json:"inserted_at"`
+	UpdatedAt                         string              `json:"updated_at"`
 }
 
 type ServiceTranslations map[string]ServiceTranslation
+
+type ServiceTranslation struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
