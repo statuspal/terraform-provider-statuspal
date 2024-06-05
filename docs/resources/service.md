@@ -46,7 +46,7 @@ Optional:
 - `auto_incident` (Boolean) Create an incident automatically when this service is down and close it if/when it comes back up.
 - `auto_notify` (Boolean) Automatically notify all your subscribers about automatically created and closed incidents.
 - `current_incident_type` (String) Enum: `"major"` `"minor"` `"scheduled"`
-The type of the (current) incident:
+  The type of the (current) incident:
   - `major` - A minor incident is currently taking place.
   - `minor` - A major incident is currently taking place.
   - `scheduled` - A scheduled maintenance is currently taking place.
@@ -54,18 +54,20 @@ The type of the (current) incident:
 - `display_response_time_chart` (Boolean) Display response time chart?
 - `display_uptime_graph` (Boolean) Display uptime graph?
 - `incident_type` (String) Enum: `"major"` `"minor"`
-The type of the (current) incident:
+  Sets the incident type to this value when an incident is created via monitoring.
+  The type of the (current) incident:
   - `major` - A minor incident is currently taking place.
   - `minor` - A major incident is currently taking place.
 - `is_up` (Boolean) Is the monitored service up?
 - `monitoring` (String) Enum: `null` `"internal"` `"3rd_party"`
-Monitoring types:
+  Monitoring types:
   - `major` - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
 - `order` (Number) Service's position in the service list.
 - `parent_incident_type` (String) Enum: `"major"` `"minor"`
-The type of the (current) incident:
+  Sets the parent's service incident type to this value when an incident is created via monitoring.
+  The type of the (current) incident:
   - `major` - A minor incident is currently taking place.
   - `minor` - A major incident is currently taking place.
 - `pause_monitoring_during_maintenances` (Boolean) Pause the the service monitoring during maintenances?

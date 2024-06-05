@@ -35,7 +35,7 @@ Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
 
-Fill this in for each provider
+See the [statuspal Provider documentation](https://registry.terraform.io/providers/statuspal/statuspal/latest/docs).
 
 ## Developing the Provider
 

@@ -54,8 +54,8 @@ Optional:
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
 - `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
-- `custom_footer` (String) A custom footer for the status page (e.g. `"<footer>...</footer>"`)
-- `custom_header` (String) A custom header for the status page (e.g. `"<header>...</header>"`)
+- `custom_footer` (String) A custom footer for the status page (e.g. "`<footer>...</footer>`").
+- `custom_header` (String) A custom header for the status page (e.g. "`<header>...</header>`").
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
 - `custom_js` (String) We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.
 - `date_format` (String) Display timestamps of incidents and updates in this format.
@@ -68,7 +68,7 @@ Optional:
 - `email_confirmation_template` (String) Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_layout_template` (String) Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
-- `email_templates_enabled` (Boolean) Enable custom email templates.
+- `email_templates_enabled` (Boolean) The templates won't be used until this is enabled, but you can send test emails.
 - `enable_auto_translations` (Boolean) Enable auto translations when creating incidents, maintenances and info notices.
 - `feed_enabled` (Boolean) Allow your customers to receive updates as RSS and Atom feeds.
 - `google_calendar_enabled` (Boolean) Allow your customers to import Google Calendar with Status Pages maintenance (business only).
@@ -91,7 +91,7 @@ Optional:
 - `member_restricted` (Boolean) Only signed in members will be allowed to access your status page.
 - `minor_notification_hours` (Number) Long-running incident notification (Minor incident).
 - `noindex` (Boolean) Remove status page from being indexed by search engines (e.g. Google).
-- `notification_email` (String) Allow your customers to subscribe via email to updates on your status page's status
+- `notification_email` (String) Allow your customers to subscribe via email to updates on your status page's status.
 - `notify_by_default` (Boolean) Check the Notify subscribers checkbox by default.
 - `public_company_name` (String) Displayed at the footer of the status page.
 - `reply_to_email` (String) The email address we'll use in the 'reply_to' field in emails to your subscribers. So they can reply to your notification emails.

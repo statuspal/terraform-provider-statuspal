@@ -56,7 +56,7 @@ func (p *statuspalProvider) Metadata(_ context.Context, _ provider.MetadataReque
 // Schema defines the provider-level schema for configuration data.
 func (p *statuspalProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Interact with StatusPal.",
+		MarkdownDescription: "Interact with [StatusPal](https://www.statuspal.io).",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
 				Description: "Your StatusPal User or Organization API Key. May also be provided via STATUSPAL_API_KEY environment variable.",

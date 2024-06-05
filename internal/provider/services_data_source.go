@@ -107,14 +107,14 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Computed:    true,
 						},
 						"current_incident_type": schema.StringAttribute{
-							MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\nThe type of the (current) incident:\n" +
+							MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The type of the (current) incident:\n" +
 								"  - `major` - A minor incident is currently taking place.\n" +
 								"  - `minor` - A major incident is currently taking place.\n" +
 								"  - `scheduled` - A scheduled maintenance is currently taking place.",
 							Computed: true,
 						},
 						"monitoring": schema.StringAttribute{
-							MarkdownDescription: "Enum: `null` `\"internal\"` `\"3rd_party\"`\nMonitoring types:\n" +
+							MarkdownDescription: "Enum: `null` `\"internal\"` `\"3rd_party\"`\n  Monitoring types:\n" +
 								"  - `major` - No monitoring.\n" +
 								"  - `internal` - StatusPal monitoring.\n" +
 								"  - `3rd_party` - 3rd Party monitoring.",
@@ -125,13 +125,13 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Computed:    true,
 						},
 						"incident_type": schema.StringAttribute{
-							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\nThe type of the (current) incident:\n" +
+							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
 								"  - `major` - A minor incident is currently taking place.\n" +
 								"  - `minor` - A major incident is currently taking place.",
 							Computed: true,
 						},
 						"parent_incident_type": schema.StringAttribute{
-							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\nThe type of the (current) incident:\n" +
+							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the parent's service incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
 								"  - `major` - A minor incident is currently taking place.\n" +
 								"  - `minor` - A major incident is currently taking place.",
 							Computed: true,

@@ -3,12 +3,12 @@
 page_title: "statuspal Provider"
 subcategory: ""
 description: |-
-  Interact with StatusPal.
+  Interact with StatusPal https://www.statuspal.io.
 ---
 
 # statuspal Provider
 
-Interact with StatusPal.
+Interact with [StatusPal](https://www.statuspal.io).
 
 ## Example Usage
 

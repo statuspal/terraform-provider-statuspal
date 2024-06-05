@@ -389,11 +389,11 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:            true,
 						},
 						"custom_header": schema.StringAttribute{
-							MarkdownDescription: "A custom header for the status page (e.g. `\"<header>...</header>\"`)",
+							MarkdownDescription: "A custom header for the status page (e.g. \"`<header>...</header>`\").",
 							Computed:            true,
 						},
 						"custom_footer": schema.StringAttribute{
-							MarkdownDescription: "A custom footer for the status page (e.g. `\"<footer>...</footer>\"`)",
+							MarkdownDescription: "A custom footer for the status page (e.g. \"`<footer>...</footer>`\").",
 							Computed:            true,
 						},
 						"notify_by_default": schema.BoolAttribute{
@@ -445,7 +445,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"notification_email": schema.StringAttribute{
-							Description: "Allow your customers to subscribe via email to updates on your status page's status",
+							Description: "Allow your customers to subscribe via email to updates on your status page's status.",
 							Computed:    true,
 						},
 						"reply_to_email": schema.StringAttribute{
@@ -469,7 +469,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:            true,
 						},
 						"email_templates_enabled": schema.BoolAttribute{
-							Description: "Enable custom email templates.",
+							Description: "The templates won't be used until this is enabled, but you can send test emails.",
 							Computed:    true,
 						},
 						"inserted_at": schema.StringAttribute{
