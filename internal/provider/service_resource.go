@@ -48,6 +48,7 @@ type serviceModel struct {
 	Name                              types.String `tfsdk:"name"`
 	Description                       types.String `tfsdk:"description"`
 	PrivateDescription                types.String `tfsdk:"private_description"`
+	ParentID                          types.Int64  `tfsdk:"parent_id"`
 	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
 	Monitoring                        types.String `tfsdk:"monitoring"`
 	PingUrl                           types.String `tfsdk:"ping_url"`
@@ -118,17 +119,21 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Optional:    true,
 						Computed:    true,
 					},
+					"parent_id": schema.Int64Attribute{
+						Description: "The service parent ID.",
+						Optional:    true,
+						Computed:    true,
+					},
 					"current_incident_type": schema.StringAttribute{
-						MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The type of the (current) incident:\n" +
-							"  - `major` - A minor incident is currently taking place.\n" +
-							"  - `minor` - A major incident is currently taking place.\n" +
+						MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The service's current incident type.\n  The type of the (current) incident:\n" +
+							"  - `minor` - A minor incident is currently taking place.\n" +
+							"  - `major` - A major incident is currently taking place.\n" +
 							"  - `scheduled` - A scheduled maintenance is currently taking place.",
-						Optional: true,
 						Computed: true,
 					},
 					"monitoring": schema.StringAttribute{
 						MarkdownDescription: "Enum: `null` `\"internal\"` `\"3rd_party\"`\n  Monitoring types:\n" +
-							"  - `major` - No monitoring.\n" +
+							"  - empty - No monitoring.\n" +
 							"  - `internal` - StatusPal monitoring.\n" +
 							"  - `3rd_party` - 3rd Party monitoring.",
 						Optional: true,
@@ -141,21 +146,18 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					},
 					"incident_type": schema.StringAttribute{
 						MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
-							"  - `major` - A minor incident is currently taking place.\n" +
-							"  - `minor` - A major incident is currently taking place.",
-						Optional: true,
+							"  - `minor` - A minor incident is currently taking place.\n" +
+							"  - `major` - A major incident is currently taking place.",
 						Computed: true,
 					},
 					"parent_incident_type": schema.StringAttribute{
 						MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the parent's service incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
-							"  - `major` - A minor incident is currently taking place.\n" +
-							"  - `minor` - A major incident is currently taking place.",
-						Optional: true,
+							"  - `minor` - A minor incident is currently taking place.\n" +
+							"  - `major` - A major incident is currently taking place.",
 						Computed: true,
 					},
 					"is_up": schema.BoolAttribute{
 						Description: "Is the monitored service up?",
-						Optional:    true,
 						Computed:    true,
 					},
 					"pause_monitoring_during_maintenances": schema.BoolAttribute{
@@ -454,14 +456,10 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 		Name:                              service.Name.ValueString(),
 		Description:                       service.Description.ValueString(),
 		PrivateDescription:                service.PrivateDescription.ValueString(),
-		CurrentIncidentType:               service.CurrentIncidentType.ValueString(),
+		ParentID:                          service.ParentID.ValueInt64(),
 		Monitoring:                        service.Monitoring.ValueString(),
 		PingUrl:                           service.PingUrl.ValueString(),
-		IncidentType:                      service.IncidentType.ValueString(),
-		ParentIncidentType:                service.ParentIncidentType.ValueString(),
-		IsUp:                              service.IsUp.ValueBool(),
 		PauseMonitoringDuringMaintenances: service.PauseMonitoringDuringMaintenances.ValueBool(),
-		InboundEmailID:                    service.InboundEmailID.ValueString(),
 		AutoIncident:                      service.AutoIncident.ValueBool(),
 		AutoNotify:                        service.AutoNotify.ValueBool(),
 		Translations:                      translationData,
@@ -516,6 +514,7 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		Name:                              types.StringValue(service.Name),
 		Description:                       types.StringValue(service.Description),
 		PrivateDescription:                types.StringValue(service.PrivateDescription),
+		ParentID:                          types.Int64Value(service.ParentID),
 		CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 		Monitoring:                        types.StringValue(service.Monitoring),
 		PingUrl:                           types.StringValue(service.PingUrl),

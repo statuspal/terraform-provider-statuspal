@@ -40,9 +40,10 @@ Read-Only:
 - `auto_notify` (Boolean) Automatically notify all your subscribers about automatically created and closed incidents.
 - `children_ids` (List of Number) IDs of the service's children.
 - `current_incident_type` (String) Enum: `"major"` `"minor"` `"scheduled"`
+  The service's current incident type.
   The type of the (current) incident:
-  - `major` - A minor incident is currently taking place.
-  - `minor` - A major incident is currently taking place.
+  - `minor` - A minor incident is currently taking place.
+  - `major` - A major incident is currently taking place.
   - `scheduled` - A scheduled maintenance is currently taking place.
 - `description` (String) The description of the service.
 - `display_response_time_chart` (Boolean) Display response time chart?
@@ -52,22 +53,23 @@ Read-Only:
 - `incident_type` (String) Enum: `"major"` `"minor"`
   Sets the incident type to this value when an incident is created via monitoring.
   The type of the (current) incident:
-  - `major` - A minor incident is currently taking place.
-  - `minor` - A major incident is currently taking place.
+  - `minor` - A minor incident is currently taking place.
+  - `major` - A major incident is currently taking place.
 - `inserted_at` (String) Datetime at which the service was inserted.
 - `is_up` (Boolean) Is the monitored service up?
 - `monitoring` (String) Enum: `null` `"internal"` `"3rd_party"`
   Monitoring types:
-  - `major` - No monitoring.
+  - empty - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
 - `name` (String) The name of the service.
 - `order` (Number) Service's position in the service list.
+- `parent_id` (Number) The service parent ID.
 - `parent_incident_type` (String) Enum: `"major"` `"minor"`
   Sets the parent's service incident type to this value when an incident is created via monitoring.
   The type of the (current) incident:
-  - `major` - A minor incident is currently taking place.
-  - `minor` - A major incident is currently taking place.
+  - `minor` - A minor incident is currently taking place.
+  - `major` - A major incident is currently taking place.
 - `pause_monitoring_during_maintenances` (Boolean) Pause the the service monitoring during maintenances?
 - `ping_url` (String) We will send HTTP requests to this URL for monitoring every minute.
 - `private` (Boolean) Private service?

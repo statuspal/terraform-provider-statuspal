@@ -16,6 +16,7 @@ func TestAccServiceResource(t *testing.T) {
 	responseBody := `{
 		"service": {
 			"id": 2,
+			"parent_id": 3,
 			"name": "Test Service from Terraform",
 			"private": false,
 			"description": null,
@@ -141,11 +142,12 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "22"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "23"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),
@@ -218,11 +220,12 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test-updated"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "22"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "23"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Edited Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),

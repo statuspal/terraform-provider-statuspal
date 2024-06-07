@@ -8,7 +8,6 @@ terraform {
 
 provider "statuspal" {
   api_key = "uk_aERPQU1kUzUrRmplaXJRMlc2TDEwZz09"
-  region  = "dev"
 }
 
 data "statuspal_status_pages" "edu" {

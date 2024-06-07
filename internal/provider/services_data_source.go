@@ -40,6 +40,7 @@ type servicesModel struct {
 	Name                              types.String              `tfsdk:"name"`
 	Description                       types.String              `tfsdk:"description"`
 	PrivateDescription                types.String              `tfsdk:"private_description"`
+	ParentID                          types.Int64               `tfsdk:"parent_id"`
 	CurrentIncidentType               types.String              `tfsdk:"current_incident_type"`
 	Monitoring                        types.String              `tfsdk:"monitoring"`
 	PingUrl                           types.String              `tfsdk:"ping_url"`
@@ -106,16 +107,20 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Description: "The private description of the service.",
 							Computed:    true,
 						},
+						"parent_id": schema.Int64Attribute{
+							Description: "The service parent ID.",
+							Computed:    true,
+						},
 						"current_incident_type": schema.StringAttribute{
-							MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The type of the (current) incident:\n" +
-								"  - `major` - A minor incident is currently taking place.\n" +
-								"  - `minor` - A major incident is currently taking place.\n" +
+							MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The service's current incident type.\n  The type of the (current) incident:\n" +
+								"  - `minor` - A minor incident is currently taking place.\n" +
+								"  - `major` - A major incident is currently taking place.\n" +
 								"  - `scheduled` - A scheduled maintenance is currently taking place.",
 							Computed: true,
 						},
 						"monitoring": schema.StringAttribute{
 							MarkdownDescription: "Enum: `null` `\"internal\"` `\"3rd_party\"`\n  Monitoring types:\n" +
-								"  - `major` - No monitoring.\n" +
+								"  - empty - No monitoring.\n" +
 								"  - `internal` - StatusPal monitoring.\n" +
 								"  - `3rd_party` - 3rd Party monitoring.",
 							Computed: true,
@@ -126,14 +131,14 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 						},
 						"incident_type": schema.StringAttribute{
 							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
-								"  - `major` - A minor incident is currently taking place.\n" +
-								"  - `minor` - A major incident is currently taking place.",
+								"  - `minor` - A minor incident is currently taking place.\n" +
+								"  - `major` - A major incident is currently taking place.",
 							Computed: true,
 						},
 						"parent_incident_type": schema.StringAttribute{
 							MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the parent's service incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
-								"  - `major` - A minor incident is currently taking place.\n" +
-								"  - `minor` - A major incident is currently taking place.",
+								"  - `minor` - A minor incident is currently taking place.\n" +
+								"  - `major` - A major incident is currently taking place.",
 							Computed: true,
 						},
 						"is_up": schema.BoolAttribute{
@@ -262,6 +267,7 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			Name:                              types.StringValue(service.Name),
 			Description:                       types.StringValue(service.Description),
 			PrivateDescription:                types.StringValue(service.PrivateDescription),
+			ParentID:                          types.Int64Value(service.ParentID),
 			CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 			Monitoring:                        types.StringValue(service.Monitoring),
 			PingUrl:                           types.StringValue(service.PingUrl),

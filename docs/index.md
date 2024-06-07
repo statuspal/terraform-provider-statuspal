@@ -24,6 +24,5 @@ provider "statuspal" {
 
 ### Optional
 
-- `api_key` (String, Sensitive) Your StatusPal User or Organization API Key. May also be provided via STATUSPAL_API_KEY environment variable.
-- `region` (String) StatusPal API Region, it can be "US" and "EU". May also be provided via STATUSPAL_REGION environment variable.
-- `test_url` (String) Ignore this attribute, it's only used in testing.
+- `api_key` (String, Sensitive) Your StatusPal User or Organization API Key. May also be provided via `STATUSPAL_API_KEY` environment variable.
+- `region` (String) StatusPal API Region, it can be "US" and "EU". May also be provided via `STATUSPAL_REGION` environment variable.

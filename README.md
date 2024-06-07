@@ -43,11 +43,11 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, run `go install .` from the root directory. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-In order to run the full suite of Acceptance tests, run `TF_ACC=1 go test -v -cover ./internal/provider/` from the root directory.
+In order to run the full suite of Acceptance tests, run `TF_ENV=TEST TF_ACC=1 go test -v -cover ./internal/provider/` from the root directory.
 
 To test manually the resource or data source, run from the root directory:
-- apply the terraform plan: `terraform -chdir=./examples/<resource_or_data_source_name>/ apply --auto-approve`
-- destroy the resource: `terraform -chdir=./examples/<resource_or_data_source_name>/ destroy --auto-approve`
+- apply the terraform plan: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name>/ apply --auto-approve`
+- destroy the resource: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name>/ destroy --auto-approve`
 
 To generate or update documentation, run `go generate ./...` from the root directory.
 
@@ -58,9 +58,8 @@ To generate or update documentation, run `go generate ./...` from the root direc
 > - In the [**Prepare Terraform for local provider install**](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider#prepare-terraform-for-local-provider-install) section, the `~/.terraformrc` file should look like this:
 >   ```terraform
 >   provider_installation {
->
 >     dev_overrides {
->         "registry.terraform.io/statuspal/statuspal" = "<PATH>"
+>       "registry.terraform.io/statuspal/statuspal" = "<PATH>"
 >     }
 >
 >     # For all other providers, install them directly from their origin provider

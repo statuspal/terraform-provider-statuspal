@@ -26,6 +26,7 @@ func TestAccServicesDataSource(t *testing.T) {
 			"services": [
 				{
 					"id": 2,
+					"parent_id": 3,
 					"name": "api",
 					"private": false,
 					"description": null,
@@ -66,6 +67,7 @@ func TestAccServicesDataSource(t *testing.T) {
 				},
 				{
 					"id": 1,
+					"parent_id": null,
 					"name": "web FR",
 					"private": false,
 					"description": "",
@@ -103,6 +105,7 @@ func TestAccServicesDataSource(t *testing.T) {
 				},
 				{
 					"id": 4,
+					"parent_id": null,
 					"name": "new service",
 					"private": true,
 					"description": "",
@@ -162,11 +165,12 @@ func TestAccServicesDataSource(t *testing.T) {
 					// Verify number of services returned
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.#", "3"),
 					// Verify the first service to ensure all attributes are set
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.%", "22"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.%", "23"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.id", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.name", "api"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.description", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.private_description", ""),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.parent_id", "3"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.ping_url", ""),

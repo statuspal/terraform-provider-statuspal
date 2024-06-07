@@ -7,6 +7,8 @@ import (
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -223,6 +226,9 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(7),
+						Validators: []validator.Int64{
+							int64validator.OneOf(7, 14, 21, 28),
+						},
 					},
 					"custom_js": schema.StringAttribute{
 						MarkdownDescription: "We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.",
@@ -265,24 +271,36 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(6),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"major_notification_hours": schema.Int64Attribute{
 						Description: "Long-running incident notification (Major incident).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"maintenance_notification_hours": schema.Int64Attribute{
 						Description: "Long-running incident notification (Maintenance).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(6),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"history_limit_days": schema.Int64Attribute{
 						Description: "Incident history limit (omit for No Limit).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(90),
+						Validators: []validator.Int64{
+							int64validator.OneOf(30, 90, 365),
+						},
 					},
 					"custom_incident_types_enabled": schema.BoolAttribute{
 						Description: "Enable custom incident types.",
@@ -370,18 +388,27 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(90),
+						Validators: []validator.Int64{
+							int64validator.OneOf(30, 60, 90),
+						},
 					},
 					"current_incidents_position": schema.StringAttribute{
 						Description: `The incident position displayed in the status page, it can be "below_services" and "above_services".`,
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("below_services"),
+						Validators: []validator.String{
+							stringvalidator.OneOf("below_services", "above_services"),
+						},
 					},
 					"theme_selected": schema.StringAttribute{
 						Description: `The selected theme for state page, it can be "default" and "big-logo".`,
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("default"),
+						Validators: []validator.String{
+							stringvalidator.OneOf("default", "big-logo"),
+						},
 					},
 					"theme_configs": schema.ObjectAttribute{
 						Description: "Theme configuration for the status page.",
