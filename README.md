@@ -72,7 +72,8 @@ To generate or update documentation, run `go generate ./...` from the root direc
 ### Create a provider release
 
 - Add tests based on the [Implement automated testing](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-acceptance-testing) section.
-- Make the documentation based on the [Implement documentation generation](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-documentation-generation) section.
+- Don't forget to change the version number in the code and the documentation.
+- Add the documentation based on the [Implement documentation generation](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-documentation-generation) section.
 - Run `golangci-lint run` and fix all the showed errors.
 - Add changes to [CHANGELOG.md](https://github.com/statuspal/terraform-provider-statuspal/blob/main/CHANGELOG.md) file.
 - Follow the instructions in the [Create a provider release](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-release-publish#create-a-provider-release) section.
