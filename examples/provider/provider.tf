@@ -3,7 +3,7 @@ terraform {
   required_providers {
     statuspal = {
       source  = "statuspal/statuspal"
-      version = "0.2.3"
+      version = "0.2.4"
     }
   }
 }
@@ -39,5 +39,13 @@ resource "statuspal_service" "example" {
   status_page_subdomain = statuspal_status_page.example.status_page.subdomain
   service = {
     name = "Example Terraform Service"
+  }
+}
+
+resource "statuspal_service" "child" {
+  status_page_subdomain = statuspal_status_page.example.status_page.subdomain
+  service = {
+    name      = "Example Terraform Child Service"
+    parent_id = statuspal_service.example.service.id
   }
 }
