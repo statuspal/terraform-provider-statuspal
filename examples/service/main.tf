@@ -21,3 +21,15 @@ resource "statuspal_service" "edu" {
 output "edu_service" {
   value = statuspal_service.edu
 }
+
+resource "statuspal_service" "edu_child" {
+  status_page_subdomain = statuspal_service.edu.status_page_subdomain
+  service = {
+    name      = "Child Service Created from Terraform"
+    parent_id = statuspal_service.edu.service.id
+  }
+}
+
+output "edu_child_service" {
+  value = statuspal_service.edu_child
+}

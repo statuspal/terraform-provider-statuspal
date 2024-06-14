@@ -48,7 +48,7 @@ type serviceModel struct {
 	Name                              types.String `tfsdk:"name"`
 	Description                       types.String `tfsdk:"description"`
 	PrivateDescription                types.String `tfsdk:"private_description"`
-	ParentID                          types.Int64  `tfsdk:"parent_id"`
+	ParentID                          types.String `tfsdk:"parent_id"`
 	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
 	Monitoring                        types.String `tfsdk:"monitoring"`
 	PingUrl                           types.String `tfsdk:"ping_url"`
@@ -119,7 +119,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Optional:    true,
 						Computed:    true,
 					},
-					"parent_id": schema.Int64Attribute{
+					"parent_id": schema.StringAttribute{
 						Description: "The service parent ID.",
 						Optional:    true,
 						Computed:    true,
@@ -452,11 +452,23 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 		}
 	}
 
+	parentID := service.ParentID.ValueString()
+	if parentID == "" {
+		parentID = "0"
+	}
+
+	convertedParentID, err := strconv.ParseInt(parentID, 10, 64)
+	if err != nil {
+		diagnostics.AddError("Not valid service parent ID", err.Error())
+
+		return nil
+	}
+
 	return &statuspal.Service{
 		Name:                              service.Name.ValueString(),
 		Description:                       service.Description.ValueString(),
 		PrivateDescription:                service.PrivateDescription.ValueString(),
-		ParentID:                          service.ParentID.ValueInt64(),
+		ParentID:                          convertedParentID,
 		Monitoring:                        service.Monitoring.ValueString(),
 		PingUrl:                           service.PingUrl.ValueString(),
 		PauseMonitoringDuringMaintenances: service.PauseMonitoringDuringMaintenances.ValueBool(),
@@ -514,7 +526,7 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		Name:                              types.StringValue(service.Name),
 		Description:                       types.StringValue(service.Description),
 		PrivateDescription:                types.StringValue(service.PrivateDescription),
-		ParentID:                          types.Int64Value(service.ParentID),
+		ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
 		CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 		Monitoring:                        types.StringValue(service.Monitoring),
 		PingUrl:                           types.StringValue(service.PingUrl),

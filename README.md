@@ -43,11 +43,11 @@ If you wish to work on the provider, you'll first need [Go](http://www.golang.or
 
 To compile the provider, run `go install .` from the root directory. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-In order to run the full suite of Acceptance tests, run `TF_ENV=TEST TF_ACC=1 go test -v -cover ./internal/provider/` from the root directory.
+In order to run the full suite of Acceptance tests, run `TF_ENV=TEST TF_ACC=1 go test -v -cover ./internal/provider` from the root directory.
 
 To test manually the resource or data source, run from the root directory:
-- apply the terraform plan: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name>/ apply --auto-approve`
-- destroy the resource: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name>/ destroy --auto-approve`
+- apply the terraform plan: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name> apply --auto-approve`
+- destroy the resource: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name> destroy --auto-approve`
 
 To generate or update documentation, run `go generate ./...` from the root directory.
 
@@ -74,6 +74,6 @@ To generate or update documentation, run `go generate ./...` from the root direc
 - Add tests based on the [Implement automated testing](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-acceptance-testing) section.
 - Don't forget to change the version number in the code and the documentation.
 - Add the documentation based on the [Implement documentation generation](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-documentation-generation) section.
-- Run `golangci-lint run` and fix all the showed errors.
+- Run `golangci-lint run` and fix all the listed errors if there are any.
 - Add changes to [CHANGELOG.md](https://github.com/statuspal/terraform-provider-statuspal/blob/main/CHANGELOG.md) file.
 - Follow the instructions in the [Create a provider release](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-release-publish#create-a-provider-release) section.

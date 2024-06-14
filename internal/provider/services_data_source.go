@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
@@ -36,11 +37,11 @@ type servicesDataSourceModel struct {
 
 // servicesModel maps services schema data.
 type servicesModel struct {
-	ID                                types.Int64               `tfsdk:"id"`
+	ID                                types.String              `tfsdk:"id"`
 	Name                              types.String              `tfsdk:"name"`
 	Description                       types.String              `tfsdk:"description"`
 	PrivateDescription                types.String              `tfsdk:"private_description"`
-	ParentID                          types.Int64               `tfsdk:"parent_id"`
+	ParentID                          types.String              `tfsdk:"parent_id"`
 	CurrentIncidentType               types.String              `tfsdk:"current_incident_type"`
 	Monitoring                        types.String              `tfsdk:"monitoring"`
 	PingUrl                           types.String              `tfsdk:"ping_url"`
@@ -91,7 +92,7 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id": schema.Int64Attribute{
+						"id": schema.StringAttribute{
 							Description: "The ID of the service.",
 							Computed:    true,
 						},
@@ -107,7 +108,7 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Description: "The private description of the service.",
 							Computed:    true,
 						},
-						"parent_id": schema.Int64Attribute{
+						"parent_id": schema.StringAttribute{
 							Description: "The service parent ID.",
 							Computed:    true,
 						},
@@ -263,11 +264,11 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 
 		serviceState := servicesModel{
-			ID:                                types.Int64Value(service.ID),
+			ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
 			Name:                              types.StringValue(service.Name),
 			Description:                       types.StringValue(service.Description),
 			PrivateDescription:                types.StringValue(service.PrivateDescription),
-			ParentID:                          types.Int64Value(service.ParentID),
+			ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
 			CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 			Monitoring:                        types.StringValue(service.Monitoring),
 			PingUrl:                           types.StringValue(service.PingUrl),

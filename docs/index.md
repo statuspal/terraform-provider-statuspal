@@ -18,7 +18,7 @@ terraform {
   required_providers {
     statuspal = {
       source  = "statuspal/statuspal"
-      version = "0.2.4"
+      version = "0.2.5"
     }
   }
 }
@@ -57,6 +57,7 @@ resource "statuspal_service" "example" {
   }
 }
 
+# Manage example child service of the previously defined example service.
 resource "statuspal_service" "child" {
   status_page_subdomain = statuspal_status_page.example.status_page.subdomain
   service = {

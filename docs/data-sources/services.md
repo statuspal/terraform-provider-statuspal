@@ -48,7 +48,7 @@ Read-Only:
 - `description` (String) The description of the service.
 - `display_response_time_chart` (Boolean) Display response time chart?
 - `display_uptime_graph` (Boolean) Display uptime graph?
-- `id` (Number) The ID of the service.
+- `id` (String) The ID of the service.
 - `inbound_email_id` (String) The inbound email ID.
 - `incident_type` (String) Enum: `"major"` `"minor"`
   Sets the incident type to this value when an incident is created via monitoring.
@@ -64,7 +64,7 @@ Read-Only:
   - `3rd_party` - 3rd Party monitoring.
 - `name` (String) The name of the service.
 - `order` (Number) Service's position in the service list.
-- `parent_id` (Number) The service parent ID.
+- `parent_id` (String) The service parent ID.
 - `parent_incident_type` (String) Enum: `"major"` `"minor"`
   Sets the parent's service incident type to this value when an incident is created via monitoring.
   The type of the (current) incident:

@@ -5,6 +5,12 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5] - 2024-06-14
+
+### Changed
+
+- The `parent_id` attribute type of the `service` resource from `int64` to `string`.
+
 ## [0.2.4] - 2024-06-13
 
 ### Changed
