@@ -18,7 +18,7 @@ terraform {
   required_providers {
     statuspal = {
       source  = "statuspal/statuspal"
-      version = "0.2.5"
+      version = "0.2.6"
     }
   }
 }
@@ -26,7 +26,7 @@ terraform {
 # Configure the StatusPal provider
 provider "statuspal" {
   api_key = "uk_aERPQU1kUzUrRmplaXJRMlc2TDEwZz09" // your user or organization api key
-  region  = "US"                                  // can be "US" and "EU"
+  region  = "US"                                  // "US" or "EU"
 }
 
 # List all status pages of the organization with ID 1.
@@ -40,7 +40,7 @@ resource "statuspal_status_page" "example" {
   status_page = {
     name      = "Example Terraform Status Page"
     url       = "example.com"
-    time_zone = "Europe/Berlin"
+    time_zone = "America/New_York"
   }
 }
 

@@ -71,6 +71,8 @@ type statusPagesModel struct {
 	HeaderLogoText                 types.String                 `tfsdk:"header_logo_text"`
 	PublicCompanyName              types.String                 `tfsdk:"public_company_name"`
 	BgImage                        types.String                 `tfsdk:"bg_image"`
+	Logo                           types.String                 `tfsdk:"logo"`
+	Favicon                        types.String                 `tfsdk:"favicon"`
 	DisplayUptimeGraph             types.Bool                   `tfsdk:"display_uptime_graph"`
 	UptimeGraphDays                types.Int64                  `tfsdk:"uptime_graph_days"`
 	CurrentIncidentsPosition       types.String                 `tfsdk:"current_incidents_position"`
@@ -313,6 +315,14 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "Background image url of the status page.",
 							Computed:    true,
 						},
+						"logo": schema.StringAttribute{
+							Description: "Logo url of the status page.",
+							Computed:    true,
+						},
+						"favicon": schema.StringAttribute{
+							Description: "Favicon url of the status page.",
+							Computed:    true,
+						},
 						"display_uptime_graph": schema.BoolAttribute{
 							Description: "Display the uptime graph in the status page.",
 							Computed:    true,
@@ -553,6 +563,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
 			PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
 			BgImage:                      types.StringValue(statusPage.BgImage),
+			Logo:                         types.StringValue(statusPage.Logo),
+			Favicon:                      types.StringValue(statusPage.Favicon),
 			DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
 			UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
 			CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),

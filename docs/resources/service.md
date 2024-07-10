@@ -57,11 +57,12 @@ Optional:
 - `description` (String) The description of the service.
 - `display_response_time_chart` (Boolean) Display response time chart?
 - `display_uptime_graph` (Boolean) Display uptime graph?
-- `monitoring` (String) Enum: `null` `"internal"` `"3rd_party"`
+- `monitoring` (String) Enum: `""` `"internal"` `"3rd_party"` `"webhook"`
   Monitoring types:
-  - empty - No monitoring.
+  - `""` - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
+  - `webhook` - Incoming webhook monitoring.
 - `order` (Number) Service's position in the service list.
 - `parent_id` (String) The service parent ID.
 - `pause_monitoring_during_maintenances` (Boolean) Pause the the service monitoring during maintenances?
@@ -82,26 +83,37 @@ Optional:
 	}
   ```
 → (see [below for nested schema](#nestedatt--service--translations))
+- `webhook_custom_jsonpath_settings` (Attributes) The webhook monitoring service custom JSONPath settings.
+  > **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**
+→ (see [below for nested schema](#nestedatt--service--webhook_custom_jsonpath_settings))
+- `webhook_monitoring_service` (String) Enum: `"status-cake"` `"uptime-robot"` `"custom-jsonpath"`
+  > **Configure this field only if the `monitoring` is set to `webhook`.**
+  Webhook Monitoring types:
+  - `status-cake` - StatusCake monitoring service.
+  - `internal` - UptimeRobot monitoring service.
+  - `3rd_party` - Custom JSONPath.
 
 Read-Only:
 
 - `children_ids` (List of Number) IDs of the service's children.
-- `current_incident_type` (String) Enum: `"major"` `"minor"` `"scheduled"`
+- `current_incident_type` (String) Enum: `"minor"` `"major"` `"scheduled"`
   The service's current incident type.
   The type of the (current) incident:
   - `minor` - A minor incident is currently taking place.
   - `major` - A major incident is currently taking place.
   - `scheduled` - A scheduled maintenance is currently taking place.
 - `id` (String) The ID of the service.
+- `inbound_email_address` (String) This is field is populated from `inbound_email_id`, if the `monitoring` is set to `3rd_party`.
 - `inbound_email_id` (String) The inbound email ID.
-- `incident_type` (String) Enum: `"major"` `"minor"`
+- `incident_type` (String) Enum: `"minor"` `"major"`
   Sets the incident type to this value when an incident is created via monitoring.
   The type of the (current) incident:
   - `minor` - A minor incident is currently taking place.
   - `major` - A major incident is currently taking place.
+- `incoming_webhook_url` (String) This is field is populated from `inbound_email_id`, if the `monitoring` is set to `webhook` and the `webhook_monitoring_service` is set.
 - `inserted_at` (String) Datetime at which the service was inserted.
 - `is_up` (Boolean) Is the monitored service up?
-- `parent_incident_type` (String) Enum: `"major"` `"minor"`
+- `parent_incident_type` (String) Enum: `"minor"` `"major"`
   Sets the parent's service incident type to this value when an incident is created via monitoring.
   The type of the (current) incident:
   - `minor` - A minor incident is currently taking place.
@@ -115,6 +127,15 @@ Required:
 
 - `description` (String) The description of the service.
 - `name` (String) The name of the service.
+
+
+<a id="nestedatt--service--webhook_custom_jsonpath_settings"></a>
+### Nested Schema for `service.webhook_custom_jsonpath_settings`
+
+Required:
+
+- `expected_result` (String) The expected result in the JSON, e.g. `"up"`
+- `jsonpath` (String) The path in the JSON, e.g. `$.status`
 
 ## Import
 

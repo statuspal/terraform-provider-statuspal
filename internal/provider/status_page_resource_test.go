@@ -65,6 +65,8 @@ func TestAccStatusPageResource(t *testing.T) {
 			"header_bg_color1": "009688",
 			"incident_link_color": null,
 			"bg_image": null,
+			"logo": null,
+			"favicon": null,
 			"custom_css": null,
 			"current_incidents_position": "below_services",
 			"custom_js": null,
@@ -199,7 +201,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "73"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -245,6 +247,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color1", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_link_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.bg_image", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.logo", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.favicon", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_css", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.current_incidents_position", "below_services"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_js", ""),
@@ -334,7 +338,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "73"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -378,6 +382,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color1", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_link_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.bg_image", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.logo", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.favicon", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_css", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.current_incidents_position", "below_services"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_js", ""),

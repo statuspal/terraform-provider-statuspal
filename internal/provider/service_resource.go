@@ -8,6 +8,7 @@ import (
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -51,6 +54,10 @@ type serviceModel struct {
 	ParentID                          types.String `tfsdk:"parent_id"`
 	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
 	Monitoring                        types.String `tfsdk:"monitoring"`
+	WebhookMonitoringService          types.String `tfsdk:"webhook_monitoring_service"`
+	WebhookCustomJsonpathSettings     types.Object `tfsdk:"webhook_custom_jsonpath_settings"`
+	InboundEmailAddress               types.String `tfsdk:"inbound_email_address"`
+	IncomingWebhookUrl                types.String `tfsdk:"incoming_webhook_url"`
 	PingUrl                           types.String `tfsdk:"ping_url"`
 	IncidentType                      types.String `tfsdk:"incident_type"`
 	ParentIncidentType                types.String `tfsdk:"parent_incident_type"`
@@ -67,6 +74,11 @@ type serviceModel struct {
 	Order                             types.Int64  `tfsdk:"order"`
 	InsertedAt                        types.String `tfsdk:"inserted_at"`
 	UpdatedAt                         types.String `tfsdk:"updated_at"`
+}
+
+type serviceWebhookCustomJsonpathSettingsModel struct {
+	Jsonpath       types.String `tfsdk:"jsonpath"`
+	ExpectedResult types.String `tfsdk:"expected_result"`
 }
 
 type serviceTranslationsModel map[string]serviceTranslationModel
@@ -125,19 +137,63 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Computed:    true,
 					},
 					"current_incident_type": schema.StringAttribute{
-						MarkdownDescription: "Enum: `\"major\"` `\"minor\"` `\"scheduled\"`\n  The service's current incident type.\n  The type of the (current) incident:\n" +
+						MarkdownDescription: "Enum: `\"minor\"` `\"major\"` `\"scheduled\"`\n  The service's current incident type.\n  The type of the (current) incident:\n" +
 							"  - `minor` - A minor incident is currently taking place.\n" +
 							"  - `major` - A major incident is currently taking place.\n" +
 							"  - `scheduled` - A scheduled maintenance is currently taking place.",
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("minor", "major", "scheduled"),
+						},
 					},
 					"monitoring": schema.StringAttribute{
-						MarkdownDescription: "Enum: `null` `\"internal\"` `\"3rd_party\"`\n  Monitoring types:\n" +
-							"  - empty - No monitoring.\n" +
+						MarkdownDescription: "Enum: `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
+							"  - `\"\"` - No monitoring.\n" +
 							"  - `internal` - StatusPal monitoring.\n" +
-							"  - `3rd_party` - 3rd Party monitoring.",
+							"  - `3rd_party` - 3rd Party monitoring.\n" +
+							"  - `webhook` - Incoming webhook monitoring.",
 						Optional: true,
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("", "internal", "3rd_party", "webhook"),
+						},
+					},
+					"webhook_monitoring_service": schema.StringAttribute{
+						MarkdownDescription: "Enum: `\"status-cake\"` `\"uptime-robot\"` `\"custom-jsonpath\"`\n" +
+							"  > **Configure this field only if the `monitoring` is set to `webhook`.**\n" +
+							"  Webhook Monitoring types:\n" +
+							"  - `status-cake` - StatusCake monitoring service.\n" +
+							"  - `internal` - UptimeRobot monitoring service.\n" +
+							"  - `3rd_party` - Custom JSONPath.",
+						Optional: true,
+						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("status-cake", "uptime-robot", "custom-jsonpath"),
+						},
+					},
+					"webhook_custom_jsonpath_settings": schema.SingleNestedAttribute{
+						MarkdownDescription: "The webhook monitoring service custom JSONPath settings.\n" +
+							"  > **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**\n→ ",
+						Optional: true,
+						Computed: true,
+						Attributes: map[string]schema.Attribute{
+							"jsonpath": schema.StringAttribute{
+								MarkdownDescription: "The path in the JSON, e.g. `$.status`",
+								Required:            true,
+							},
+							"expected_result": schema.StringAttribute{
+								MarkdownDescription: "The expected result in the JSON, e.g. `\"up\"`",
+								Required:            true,
+							},
+						},
+					},
+					"inbound_email_address": schema.StringAttribute{
+						MarkdownDescription: "This is field is populated from `inbound_email_id`, if the `monitoring` is set to `3rd_party`.",
+						Computed:            true,
+					},
+					"incoming_webhook_url": schema.StringAttribute{
+						MarkdownDescription: "This is field is populated from `inbound_email_id`, if the `monitoring` is set to `webhook` and the `webhook_monitoring_service` is set.",
+						Computed:            true,
 					},
 					"ping_url": schema.StringAttribute{
 						Description: "We will send HTTP requests to this URL for monitoring every minute.",
@@ -145,16 +201,22 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Computed:    true,
 					},
 					"incident_type": schema.StringAttribute{
-						MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
+						MarkdownDescription: "Enum: `\"minor\"` `\"major\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
 							"  - `minor` - A minor incident is currently taking place.\n" +
 							"  - `major` - A major incident is currently taking place.",
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("minor", "major"),
+						},
 					},
 					"parent_incident_type": schema.StringAttribute{
-						MarkdownDescription: "Enum: `\"major\"` `\"minor\"`\n  Sets the parent's service incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
+						MarkdownDescription: "Enum: `\"minor\"` `\"major\"`\n  Sets the parent's service incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
 							"  - `minor` - A minor incident is currently taking place.\n" +
 							"  - `major` - A major incident is currently taking place.",
 						Computed: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf("minor", "major"),
+						},
 					},
 					"is_up": schema.BoolAttribute{
 						Description: "Is the monitored service up?",
@@ -434,6 +496,21 @@ func (r *serviceResource) Configure(_ context.Context, req resource.ConfigureReq
 }
 
 func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, diagnostics *diag.Diagnostics) *statuspal.Service {
+	monitoring := service.Monitoring.ValueString()
+	var webhookMonitoringService string
+	var webhookCustomJsonpathSettings serviceWebhookCustomJsonpathSettingsModel
+
+	if monitoring == "webhook" {
+		webhookMonitoringService = service.WebhookMonitoringService.ValueString()
+	}
+	if webhookMonitoringService == "custom-jsonpath" && !service.WebhookCustomJsonpathSettings.IsNull() && !service.WebhookCustomJsonpathSettings.IsUnknown() {
+		diags := service.WebhookCustomJsonpathSettings.As(*ctx, &webhookCustomJsonpathSettings, basetypes.ObjectAsOptions{})
+		diagnostics.Append(diags...)
+		if diagnostics.HasError() {
+			return nil
+		}
+	}
+
 	// Create the translationData object dynamically
 	translationData := make(statuspal.ServiceTranslations)
 	if !service.Translations.IsNull() && !service.Translations.IsUnknown() {
@@ -465,11 +542,16 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 	}
 
 	return &statuspal.Service{
-		Name:                              service.Name.ValueString(),
-		Description:                       service.Description.ValueString(),
-		PrivateDescription:                service.PrivateDescription.ValueString(),
-		ParentID:                          convertedParentID,
-		Monitoring:                        service.Monitoring.ValueString(),
+		Name:                     service.Name.ValueString(),
+		Description:              service.Description.ValueString(),
+		PrivateDescription:       service.PrivateDescription.ValueString(),
+		ParentID:                 convertedParentID,
+		Monitoring:               monitoring,
+		WebhookMonitoringService: webhookMonitoringService,
+		WebhookCustomJsonpathSettings: statuspal.WebhookCustomJsonpathSettings{
+			Jsonpath:       webhookCustomJsonpathSettings.Jsonpath.ValueString(),
+			ExpectedResult: webhookCustomJsonpathSettings.ExpectedResult.ValueString(),
+		},
 		PingUrl:                           service.PingUrl.ValueString(),
 		PauseMonitoringDuringMaintenances: service.PauseMonitoringDuringMaintenances.ValueBool(),
 		AutoIncident:                      service.AutoIncident.ValueBool(),
@@ -522,13 +604,23 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 	}
 
 	return &serviceModel{
-		ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
-		Name:                              types.StringValue(service.Name),
-		Description:                       types.StringValue(service.Description),
-		PrivateDescription:                types.StringValue(service.PrivateDescription),
-		ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
-		CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
-		Monitoring:                        types.StringValue(service.Monitoring),
+		ID:                       types.StringValue(strconv.FormatInt(service.ID, 10)),
+		Name:                     types.StringValue(service.Name),
+		Description:              types.StringValue(service.Description),
+		PrivateDescription:       types.StringValue(service.PrivateDescription),
+		ParentID:                 types.StringValue(strconv.FormatInt(service.ParentID, 10)),
+		CurrentIncidentType:      types.StringValue(service.CurrentIncidentType),
+		Monitoring:               types.StringValue(service.Monitoring),
+		WebhookMonitoringService: types.StringValue(service.WebhookMonitoringService),
+		WebhookCustomJsonpathSettings: types.ObjectValueMust(map[string]attr.Type{
+			"jsonpath":        types.StringType,
+			"expected_result": types.StringType,
+		}, map[string]attr.Value{
+			"jsonpath":        types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
+			"expected_result": types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
+		}),
+		InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
+		IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 		PingUrl:                           types.StringValue(service.PingUrl),
 		IncidentType:                      types.StringValue(service.IncidentType),
 		ParentIncidentType:                types.StringValue(service.ParentIncidentType),

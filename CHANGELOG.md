@@ -5,6 +5,19 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2024-07-10
+
+### Added
+
+- `webhook_monitoring_service`, `webhook_custom_jsonpath_settings`, `inbound_email_address` and `incoming_webhook_url` attributes to the service resource and services data source.
+- `webhook` type to the service `monitoring` attribute
+- `bg_image`, `logo` and `favicon` readonly attributes to the status_page resource and status_pages data source.
+- Validators to the service resource attributes where it was needed.
+
+### Changed
+
+- Polished the documentation.
+
 ## [0.2.5] - 2024-06-14
 
 ### Changed

@@ -82,6 +82,8 @@ type statusPageModel struct {
 	HeaderLogoText                 types.String `tfsdk:"header_logo_text"`
 	PublicCompanyName              types.String `tfsdk:"public_company_name"`
 	BgImage                        types.String `tfsdk:"bg_image"`
+	Logo                           types.String `tfsdk:"logo"`
+	Favicon                        types.String `tfsdk:"favicon"`
 	DisplayUptimeGraph             types.Bool   `tfsdk:"display_uptime_graph"`
 	UptimeGraphDays                types.Int64  `tfsdk:"uptime_graph_days"`
 	CurrentIncidentsPosition       types.String `tfsdk:"current_incidents_position"`
@@ -374,7 +376,14 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					},
 					"bg_image": schema.StringAttribute{
 						Description: "Background image url of the status page.",
-						Optional:    true,
+						Computed:    true,
+					},
+					"logo": schema.StringAttribute{
+						Description: "Logo url of the status page.",
+						Computed:    true,
+					},
+					"favicon": schema.StringAttribute{
+						Description: "Favicon url of the status page.",
 						Computed:    true,
 					},
 					"display_uptime_graph": schema.BoolAttribute{
@@ -872,7 +881,6 @@ func mapStatusPageModelToRequestBody(ctx *context.Context, statusPage *statusPag
 		Translations:                 translationData,
 		HeaderLogoText:               statusPage.HeaderLogoText.ValueString(),
 		PublicCompanyName:            statusPage.PublicCompanyName.ValueString(),
-		BgImage:                      statusPage.BgImage.ValueString(),
 		DisplayUptimeGraph:           statusPage.DisplayUptimeGraph.ValueBool(),
 		UptimeGraphDays:              statusPage.UptimeGraphDays.ValueInt64(),
 		CurrentIncidentsPosition:     statusPage.CurrentIncidentsPosition.ValueString(),
@@ -990,6 +998,8 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
 		PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
 		BgImage:                      types.StringValue(statusPage.BgImage),
+		Logo:                         types.StringValue(statusPage.Logo),
+		Favicon:                      types.StringValue(statusPage.Favicon),
 		DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
 		UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
 		CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),

@@ -36,6 +36,8 @@ type StatusPage struct {
 	HeaderLogoText                 string                 `json:"header_logo_text,omitempty"`
 	PublicCompanyName              string                 `json:"public_company_name,omitempty"`
 	BgImage                        string                 `json:"bg_image,omitempty"`
+	Logo                           string                 `json:"logo,omitempty"`
+	Favicon                        string                 `json:"favicon,omitempty"`
 	DisplayUptimeGraph             bool                   `json:"display_uptime_graph,omitempty"`
 	UptimeGraphDays                int64                  `json:"uptime_graph_days,omitempty"`
 	CurrentIncidentsPosition       string                 `json:"current_incidents_position,omitempty"`
@@ -98,29 +100,38 @@ type StatusPageThemeConfigs struct {
 
 // Service struct.
 type Service struct {
-	ID                                int64               `json:"id,omitempty"`
-	Name                              string              `json:"name,omitempty"`
-	Description                       string              `json:"description,omitempty"`
-	PrivateDescription                string              `json:"private_description,omitempty"`
-	ParentID                          int64               `json:"parent_id,omitempty"`
-	CurrentIncidentType               string              `json:"current_incident_type,omitempty"`
-	Monitoring                        string              `json:"monitoring,omitempty"`
-	PingUrl                           string              `json:"ping_url,omitempty"`
-	IncidentType                      string              `json:"incident_type,omitempty"`
-	ParentIncidentType                string              `json:"parent_incident_type,omitempty"`
-	IsUp                              bool                `json:"is_up,omitempty"`
-	PauseMonitoringDuringMaintenances bool                `json:"pause_monitoring_during_maintenances,omitempty"`
-	InboundEmailID                    string              `json:"inbound_email_id,omitempty"`
-	AutoIncident                      bool                `json:"auto_incident,omitempty"`
-	AutoNotify                        bool                `json:"auto_notify,omitempty"`
-	ChildrenIDs                       []int64             `json:"children_ids,omitempty"`
-	Translations                      ServiceTranslations `json:"translations,omitempty"`
-	Private                           bool                `json:"private,omitempty"`
-	DisplayUptimeGraph                bool                `json:"display_uptime_graph,omitempty"`
-	DisplayResponseTimeChart          bool                `json:"display_response_time_chart,omitempty"`
-	Order                             int64               `json:"order,omitempty"`
-	InsertedAt                        string              `json:"inserted_at,omitempty"`
-	UpdatedAt                         string              `json:"updated_at,omitempty"`
+	ID                                int64                         `json:"id,omitempty"`
+	Name                              string                        `json:"name,omitempty"`
+	Description                       string                        `json:"description,omitempty"`
+	PrivateDescription                string                        `json:"private_description,omitempty"`
+	ParentID                          int64                         `json:"parent_id,omitempty"`
+	CurrentIncidentType               string                        `json:"current_incident_type,omitempty"`
+	Monitoring                        string                        `json:"monitoring"`
+	WebhookMonitoringService          string                        `json:"webhook_monitoring_service,omitempty"`
+	WebhookCustomJsonpathSettings     WebhookCustomJsonpathSettings `json:"webhook_custom_jsonpath_settings,omitempty"`
+	InboundEmailAddress               string                        `json:"inbound_email_address,omitempty"`
+	IncomingWebhookUrl                string                        `json:"incoming_webhook_url,omitempty"`
+	PingUrl                           string                        `json:"ping_url,omitempty"`
+	IncidentType                      string                        `json:"incident_type,omitempty"`
+	ParentIncidentType                string                        `json:"parent_incident_type,omitempty"`
+	IsUp                              bool                          `json:"is_up,omitempty"`
+	PauseMonitoringDuringMaintenances bool                          `json:"pause_monitoring_during_maintenances,omitempty"`
+	InboundEmailID                    string                        `json:"inbound_email_id,omitempty"`
+	AutoIncident                      bool                          `json:"auto_incident,omitempty"`
+	AutoNotify                        bool                          `json:"auto_notify,omitempty"`
+	ChildrenIDs                       []int64                       `json:"children_ids,omitempty"`
+	Translations                      ServiceTranslations           `json:"translations,omitempty"`
+	Private                           bool                          `json:"private,omitempty"`
+	DisplayUptimeGraph                bool                          `json:"display_uptime_graph,omitempty"`
+	DisplayResponseTimeChart          bool                          `json:"display_response_time_chart,omitempty"`
+	Order                             int64                         `json:"order,omitempty"`
+	InsertedAt                        string                        `json:"inserted_at,omitempty"`
+	UpdatedAt                         string                        `json:"updated_at,omitempty"`
+}
+
+type WebhookCustomJsonpathSettings struct {
+	Jsonpath       string `json:"jsonpath,omitempty"`
+	ExpectedResult string `json:"expected_result,omitempty"`
 }
 
 type ServiceTranslations map[string]ServiceTranslation

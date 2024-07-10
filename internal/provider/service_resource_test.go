@@ -21,6 +21,10 @@ func TestAccServiceResource(t *testing.T) {
 			"private": false,
 			"description": null,
 			"monitoring": null,
+			"webhook_monitoring_service": null,
+			"webhook_custom_jsonpath_settings": null,
+			"inbound_email_address": null,
+			"incoming_webhook_url": null,
 			"inserted_at": "2023-11-15T10:03:20",
 			"updated_at": "2024-05-16T10:00:00",
 			"order": 3,
@@ -193,12 +197,16 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						webhook_custom_jsonpath_settings = {
+							jsonpath = ""
+							expected_result = ""
+						}
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "23"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
@@ -206,6 +214,12 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_address", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.incident_type", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_incident_type", ""),
@@ -271,12 +285,16 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						webhook_custom_jsonpath_settings = {
+							jsonpath = ""
+							expected_result = ""
+						}
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test-updated"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "23"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Edited Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
@@ -284,6 +302,12 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_address", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.incident_type", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_incident_type", ""),
@@ -335,6 +359,10 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						webhook_custom_jsonpath_settings = {
+							jsonpath = ""
+							expected_result = ""
+						}
 					}
 				}
 
@@ -356,6 +384,10 @@ func TestAccServiceResource(t *testing.T) {
 								name = "web FR"
 								description = ""
 							}
+						}
+						webhook_custom_jsonpath_settings = {
+							jsonpath = ""
+							expected_result = ""
 						}
 					}
 				}`,

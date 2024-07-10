@@ -48,7 +48,6 @@ Required:
 Optional:
 
 - `about` (String) Customize the about information displayed in your status page.
-- `bg_image` (String) Background image url of the status page.
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
@@ -131,7 +130,10 @@ Optional:
 
 Read-Only:
 
+- `bg_image` (String) Background image url of the status page.
+- `favicon` (String) Favicon url of the status page.
 - `inserted_at` (String) Datetime at which the status page was inserted.
+- `logo` (String) Logo url of the status page.
 - `updated_at` (String) Datetime at which the status page was last updated.
 
 <a id="nestedatt--status_page--theme_configs"></a>

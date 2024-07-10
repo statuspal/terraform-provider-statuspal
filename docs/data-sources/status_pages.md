@@ -59,6 +59,7 @@ Read-Only:
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_templates_enabled` (Boolean) The templates won't be used until this is enabled, but you can send test emails.
 - `enable_auto_translations` (Boolean) Enable auto translations when creating incidents, maintenances and info notices.
+- `favicon` (String) Favicon url of the status page.
 - `feed_enabled` (Boolean) Allow your customers to receive updates as RSS and Atom feeds.
 - `google_calendar_enabled` (Boolean) Allow your customers to import Google Calendar with Status Pages maintenance (business only).
 - `google_chat_notifications_enabled` (Boolean) Allow your customers to receive notifications on Google Chat.
@@ -75,6 +76,7 @@ Read-Only:
 - `inserted_at` (String) Datetime at which the status page was inserted.
 - `link_color` (String) The links color in the status page.
 - `locked_when_maintenance` (Boolean) Lock from adding incidents when under maintenance.
+- `logo` (String) Logo url of the status page.
 - `maintenance_notification_hours` (Number) Long-running incident notification (Maintenance).
 - `major_notification_hours` (Number) Long-running incident notification (Major incident).
 - `mattermost_notifications_enabled` (Boolean) Allow your customers to receive notifications on Mattermost.
