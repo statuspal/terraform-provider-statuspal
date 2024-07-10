@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     statuspal = {
-      source = "registry.terraform.io/hashicorp/statuspal"
+      source = "registry.terraform.io/statuspal/statuspal"
     }
   }
   required_version = ">= 1.8.0"

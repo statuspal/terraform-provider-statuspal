@@ -35,23 +35,21 @@ Then commit the changes to `go.mod` and `go.sum`.
 
 ## Using the provider
 
-Fill this in for each provider
+See the [statuspal Provider documentation](https://registry.terraform.io/providers/statuspal/statuspal/latest/docs).
 
 ## Developing the Provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+To compile the provider, run `go install .` from the root directory. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
-To generate or update documentation, run `go generate`.
+In order to run the full suite of Acceptance tests, run `TF_ENV=TEST TF_ACC=1 go test -v -cover ./internal/provider` from the root directory.
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+To test manually the resource or data source, run from the root directory:
+- apply the terraform plan: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name> apply --auto-approve`
+- destroy the resource: `TF_ENV=DEV terraform -chdir=./examples/<resource_or_data_source_name> destroy --auto-approve`
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-```shell
-make testacc
-```
+To generate or update documentation, run `go generate ./...` from the root directory.
 
 > [!NOTE]
 > **For more information visit [Implement a provider with the Terraform Plugin Framework](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider)**:
@@ -60,9 +58,8 @@ make testacc
 > - In the [**Prepare Terraform for local provider install**](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider#prepare-terraform-for-local-provider-install) section, the `~/.terraformrc` file should look like this:
 >   ```terraform
 >   provider_installation {
->
 >     dev_overrides {
->         "registry.terraform.io/hashicorp/statuspal" = "<PATH>"
+>       "registry.terraform.io/statuspal/statuspal" = "<PATH>"
 >     }
 >
 >     # For all other providers, install them directly from their origin provider
@@ -71,3 +68,12 @@ make testacc
 >     direct {}
 >   }
 >   ```
+
+### Create a provider release
+
+- Add tests based on the [Implement automated testing](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-acceptance-testing) section.
+- Don't forget to change the version number in the code and the documentation.
+- Add the documentation based on the [Implement documentation generation](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-documentation-generation) section.
+- Run `golangci-lint run` and fix all the listed errors if there are any.
+- Add changes to [CHANGELOG.md](https://github.com/statuspal/terraform-provider-statuspal/blob/main/CHANGELOG.md) file.
+- Follow the instructions in the [Create a provider release](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-release-publish#create-a-provider-release) section.

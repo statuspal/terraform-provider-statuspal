@@ -9,7 +9,6 @@ import (
 func providerConfig(testUrl *string) *string {
 	providerConfig := `
 		provider "statuspal" {
-			region  = "test"
 			test_url = "` + *testUrl + `"
 		}
 	`

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -17,6 +18,8 @@ func TestAccStatusPageResource(t *testing.T) {
 			"theme_selected": "default",
 			"scheduled_maintenance_days": 7,
 			"display_uptime_graph": true,
+			"inserted_at": "2024-04-15T11:20:35",
+			"updated_at": "2024-04-20T11:22:32",
 			"header_fg_color": "ffffff",
 			"history_limit_days": 90,
 			"head_code": null,
@@ -62,6 +65,8 @@ func TestAccStatusPageResource(t *testing.T) {
 			"header_bg_color1": "009688",
 			"incident_link_color": null,
 			"bg_image": null,
+			"logo": null,
+			"favicon": null,
 			"custom_css": null,
 			"current_incidents_position": "below_services",
 			"custom_js": null,
@@ -93,7 +98,7 @@ func TestAccStatusPageResource(t *testing.T) {
 			"restricted_ips": null,
 			"feed_enabled": true,
 			"header_bg_color2": "0c91c3",
-			"public_company_name": null,
+			"public_company_name": "Public company name EN",
 			"notification_email": null,
 			"email_notification_template": null,
 			"teams_notifications_enabled": false,
@@ -109,10 +114,14 @@ func TestAccStatusPageResource(t *testing.T) {
 	}`
 	updatedResponseBody := strings.Replace(responseBody, `"name": "Test Status Page from Terraform"`, `"name": "Edited Test Status Page from Terraform"`, 1)
 	updatedResponseBody = strings.Replace(updatedResponseBody, `"subdomain": "terraform-test"`, `"subdomain": "terraform-test-updated"`, 1)
+	updatedResponseBody = strings.Replace(updatedResponseBody, `"updated_at": "2024-04-20T11:22:32"`, `"updated_at": "2024-04-25T11:22:32"`, 1)
 
 	// Mock create response for resource
 	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages" response with method "%s": %v`, r.Method, err)
+			return
+		}
 		w.WriteHeader(http.StatusCreated)
 	})
 
@@ -123,7 +132,10 @@ func TestAccStatusPageResource(t *testing.T) {
 			responseBody = updatedResponseBody
 		}
 
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages/terraform-test" response with method "%s": %v`, r.Method, err)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -136,7 +148,10 @@ func TestAccStatusPageResource(t *testing.T) {
 			responseBody = `""`
 		}
 
-		w.Write([]byte(responseBody))
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf(`Error writing "/orgs/1/status_pages/terraform-test-updated" response with method "%s": %v`, r.Method, err)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -173,11 +188,11 @@ func TestAccStatusPageResource(t *testing.T) {
 						time_zone = "Europe/Budapest"
 						translations = {
 							en = {
-								header_logo_text = "",
+								header_logo_text = ""
 								public_company_name = "Public company name EN"
-							},
+							}
 							fr = {
-								header_logo_text = "",
+								header_logo_text = ""
 								public_company_name = "Public company name FR"
 							}
 						}
@@ -186,7 +201,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "71"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -212,8 +227,10 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.subscribers_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_about", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.%", "2"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.header_logo_text", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.public_company_name", "Public company name EN"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.%", "2"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.header_logo_text", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.public_company_name", "Public company name FR"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.tweet_by_default", "false"),
@@ -230,6 +247,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color1", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_link_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.bg_image", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.logo", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.favicon", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_css", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.current_incidents_position", "below_services"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_js", ""),
@@ -259,7 +278,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.enable_auto_translations", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.feed_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color2", "0c91c3"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.public_company_name", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.public_company_name", "Public company name EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.notification_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.email_notification_template", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.teams_notifications_enabled", "false"),
@@ -271,9 +290,18 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.reply_to_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.noindex", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-20T11:22:32"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),
 				),
+			},
+			// ImportState fail testing
+			{
+				ResourceName:      "statuspal_status_page.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ExpectError:       regexp.MustCompile(`Expected StatusPal status page import identifier with format:\n"<organization_id> <status_page_subdomain>"`),
 			},
 			// ImportState testing
 			{
@@ -281,7 +309,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateId:     "1 terraform-test",
-				// // The last_updated attribute does not exist in the HashiCups
+				// // The last_updated attribute does not exist in the StatusPal
 				// // API, therefore there is no value for it during import.
 				// ImportStateVerifyIgnore: []string{"last_updated"},
 			},
@@ -296,11 +324,11 @@ func TestAccStatusPageResource(t *testing.T) {
 							subdomain = "terraform-test-updated"
 							translations = {
 								en = {
-									header_logo_text = "",
+									header_logo_text = ""
 									public_company_name = "Public company name EN"
-								},
+								}
 								fr = {
-									header_logo_text = "",
+									header_logo_text = ""
 									public_company_name = "Public company name FR"
 								}
 							}
@@ -310,7 +338,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "71"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -354,6 +382,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color1", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_link_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.bg_image", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.logo", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.favicon", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_css", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.current_incidents_position", "below_services"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_js", ""),
@@ -383,7 +413,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.enable_auto_translations", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.feed_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_bg_color2", "0c91c3"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.public_company_name", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.public_company_name", "Public company name EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.notification_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.email_notification_template", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.teams_notifications_enabled", "false"),
@@ -395,6 +425,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.reply_to_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.noindex", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-25T11:22:32"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),
 				),

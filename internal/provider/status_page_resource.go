@@ -7,6 +7,8 @@ import (
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
@@ -79,6 +82,8 @@ type statusPageModel struct {
 	HeaderLogoText                 types.String `tfsdk:"header_logo_text"`
 	PublicCompanyName              types.String `tfsdk:"public_company_name"`
 	BgImage                        types.String `tfsdk:"bg_image"`
+	Logo                           types.String `tfsdk:"logo"`
+	Favicon                        types.String `tfsdk:"favicon"`
 	DisplayUptimeGraph             types.Bool   `tfsdk:"display_uptime_graph"`
 	UptimeGraphDays                types.Int64  `tfsdk:"uptime_graph_days"`
 	CurrentIncidentsPosition       types.String `tfsdk:"current_incidents_position"`
@@ -116,6 +121,8 @@ type statusPageModel struct {
 	EmailConfirmationTemplate      types.String `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool   `tfsdk:"email_templates_enabled"`
+	InsertedAt                     types.String `tfsdk:"inserted_at"`
+	UpdatedAt                      types.String `tfsdk:"updated_at"`
 }
 
 type statusPageThemeConfigsModel struct {
@@ -154,9 +161,6 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"organization_id": schema.StringAttribute{
 				Description: "The organization ID of the status page.",
 				Required:    true,
-				// PlanModifiers: []planmodifier.String{
-				// 	stringplanmodifier.UseStateForUnknown(),
-				// },
 			},
 			"status_page": schema.SingleNestedAttribute{
 				Description: "The status page.",
@@ -224,6 +228,9 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(7),
+						Validators: []validator.Int64{
+							int64validator.OneOf(7, 14, 21, 28),
+						},
 					},
 					"custom_js": schema.StringAttribute{
 						MarkdownDescription: "We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.",
@@ -266,24 +273,36 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(6),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"major_notification_hours": schema.Int64Attribute{
 						Description: "Long-running incident notification (Major incident).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"maintenance_notification_hours": schema.Int64Attribute{
 						Description: "Long-running incident notification (Maintenance).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(6),
+						Validators: []validator.Int64{
+							int64validator.AtLeast(0),
+						},
 					},
 					"history_limit_days": schema.Int64Attribute{
 						Description: "Incident history limit (omit for No Limit).",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(90),
+						Validators: []validator.Int64{
+							int64validator.OneOf(30, 90, 365),
+						},
 					},
 					"custom_incident_types_enabled": schema.BoolAttribute{
 						Description: "Enable custom incident types.",
@@ -318,18 +337,18 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Default:     booldefault.StaticBool(true),
 					},
 					"translations": schema.MapNestedAttribute{
-						MarkdownDescription: "A translations object. For example:\n```terraform" + `
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+						MarkdownDescription: "A translations object. For example:\n  ```terraform" + `
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-						` + "```",
+` + "  ```\n→ ",
 						Optional: true,
 						Computed: true,
 						NestedObject: schema.NestedAttributeObject{
@@ -357,7 +376,14 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					},
 					"bg_image": schema.StringAttribute{
 						Description: "Background image url of the status page.",
-						Optional:    true,
+						Computed:    true,
+					},
+					"logo": schema.StringAttribute{
+						Description: "Logo url of the status page.",
+						Computed:    true,
+					},
+					"favicon": schema.StringAttribute{
+						Description: "Favicon url of the status page.",
 						Computed:    true,
 					},
 					"display_uptime_graph": schema.BoolAttribute{
@@ -371,18 +397,27 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(90),
+						Validators: []validator.Int64{
+							int64validator.OneOf(30, 60, 90),
+						},
 					},
 					"current_incidents_position": schema.StringAttribute{
-						Description: `The incident postion displayed in the status page, it can be "below_services" and "above_services".`,
+						Description: `The incident position displayed in the status page, it can be "below_services" and "above_services".`,
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("below_services"),
+						Validators: []validator.String{
+							stringvalidator.OneOf("below_services", "above_services"),
+						},
 					},
 					"theme_selected": schema.StringAttribute{
 						Description: `The selected theme for state page, it can be "default" and "big-logo".`,
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("default"),
+						Validators: []validator.String{
+							stringvalidator.OneOf("default", "big-logo"),
+						},
 					},
 					"theme_configs": schema.ObjectAttribute{
 						Description: "Theme configuration for the status page.",
@@ -465,14 +500,14 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Computed:            true,
 					},
 					"custom_header": schema.StringAttribute{
-						Description: `A custom header for the status page (e.g. "<header>...</header>")`,
-						Optional:    true,
-						Computed:    true,
+						MarkdownDescription: "A custom header for the status page (e.g. \"`<header>...</header>`\").",
+						Optional:            true,
+						Computed:            true,
 					},
 					"custom_footer": schema.StringAttribute{
-						Description: `A custom header for the status page (e.g. "<footer>...</footer>")`,
-						Optional:    true,
-						Computed:    true,
+						MarkdownDescription: "A custom footer for the status page (e.g. \"`<footer>...</footer>`\").",
+						Optional:            true,
+						Computed:            true,
 					},
 					"notify_by_default": schema.BoolAttribute{
 						Description: "Check the Notify subscribers checkbox by default.",
@@ -526,7 +561,7 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Computed:    true,
 					},
 					"google_calendar_enabled": schema.BoolAttribute{
-						Description: "Allow your customers to import Google Calendar with Status Pages maintenence (business only).",
+						Description: "Allow your customers to import Google Calendar with Status Pages maintenance (business only).",
 						Optional:    true,
 						Computed:    true,
 					},
@@ -537,7 +572,7 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Default:     booldefault.StaticBool(true),
 					},
 					"notification_email": schema.StringAttribute{
-						Description: "Allow your customers to subscribe via email to updates on your status page's status",
+						Description: "Allow your customers to subscribe via email to updates on your status page's status.",
 						Optional:    true,
 						Computed:    true,
 					},
@@ -568,8 +603,16 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Computed:            true,
 					},
 					"email_templates_enabled": schema.BoolAttribute{
-						Description: "Enable custom email templates.",
+						Description: "The templates won't be used until this is enabled, but you can send test emails.",
 						Optional:    true,
+						Computed:    true,
+					},
+					"inserted_at": schema.StringAttribute{
+						Description: "Datetime at which the status page was inserted.",
+						Computed:    true,
+					},
+					"updated_at": schema.StringAttribute{
+						Description: "Datetime at which the status page was last updated.",
 						Computed:    true,
 					},
 				},
@@ -638,7 +681,7 @@ func (r *statusPageResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading StatusPal StatusPage",
-			"Could not read status page subdomain "+state.StatusPage.Subdomain.ValueString()+": "+err.Error(),
+			"Could not read status page subdomain "+subdomain+": "+err.Error(),
 		)
 		return
 	}
@@ -838,7 +881,6 @@ func mapStatusPageModelToRequestBody(ctx *context.Context, statusPage *statusPag
 		Translations:                 translationData,
 		HeaderLogoText:               statusPage.HeaderLogoText.ValueString(),
 		PublicCompanyName:            statusPage.PublicCompanyName.ValueString(),
-		BgImage:                      statusPage.BgImage.ValueString(),
 		DisplayUptimeGraph:           statusPage.DisplayUptimeGraph.ValueBool(),
 		UptimeGraphDays:              statusPage.UptimeGraphDays.ValueInt64(),
 		CurrentIncidentsPosition:     statusPage.CurrentIncidentsPosition.ValueString(),
@@ -956,6 +998,8 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
 		PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
 		BgImage:                      types.StringValue(statusPage.BgImage),
+		Logo:                         types.StringValue(statusPage.Logo),
+		Favicon:                      types.StringValue(statusPage.Favicon),
 		DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
 		UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
 		CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),
@@ -1013,5 +1057,7 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 		EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 		EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+		InsertedAt:                     types.StringValue(statusPage.InsertedAt),
+		UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 	}
 }

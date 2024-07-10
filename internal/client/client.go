@@ -4,30 +4,38 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
-// HostURL - Default StatusPal API URL
-const HostURL string = "http://local.statuspal.io:4000/api/v2"
-
-// Client -
+// Client struct.
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
 	ApiKey     string
 }
 
-// NewClient -
+// NewClient function.
 func NewClient(api_key *string, region *string, test_url *string) (*Client, error) {
+	env := os.Getenv("TF_ENV")
+
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		// Default StatusPal API URL
-		HostURL: HostURL,
+		HostURL: "http://local.statuspal.io:4000/api/v2",
 	}
 
-	if *region == "eu" || *region == "us" {
-		c.HostURL = fmt.Sprintf("https://statuspal.%s/api/v2", *region)
-	} else if *region == "test" {
+	if *region == "EU" || *region == "US" {
+		var topLevelDomain string
+		switch *region {
+		case "EU":
+			topLevelDomain = "eu"
+		case "US":
+			topLevelDomain = "io"
+		}
+
+		c.HostURL = fmt.Sprintf("https://statuspal.%s/api/v2", topLevelDomain)
+	} else if env == "TEST" {
 		c.HostURL = *test_url
 	}
 

@@ -48,14 +48,13 @@ Required:
 Optional:
 
 - `about` (String) Customize the about information displayed in your status page.
-- `bg_image` (String) Background image url of the status page.
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
-- `current_incidents_position` (String) The incident postion displayed in the status page, it can be "below_services" and "above_services".
+- `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
 - `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
-- `custom_footer` (String) A custom header for the status page (e.g. "<footer>...</footer>")
-- `custom_header` (String) A custom header for the status page (e.g. "<header>...</header>")
+- `custom_footer` (String) A custom footer for the status page (e.g. "`<footer>...</footer>`").
+- `custom_header` (String) A custom header for the status page (e.g. "`<header>...</header>`").
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
 - `custom_js` (String) We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.
 - `date_format` (String) Display timestamps of incidents and updates in this format.
@@ -68,10 +67,10 @@ Optional:
 - `email_confirmation_template` (String) Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_layout_template` (String) Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
-- `email_templates_enabled` (Boolean) Enable custom email templates.
+- `email_templates_enabled` (Boolean) The templates won't be used until this is enabled, but you can send test emails.
 - `enable_auto_translations` (Boolean) Enable auto translations when creating incidents, maintenances and info notices.
 - `feed_enabled` (Boolean) Allow your customers to receive updates as RSS and Atom feeds.
-- `google_calendar_enabled` (Boolean) Allow your customers to import Google Calendar with Status Pages maintenence (business only).
+- `google_calendar_enabled` (Boolean) Allow your customers to import Google Calendar with Status Pages maintenance (business only).
 - `google_chat_notifications_enabled` (Boolean) Allow your customers to receive notifications on Google Chat.
 - `head_code` (String) We'll insert this content inside the `<head>` tag.
 - `header_bg_color1` (String) The background color at left side of the status page header.
@@ -91,7 +90,7 @@ Optional:
 - `member_restricted` (Boolean) Only signed in members will be allowed to access your status page.
 - `minor_notification_hours` (Number) Long-running incident notification (Minor incident).
 - `noindex` (Boolean) Remove status page from being indexed by search engines (e.g. Google).
-- `notification_email` (String) Allow your customers to subscribe via email to updates on your status page's status
+- `notification_email` (String) Allow your customers to subscribe via email to updates on your status page's status.
 - `notify_by_default` (Boolean) Check the Notify subscribers checkbox by default.
 - `public_company_name` (String) Displayed at the footer of the status page.
 - `reply_to_email` (String) The email address we'll use in the 'reply_to' field in emails to your subscribers. So they can reply to your notification emails.
@@ -111,22 +110,31 @@ Optional:
 - `theme_selected` (String) The selected theme for state page, it can be "default" and "big-logo".
 - `time_format` (String) Display timestamps of incidents and updates in this format.
 - `translations` (Attributes Map) A translations object. For example:
-```terraform
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+  ```terraform
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-						``` (see [below for nested schema](#nestedatt--status_page--translations))
+  ```
+→ (see [below for nested schema](#nestedatt--status_page--translations))
 - `tweet_by_default` (Boolean) Check the Tweet checkbox by default.
 - `tweeting_enabled` (Boolean) Allows to send tweets when creating or updating an incident.
 - `twitter_public_screen_name` (String) Twitter handle name (e.g. yourcompany).
 - `uptime_graph_days` (Number) Uptime graph period.
+
+Read-Only:
+
+- `bg_image` (String) Background image url of the status page.
+- `favicon` (String) Favicon url of the status page.
+- `inserted_at` (String) Datetime at which the status page was inserted.
+- `logo` (String) Logo url of the status page.
+- `updated_at` (String) Datetime at which the status page was last updated.
 
 <a id="nestedatt--status_page--theme_configs"></a>
 ### Nested Schema for `status_page.theme_configs`

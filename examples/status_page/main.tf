@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     statuspal = {
-      source = "registry.terraform.io/hashicorp/statuspal"
+      source = "registry.terraform.io/statuspal/statuspal"
     }
   }
   required_version = ">= 1.1.0"
@@ -9,7 +9,6 @@ terraform {
 
 provider "statuspal" {
   api_key = "uk_aERPQU1kUzUrRmplaXJRMlc2TDEwZz09"
-  region  = "dev"
 }
 
 resource "statuspal_status_page" "edu" {
@@ -17,7 +16,7 @@ resource "statuspal_status_page" "edu" {
   status_page = {
     name      = "Status Page Created from Terraform"
     url       = "terraform-test.com"
-    time_zone = "Europe/Budapest"
+    time_zone = "Europe/Berlin"
   }
 }
 

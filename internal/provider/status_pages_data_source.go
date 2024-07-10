@@ -71,6 +71,8 @@ type statusPagesModel struct {
 	HeaderLogoText                 types.String                 `tfsdk:"header_logo_text"`
 	PublicCompanyName              types.String                 `tfsdk:"public_company_name"`
 	BgImage                        types.String                 `tfsdk:"bg_image"`
+	Logo                           types.String                 `tfsdk:"logo"`
+	Favicon                        types.String                 `tfsdk:"favicon"`
 	DisplayUptimeGraph             types.Bool                   `tfsdk:"display_uptime_graph"`
 	UptimeGraphDays                types.Int64                  `tfsdk:"uptime_graph_days"`
 	CurrentIncidentsPosition       types.String                 `tfsdk:"current_incidents_position"`
@@ -108,6 +110,8 @@ type statusPagesModel struct {
 	EmailConfirmationTemplate      types.String                 `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String                 `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool                   `tfsdk:"email_templates_enabled"`
+	InsertedAt                     types.String                 `tfsdk:"inserted_at"`
+	UpdatedAt                      types.String                 `tfsdk:"updated_at"`
 }
 
 type statusPagesThemeConfigsModel struct {
@@ -273,18 +277,18 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"translations": schema.MapNestedAttribute{
-							MarkdownDescription: "A translations object. For example:\n```terraform" + `
-{
-	en = {
-		public_company_name = "Your company"
-		header_logo_text = "Your company status page"
+							MarkdownDescription: "A translations object. For example:\n  ```terraform" + `
+	{
+		en = {
+			public_company_name = "Your company"
+			header_logo_text = "Your company status page"
+		}
+		fr = {
+			public_company_name = "Votre entreprise"
+			header_logo_text = "Page d'état de votre entreprise"
+		}
 	}
-	fr = {
-		public_company_name = "Votre entreprise"
-		header_logo_text = "Page d'état de votre entreprise"
-	}
-}
-							` + "```",
+` + "  ```\n→ ",
 							Computed: true,
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
@@ -311,6 +315,14 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "Background image url of the status page.",
 							Computed:    true,
 						},
+						"logo": schema.StringAttribute{
+							Description: "Logo url of the status page.",
+							Computed:    true,
+						},
+						"favicon": schema.StringAttribute{
+							Description: "Favicon url of the status page.",
+							Computed:    true,
+						},
 						"display_uptime_graph": schema.BoolAttribute{
 							Description: "Display the uptime graph in the status page.",
 							Computed:    true,
@@ -320,7 +332,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"current_incidents_position": schema.StringAttribute{
-							Description: `The incident postion displayed in the status page, it can be "below_services" and "above_services".`,
+							Description: `The incident position displayed in the status page, it can be "below_services" and "above_services".`,
 							Computed:    true,
 						},
 						"theme_selected": schema.StringAttribute{
@@ -387,12 +399,12 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:            true,
 						},
 						"custom_header": schema.StringAttribute{
-							Description: `A custom header for the status page (e.g. "<header>...</header>")`,
-							Computed:    true,
+							MarkdownDescription: "A custom header for the status page (e.g. \"`<header>...</header>`\").",
+							Computed:            true,
 						},
 						"custom_footer": schema.StringAttribute{
-							Description: `A custom header for the status page (e.g. "<footer>...</footer>")`,
-							Computed:    true,
+							MarkdownDescription: "A custom footer for the status page (e.g. \"`<footer>...</footer>`\").",
+							Computed:            true,
 						},
 						"notify_by_default": schema.BoolAttribute{
 							Description: "Check the Notify subscribers checkbox by default.",
@@ -435,7 +447,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"google_calendar_enabled": schema.BoolAttribute{
-							Description: "Allow your customers to import Google Calendar with Status Pages maintenence (business only).",
+							Description: "Allow your customers to import Google Calendar with Status Pages maintenance (business only).",
 							Computed:    true,
 						},
 						"subscribers_enabled": schema.BoolAttribute{
@@ -443,7 +455,7 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"notification_email": schema.StringAttribute{
-							Description: "Allow your customers to subscribe via email to updates on your status page's status",
+							Description: "Allow your customers to subscribe via email to updates on your status page's status.",
 							Computed:    true,
 						},
 						"reply_to_email": schema.StringAttribute{
@@ -467,7 +479,15 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:            true,
 						},
 						"email_templates_enabled": schema.BoolAttribute{
-							Description: "Enable custom email templates.",
+							Description: "The templates won't be used until this is enabled, but you can send test emails.",
+							Computed:    true,
+						},
+						"inserted_at": schema.StringAttribute{
+							Description: "Datetime at which the status page was inserted.",
+							Computed:    true,
+						},
+						"updated_at": schema.StringAttribute{
+							Description: "Datetime at which the status page was last updated.",
 							Computed:    true,
 						},
 					},
@@ -521,7 +541,7 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			Domain:                       types.StringValue(statusPage.Domain),
 			RestrictedIps:                types.StringValue(statusPage.RestrictedIps),
 			MemberRestricted:             types.BoolValue(statusPage.MemberRestricted),
-			ScheduledMaintenanceDays:     types.Int64Value(int64(statusPage.ScheduledMaintenanceDays)),
+			ScheduledMaintenanceDays:     types.Int64Value(statusPage.ScheduledMaintenanceDays),
 			CustomJs:                     types.StringValue(statusPage.CustomJs),
 			HeadCode:                     types.StringValue(statusPage.HeadCode),
 			DateFormat:                   types.StringValue(statusPage.DateFormat),
@@ -529,10 +549,10 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			DateFormatEnforceEverywhere:  types.BoolValue(statusPage.DateFormatEnforceEverywhere),
 			DisplayCalendar:              types.BoolValue(statusPage.DisplayCalendar),
 			HideWatermark:                types.BoolValue(statusPage.HideWatermark),
-			MinorNotificationHours:       types.Int64Value(int64(statusPage.MinorNotificationHours)),
-			MajorNotificationHours:       types.Int64Value(int64(statusPage.MajorNotificationHours)),
-			MaintenanceNotificationHours: types.Int64Value(int64(statusPage.MaintenanceNotificationHours)),
-			HistoryLimitDays:             types.Int64Value(int64(statusPage.HistoryLimitDays)),
+			MinorNotificationHours:       types.Int64Value(statusPage.MinorNotificationHours),
+			MajorNotificationHours:       types.Int64Value(statusPage.MajorNotificationHours),
+			MaintenanceNotificationHours: types.Int64Value(statusPage.MaintenanceNotificationHours),
+			HistoryLimitDays:             types.Int64Value(statusPage.HistoryLimitDays),
 			CustomIncidentTypesEnabled:   types.BoolValue(statusPage.CustomIncidentTypesEnabled),
 			InfoNoticesEnabled:           types.BoolValue(statusPage.InfoNoticesEnabled),
 			LockedWhenMaintenance:        types.BoolValue(statusPage.LockedWhenMaintenance),
@@ -543,8 +563,10 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
 			PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
 			BgImage:                      types.StringValue(statusPage.BgImage),
+			Logo:                         types.StringValue(statusPage.Logo),
+			Favicon:                      types.StringValue(statusPage.Favicon),
 			DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
-			UptimeGraphDays:              types.Int64Value(int64(statusPage.UptimeGraphDays)),
+			UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
 			CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),
 			ThemeSelected:                types.StringValue(statusPage.ThemeSelected),
 			ThemeConfigs: statusPagesThemeConfigsModel{
@@ -590,6 +612,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 			EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 			EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+			InsertedAt:                     types.StringValue(statusPage.InsertedAt),
+			UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 		}
 
 		state.StatusPages = append(state.StatusPages, statusPageState)
