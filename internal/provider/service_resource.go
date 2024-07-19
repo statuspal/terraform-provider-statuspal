@@ -160,7 +160,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					},
 					"webhook_monitoring_service": schema.StringAttribute{
 						MarkdownDescription: "Enum: `\"status-cake\"` `\"uptime-robot\"` `\"custom-jsonpath\"`\n" +
-							"  > **Configure this field only if the `monitoring` is set to `webhook`.**\n" +
+							"  **Configure this field only if the `monitoring` is set to `webhook`.**\n" +
 							"  Webhook Monitoring types:\n" +
 							"  - `status-cake` - StatusCake monitoring service.\n" +
 							"  - `internal` - UptimeRobot monitoring service.\n" +
@@ -173,7 +173,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 					},
 					"webhook_custom_jsonpath_settings": schema.SingleNestedAttribute{
 						MarkdownDescription: "The webhook monitoring service custom JSONPath settings.\n" +
-							"  > **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**\n→ ",
+							"  **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**\n→ ",
 						Optional: true,
 						Computed: true,
 						Attributes: map[string]schema.Attribute{

@@ -84,10 +84,10 @@ Optional:
   ```
 → (see [below for nested schema](#nestedatt--service--translations))
 - `webhook_custom_jsonpath_settings` (Attributes) The webhook monitoring service custom JSONPath settings.
-  > **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**
+  **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**
 → (see [below for nested schema](#nestedatt--service--webhook_custom_jsonpath_settings))
 - `webhook_monitoring_service` (String) Enum: `"status-cake"` `"uptime-robot"` `"custom-jsonpath"`
-  > **Configure this field only if the `monitoring` is set to `webhook`.**
+  **Configure this field only if the `monitoring` is set to `webhook`.**
   Webhook Monitoring types:
   - `status-cake` - StatusCake monitoring service.
   - `internal` - UptimeRobot monitoring service.
