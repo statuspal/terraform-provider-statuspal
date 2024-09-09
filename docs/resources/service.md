@@ -90,7 +90,7 @@ Optional:
   **Configure this field only if the `monitoring` is set to `webhook`.**
   Webhook Monitoring types:
   - `status-cake` - StatusCake monitoring service.
-  - `internal` - UptimeRobot monitoring service.
+  - `uptime-robot` - UptimeRobot monitoring service.
   - `3rd_party` - Custom JSONPath.
 
 Read-Only:

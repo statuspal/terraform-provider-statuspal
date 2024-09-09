@@ -141,7 +141,7 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 								"  **Configure this field only if the `monitoring` is set to `webhook`.**\n" +
 								"  Webhook Monitoring types:\n" +
 								"  - `status-cake` - StatusCake monitoring service.\n" +
-								"  - `internal` - UptimeRobot monitoring service.\n" +
+								"  - `uptime-robot` - UptimeRobot monitoring service.\n" +
 								"  - `3rd_party` - Custom JSONPath.",
 							Computed: true,
 						},
