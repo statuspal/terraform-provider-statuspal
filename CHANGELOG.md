@@ -5,6 +5,12 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.9] - 2024-09-09
+
+### Fixed
+
+- Omit empty values from the API request payload except the service `monitoring` attribute.
+
 ## [0.2.8] - 2024-07-19
 
 ### Fixed
