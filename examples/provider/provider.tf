@@ -3,7 +3,7 @@ terraform {
   required_providers {
     statuspal = {
       source  = "statuspal/statuspal"
-      version = "0.2.9"
+      version = "0.2.10"
     }
   }
 }

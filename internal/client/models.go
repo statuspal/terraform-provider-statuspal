@@ -9,36 +9,36 @@ type StatusPage struct {
 	SupportEmail                   string                 `json:"support_email,omitempty"`
 	TwitterPublicScreenName        string                 `json:"twitter_public_screen_name,omitempty"`
 	About                          string                 `json:"about,omitempty"`
-	DisplayAbout                   bool                   `json:"display_about,omitempty"`
-	CustomDomainEnabled            bool                   `json:"custom_domain_enabled,omitempty"`
+	DisplayAbout                   bool                   `json:"display_about"`
+	CustomDomainEnabled            bool                   `json:"custom_domain_enabled"`
 	Domain                         string                 `json:"domain,omitempty"`
 	RestrictedIps                  string                 `json:"restricted_ips,omitempty"`
-	MemberRestricted               bool                   `json:"member_restricted,omitempty"`
+	MemberRestricted               bool                   `json:"member_restricted"`
 	ScheduledMaintenanceDays       int64                  `json:"scheduled_maintenance_days,omitempty"`
 	CustomJs                       string                 `json:"custom_js,omitempty"`
 	HeadCode                       string                 `json:"head_code,omitempty"`
 	DateFormat                     string                 `json:"date_format,omitempty"`
 	TimeFormat                     string                 `json:"time_format,omitempty"`
-	DateFormatEnforceEverywhere    bool                   `json:"date_format_enforce_everywhere,omitempty"`
-	DisplayCalendar                bool                   `json:"display_calendar,omitempty"`
-	HideWatermark                  bool                   `json:"hide_watermark,omitempty"`
+	DateFormatEnforceEverywhere    bool                   `json:"date_format_enforce_everywhere"`
+	DisplayCalendar                bool                   `json:"display_calendar"`
+	HideWatermark                  bool                   `json:"hide_watermark"`
 	MinorNotificationHours         int64                  `json:"minor_notification_hours,omitempty"`
 	MajorNotificationHours         int64                  `json:"major_notification_hours,omitempty"`
 	MaintenanceNotificationHours   int64                  `json:"maintenance_notification_hours,omitempty"`
 	HistoryLimitDays               int64                  `json:"history_limit_days,omitempty"`
-	CustomIncidentTypesEnabled     bool                   `json:"custom_incident_types_enabled,omitempty"`
-	InfoNoticesEnabled             bool                   `json:"info_notices_enabled,omitempty"`
-	LockedWhenMaintenance          bool                   `json:"locked_when_maintenance,omitempty"`
-	Noindex                        bool                   `json:"noindex,omitempty"`
-	EnableAutoTranslations         bool                   `json:"enable_auto_translations,omitempty"`
-	CaptchaEnabled                 bool                   `json:"captcha_enabled,omitempty"`
+	CustomIncidentTypesEnabled     bool                   `json:"custom_incident_types_enabled"`
+	InfoNoticesEnabled             bool                   `json:"info_notices_enabled"`
+	LockedWhenMaintenance          bool                   `json:"locked_when_maintenance"`
+	Noindex                        bool                   `json:"noindex"`
+	EnableAutoTranslations         bool                   `json:"enable_auto_translations"`
+	CaptchaEnabled                 bool                   `json:"captcha_enabled"`
 	Translations                   StatusPageTranslations `json:"translations,omitempty"`
 	HeaderLogoText                 string                 `json:"header_logo_text,omitempty"`
 	PublicCompanyName              string                 `json:"public_company_name,omitempty"`
 	BgImage                        string                 `json:"bg_image,omitempty"`
 	Logo                           string                 `json:"logo,omitempty"`
 	Favicon                        string                 `json:"favicon,omitempty"`
-	DisplayUptimeGraph             bool                   `json:"display_uptime_graph,omitempty"`
+	DisplayUptimeGraph             bool                   `json:"display_uptime_graph"`
 	UptimeGraphDays                int64                  `json:"uptime_graph_days,omitempty"`
 	CurrentIncidentsPosition       string                 `json:"current_incidents_position,omitempty"`
 	ThemeSelected                  string                 `json:"theme_selected,omitempty"`
@@ -56,25 +56,25 @@ type StatusPage struct {
 	CustomCss                      string                 `json:"custom_css,omitempty"`
 	CustomHeader                   string                 `json:"custom_header,omitempty"`
 	CustomFooter                   string                 `json:"custom_footer,omitempty"`
-	NotifyByDefault                bool                   `json:"notify_by_default,omitempty"`
-	TweetByDefault                 bool                   `json:"tweet_by_default,omitempty"`
-	SlackSubscriptionsEnabled      bool                   `json:"slack_subscriptions_enabled,omitempty"`
-	DiscordNotificationsEnabled    bool                   `json:"discord_notifications_enabled,omitempty"`
-	TeamsNotificationsEnabled      bool                   `json:"teams_notifications_enabled,omitempty"`
-	GoogleChatNotificationsEnabled bool                   `json:"google_chat_notifications_enabled,omitempty"`
-	MattermostNotificationsEnabled bool                   `json:"mattermost_notifications_enabled,omitempty"`
-	SmsNotificationsEnabled        bool                   `json:"sms_notifications_enabled,omitempty"`
-	FeedEnabled                    bool                   `json:"feed_enabled,omitempty"`
-	CalendarEnabled                bool                   `json:"calendar_enabled,omitempty"`
-	GoogleCalendarEnabled          bool                   `json:"google_calendar_enabled,omitempty"`
-	SubscribersEnabled             bool                   `json:"subscribers_enabled,omitempty"`
+	NotifyByDefault                bool                   `json:"notify_by_default"`
+	TweetByDefault                 bool                   `json:"tweet_by_default"`
+	SlackSubscriptionsEnabled      bool                   `json:"slack_subscriptions_enabled"`
+	DiscordNotificationsEnabled    bool                   `json:"discord_notifications_enabled"`
+	TeamsNotificationsEnabled      bool                   `json:"teams_notifications_enabled"`
+	GoogleChatNotificationsEnabled bool                   `json:"google_chat_notifications_enabled"`
+	MattermostNotificationsEnabled bool                   `json:"mattermost_notifications_enabled"`
+	SmsNotificationsEnabled        bool                   `json:"sms_notifications_enabled"`
+	FeedEnabled                    bool                   `json:"feed_enabled"`
+	CalendarEnabled                bool                   `json:"calendar_enabled"`
+	GoogleCalendarEnabled          bool                   `json:"google_calendar_enabled"`
+	SubscribersEnabled             bool                   `json:"subscribers_enabled"`
 	NotificationEmail              string                 `json:"notification_email,omitempty"`
 	ReplyToEmail                   string                 `json:"reply_to_email,omitempty"`
-	TweetingEnabled                bool                   `json:"tweeting_enabled,omitempty"`
+	TweetingEnabled                bool                   `json:"tweeting_enabled"`
 	EmailLayoutTemplate            string                 `json:"email_layout_template,omitempty"`
 	EmailConfirmationTemplate      string                 `json:"email_confirmation_template,omitempty"`
 	EmailNotificationTemplate      string                 `json:"email_notification_template,omitempty"`
-	EmailTemplatesEnabled          bool                   `json:"email_templates_enabled,omitempty"`
+	EmailTemplatesEnabled          bool                   `json:"email_templates_enabled"`
 	InsertedAt                     string                 `json:"inserted_at,omitempty"`
 	UpdatedAt                      string                 `json:"updated_at,omitempty"`
 }
@@ -114,16 +114,16 @@ type Service struct {
 	PingUrl                           string                        `json:"ping_url,omitempty"`
 	IncidentType                      string                        `json:"incident_type,omitempty"`
 	ParentIncidentType                string                        `json:"parent_incident_type,omitempty"`
-	IsUp                              bool                          `json:"is_up,omitempty"`
-	PauseMonitoringDuringMaintenances bool                          `json:"pause_monitoring_during_maintenances,omitempty"`
+	IsUp                              bool                          `json:"is_up"`
+	PauseMonitoringDuringMaintenances bool                          `json:"pause_monitoring_during_maintenances"`
 	InboundEmailID                    string                        `json:"inbound_email_id,omitempty"`
-	AutoIncident                      bool                          `json:"auto_incident,omitempty"`
-	AutoNotify                        bool                          `json:"auto_notify,omitempty"`
+	AutoIncident                      bool                          `json:"auto_incident"`
+	AutoNotify                        bool                          `json:"auto_notify"`
 	ChildrenIDs                       []int64                       `json:"children_ids,omitempty"`
 	Translations                      ServiceTranslations           `json:"translations,omitempty"`
-	Private                           bool                          `json:"private,omitempty"`
-	DisplayUptimeGraph                bool                          `json:"display_uptime_graph,omitempty"`
-	DisplayResponseTimeChart          bool                          `json:"display_response_time_chart,omitempty"`
+	Private                           bool                          `json:"private"`
+	DisplayUptimeGraph                bool                          `json:"display_uptime_graph"`
+	DisplayResponseTimeChart          bool                          `json:"display_response_time_chart"`
 	Order                             int64                         `json:"order,omitempty"`
 	InsertedAt                        string                        `json:"inserted_at,omitempty"`
 	UpdatedAt                         string                        `json:"updated_at,omitempty"`
