@@ -219,7 +219,7 @@ func TestAccServicesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.order", "3"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.inserted_at", "2023-11-15T10:03:20"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.updated_at", "2024-05-16T10:00:00"),
-					// Verufy the second service webhook_custom_jsonpath_settings attribute
+					// Verify the second service webhook_custom_jsonpath_settings attribute
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.%", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.jsonpath", "$.status"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.expected_result", "\"up\""),
