@@ -147,8 +147,8 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						},
 					},
 					"monitoring": schema.StringAttribute{
-						MarkdownDescription: "Enum: `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
-							"  - `\"\"` - No monitoring.\n" +
+						MarkdownDescription: "Enum: `null` `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
+							"  - `null` or `\"\"` - No monitoring.\n" +
 							"  - `internal` - StatusPal monitoring.\n" +
 							"  - `3rd_party` - 3rd Party monitoring.\n" +
 							"  - `webhook` - Incoming webhook monitoring.",
@@ -498,16 +498,23 @@ func (r *serviceResource) Configure(_ context.Context, req resource.ConfigureReq
 func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, diagnostics *diag.Diagnostics) *statuspal.Service {
 	monitoring := service.Monitoring.ValueString()
 	var webhookMonitoringService string
-	var webhookCustomJsonpathSettings serviceWebhookCustomJsonpathSettingsModel
+	var webhookCustomJsonpathSettings *statuspal.WebhookCustomJsonpathSettings
 
 	if monitoring == "webhook" {
 		webhookMonitoringService = service.WebhookMonitoringService.ValueString()
 	}
 	if webhookMonitoringService == "custom-jsonpath" && !service.WebhookCustomJsonpathSettings.IsNull() && !service.WebhookCustomJsonpathSettings.IsUnknown() {
-		diags := service.WebhookCustomJsonpathSettings.As(*ctx, &webhookCustomJsonpathSettings, basetypes.ObjectAsOptions{})
+		var webhookCustomJsonpathSettingsModel serviceWebhookCustomJsonpathSettingsModel
+
+		diags := service.WebhookCustomJsonpathSettings.As(*ctx, &webhookCustomJsonpathSettingsModel, basetypes.ObjectAsOptions{})
 		diagnostics.Append(diags...)
 		if diagnostics.HasError() {
 			return nil
+		}
+
+		webhookCustomJsonpathSettings = &statuspal.WebhookCustomJsonpathSettings{
+			Jsonpath:       webhookCustomJsonpathSettingsModel.Jsonpath.ValueString(),
+			ExpectedResult: webhookCustomJsonpathSettingsModel.ExpectedResult.ValueString(),
 		}
 	}
 
@@ -542,16 +549,13 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 	}
 
 	return &statuspal.Service{
-		Name:                     service.Name.ValueString(),
-		Description:              service.Description.ValueString(),
-		PrivateDescription:       service.PrivateDescription.ValueString(),
-		ParentID:                 convertedParentID,
-		Monitoring:               monitoring,
-		WebhookMonitoringService: webhookMonitoringService,
-		WebhookCustomJsonpathSettings: statuspal.WebhookCustomJsonpathSettings{
-			Jsonpath:       webhookCustomJsonpathSettings.Jsonpath.ValueString(),
-			ExpectedResult: webhookCustomJsonpathSettings.ExpectedResult.ValueString(),
-		},
+		Name:                              service.Name.ValueString(),
+		Description:                       service.Description.ValueString(),
+		PrivateDescription:                service.PrivateDescription.ValueString(),
+		ParentID:                          convertedParentID,
+		Monitoring:                        monitoring,
+		WebhookMonitoringService:          webhookMonitoringService,
+		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
 		PingUrl:                           service.PingUrl.ValueString(),
 		PauseMonitoringDuringMaintenances: service.PauseMonitoringDuringMaintenances.ValueBool(),
 		AutoIncident:                      service.AutoIncident.ValueBool(),
@@ -565,6 +569,12 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 }
 
 func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service, diagnostics *diag.Diagnostics) *serviceModel {
+	webhookCustomJsonpathSettingsSchema := map[string]attr.Type{
+		"jsonpath":        types.StringType,
+		"expected_result": types.StringType,
+	}
+	webhookCustomJsonpathSettings := types.ObjectNull(webhookCustomJsonpathSettingsSchema)
+
 	// Define the translation object schema
 	translationSchema := map[string]attr.Type{
 		"name":        types.StringType,
@@ -603,22 +613,26 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		return nil
 	}
 
+	if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" && service.WebhookCustomJsonpathSettings != nil {
+		webhookCustomJsonpathSettings = types.ObjectValueMust(
+			webhookCustomJsonpathSettingsSchema,
+			map[string]attr.Value{
+				"jsonpath":        types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
+				"expected_result": types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
+			},
+		)
+	}
+
 	return &serviceModel{
-		ID:                       types.StringValue(strconv.FormatInt(service.ID, 10)),
-		Name:                     types.StringValue(service.Name),
-		Description:              types.StringValue(service.Description),
-		PrivateDescription:       types.StringValue(service.PrivateDescription),
-		ParentID:                 types.StringValue(strconv.FormatInt(service.ParentID, 10)),
-		CurrentIncidentType:      types.StringValue(service.CurrentIncidentType),
-		Monitoring:               types.StringValue(service.Monitoring),
-		WebhookMonitoringService: types.StringValue(service.WebhookMonitoringService),
-		WebhookCustomJsonpathSettings: types.ObjectValueMust(map[string]attr.Type{
-			"jsonpath":        types.StringType,
-			"expected_result": types.StringType,
-		}, map[string]attr.Value{
-			"jsonpath":        types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
-			"expected_result": types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
-		}),
+		ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
+		Name:                              types.StringValue(service.Name),
+		Description:                       types.StringValue(service.Description),
+		PrivateDescription:                types.StringValue(service.PrivateDescription),
+		ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
+		CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
+		Monitoring:                        types.StringValue(service.Monitoring),
+		WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
+		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
 		InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 		IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 		PingUrl:                           types.StringValue(service.PingUrl),
