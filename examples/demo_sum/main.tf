@@ -4,6 +4,7 @@ terraform {
       source = "registry.terraform.io/statuspal/statuspal"
     }
   }
+
   required_version = ">= 1.8.0"
 }
 
