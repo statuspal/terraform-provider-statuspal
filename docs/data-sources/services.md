@@ -59,9 +59,9 @@ Read-Only:
 - `incoming_webhook_url` (String) This is field is populated from `inbound_email_id`, if the `monitoring` is set to `webhook` and the `webhook_monitoring_service` is set.
 - `inserted_at` (String) Datetime at which the service was inserted.
 - `is_up` (Boolean) Is the monitored service up?
-- `monitoring` (String) Enum: `""` `"internal"` `"3rd_party"` `"webhook"`
+- `monitoring` (String) Enum: `null` `""` `"internal"` `"3rd_party"` `"webhook"`
   Monitoring types:
-  - `""` - No monitoring.
+  - `null` or `""` - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
   - `webhook` - Incoming webhook monitoring.

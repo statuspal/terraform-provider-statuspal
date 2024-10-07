@@ -57,9 +57,9 @@ Optional:
 - `description` (String) The description of the service.
 - `display_response_time_chart` (Boolean) Display response time chart?
 - `display_uptime_graph` (Boolean) Display uptime graph?
-- `monitoring` (String) Enum: `""` `"internal"` `"3rd_party"` `"webhook"`
+- `monitoring` (String) Enum: `null` `""` `"internal"` `"3rd_party"` `"webhook"`
   Monitoring types:
-  - `""` - No monitoring.
+  - `null` or `""` - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
   - `webhook` - Incoming webhook monitoring.
