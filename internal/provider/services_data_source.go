@@ -37,33 +37,33 @@ type servicesDataSourceModel struct {
 
 // servicesModel maps services schema data.
 type servicesModel struct {
-	ID                                types.String                               `tfsdk:"id"`
-	Name                              types.String                               `tfsdk:"name"`
-	Description                       types.String                               `tfsdk:"description"`
-	PrivateDescription                types.String                               `tfsdk:"private_description"`
-	ParentID                          types.String                               `tfsdk:"parent_id"`
-	CurrentIncidentType               types.String                               `tfsdk:"current_incident_type"`
-	Monitoring                        types.String                               `tfsdk:"monitoring"`
-	WebhookMonitoringService          types.String                               `tfsdk:"webhook_monitoring_service"`
-	WebhookCustomJsonpathSettings     servicesWebhookCustomJsonpathSettingsModel `tfsdk:"webhook_custom_jsonpath_settings"`
-	InboundEmailAddress               types.String                               `tfsdk:"inbound_email_address"`
-	IncomingWebhookUrl                types.String                               `tfsdk:"incoming_webhook_url"`
-	PingUrl                           types.String                               `tfsdk:"ping_url"`
-	IncidentType                      types.String                               `tfsdk:"incident_type"`
-	ParentIncidentType                types.String                               `tfsdk:"parent_incident_type"`
-	IsUp                              types.Bool                                 `tfsdk:"is_up"`
-	PauseMonitoringDuringMaintenances types.Bool                                 `tfsdk:"pause_monitoring_during_maintenances"`
-	InboundEmailID                    types.String                               `tfsdk:"inbound_email_id"`
-	AutoIncident                      types.Bool                                 `tfsdk:"auto_incident"`
-	AutoNotify                        types.Bool                                 `tfsdk:"auto_notify"`
-	ChildrenIDs                       types.List                                 `tfsdk:"children_ids"`
-	Translations                      servicesTranslationsModel                  `tfsdk:"translations"`
-	Private                           types.Bool                                 `tfsdk:"private"`
-	DisplayUptimeGraph                types.Bool                                 `tfsdk:"display_uptime_graph"`
-	DisplayResponseTimeChart          types.Bool                                 `tfsdk:"display_response_time_chart"`
-	Order                             types.Int64                                `tfsdk:"order"`
-	InsertedAt                        types.String                               `tfsdk:"inserted_at"`
-	UpdatedAt                         types.String                               `tfsdk:"updated_at"`
+	ID                                types.String                                `tfsdk:"id"`
+	Name                              types.String                                `tfsdk:"name"`
+	Description                       types.String                                `tfsdk:"description"`
+	PrivateDescription                types.String                                `tfsdk:"private_description"`
+	ParentID                          types.String                                `tfsdk:"parent_id"`
+	CurrentIncidentType               types.String                                `tfsdk:"current_incident_type"`
+	Monitoring                        types.String                                `tfsdk:"monitoring"`
+	WebhookMonitoringService          types.String                                `tfsdk:"webhook_monitoring_service"`
+	WebhookCustomJsonpathSettings     *servicesWebhookCustomJsonpathSettingsModel `tfsdk:"webhook_custom_jsonpath_settings"`
+	InboundEmailAddress               types.String                                `tfsdk:"inbound_email_address"`
+	IncomingWebhookUrl                types.String                                `tfsdk:"incoming_webhook_url"`
+	PingUrl                           types.String                                `tfsdk:"ping_url"`
+	IncidentType                      types.String                                `tfsdk:"incident_type"`
+	ParentIncidentType                types.String                                `tfsdk:"parent_incident_type"`
+	IsUp                              types.Bool                                  `tfsdk:"is_up"`
+	PauseMonitoringDuringMaintenances types.Bool                                  `tfsdk:"pause_monitoring_during_maintenances"`
+	InboundEmailID                    types.String                                `tfsdk:"inbound_email_id"`
+	AutoIncident                      types.Bool                                  `tfsdk:"auto_incident"`
+	AutoNotify                        types.Bool                                  `tfsdk:"auto_notify"`
+	ChildrenIDs                       types.List                                  `tfsdk:"children_ids"`
+	Translations                      servicesTranslationsModel                   `tfsdk:"translations"`
+	Private                           types.Bool                                  `tfsdk:"private"`
+	DisplayUptimeGraph                types.Bool                                  `tfsdk:"display_uptime_graph"`
+	DisplayResponseTimeChart          types.Bool                                  `tfsdk:"display_response_time_chart"`
+	Order                             types.Int64                                 `tfsdk:"order"`
+	InsertedAt                        types.String                                `tfsdk:"inserted_at"`
+	UpdatedAt                         types.String                                `tfsdk:"updated_at"`
 }
 
 type servicesWebhookCustomJsonpathSettingsModel struct {
@@ -129,8 +129,8 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Computed: true,
 						},
 						"monitoring": schema.StringAttribute{
-							MarkdownDescription: "Enum: `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
-								"  - `\"\"` - No monitoring.\n" +
+							MarkdownDescription: "Enum: `null` `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
+								"  - `null` or `\"\"` - No monitoring.\n" +
 								"  - `internal` - StatusPal monitoring.\n" +
 								"  - `3rd_party` - 3rd Party monitoring.\n" +
 								"  - `webhook` - Incoming webhook monitoring.",
@@ -289,6 +289,8 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Map response body to model
 	for _, service := range *services {
+		var webhookCustomJsonpathSettings *servicesWebhookCustomJsonpathSettingsModel
+
 		// Create the translationData object dynamically
 		translationData := make(servicesTranslationsModel)
 		for lang, data := range service.Translations {
@@ -305,19 +307,23 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			return
 		}
 
-		serviceState := servicesModel{
-			ID:                       types.StringValue(strconv.FormatInt(service.ID, 10)),
-			Name:                     types.StringValue(service.Name),
-			Description:              types.StringValue(service.Description),
-			PrivateDescription:       types.StringValue(service.PrivateDescription),
-			ParentID:                 types.StringValue(strconv.FormatInt(service.ParentID, 10)),
-			CurrentIncidentType:      types.StringValue(service.CurrentIncidentType),
-			Monitoring:               types.StringValue(service.Monitoring),
-			WebhookMonitoringService: types.StringValue(service.WebhookMonitoringService),
-			WebhookCustomJsonpathSettings: servicesWebhookCustomJsonpathSettingsModel{
+		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" && service.WebhookCustomJsonpathSettings != nil {
+			webhookCustomJsonpathSettings = &servicesWebhookCustomJsonpathSettingsModel{
 				Jsonpath:       types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
 				ExpectedResult: types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
-			},
+			}
+		}
+
+		serviceState := servicesModel{
+			ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
+			Name:                              types.StringValue(service.Name),
+			Description:                       types.StringValue(service.Description),
+			PrivateDescription:                types.StringValue(service.PrivateDescription),
+			ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
+			CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
+			Monitoring:                        types.StringValue(service.Monitoring),
+			WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
+			WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
 			InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 			IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 			PingUrl:                           types.StringValue(service.PingUrl),

@@ -18,9 +18,11 @@ terraform {
   required_providers {
     statuspal = {
       source  = "statuspal/statuspal"
-      version = "0.2.10"
+      version = "0.2.11"
     }
   }
+
+  required_version = ">= 1.2.0"
 }
 
 # Configure the StatusPal provider

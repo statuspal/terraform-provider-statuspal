@@ -75,9 +75,12 @@ func TestAccServicesDataSource(t *testing.T) {
 					"name": "web FR",
 					"private": false,
 					"description": "",
-					"monitoring": "internal",
-					"webhook_monitoring_service": null,
-					"webhook_custom_jsonpath_settings": null,
+					"monitoring": "webhook",
+					"webhook_monitoring_service": "custom-jsonpath",
+					"webhook_custom_jsonpath_settings": {
+						"jsonpath": "$.status",
+						"expected_result": "\"up\""
+					},
 					"inbound_email_address": null,
 					"incoming_webhook_url": null,
 					"inserted_at": "2023-11-15T10:03:20",
@@ -186,9 +189,7 @@ func TestAccServicesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.current_incident_type", "custom-type"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.webhook_monitoring_service", ""),
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.webhook_custom_jsonpath_settings.%", "2"),
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.webhook_custom_jsonpath_settings.jsonpath", ""),
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.webhook_custom_jsonpath_settings.expected_result", ""),
+					resource.TestCheckNoResourceAttr("data.statuspal_services.test", "services.0.webhook_custom_jsonpath_settings"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.inbound_email_address", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.incoming_webhook_url", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.ping_url", ""),
@@ -218,6 +219,10 @@ func TestAccServicesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.order", "3"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.inserted_at", "2023-11-15T10:03:20"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.updated_at", "2024-05-16T10:00:00"),
+					// Verify the second service webhook_custom_jsonpath_settings attribute
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.%", "2"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.jsonpath", "$.status"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.expected_result", "\"up\""),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "id", "placeholder"),
 				),

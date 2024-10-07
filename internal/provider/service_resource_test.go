@@ -18,13 +18,16 @@ func TestAccServiceResource(t *testing.T) {
 			"id": 2,
 			"parent_id": 3,
 			"name": "Test Service from Terraform",
-			"private": false,
-			"description": null,
-			"monitoring": null,
-			"webhook_monitoring_service": null,
-			"webhook_custom_jsonpath_settings": null,
-			"inbound_email_address": null,
-			"incoming_webhook_url": null,
+			"private": true,
+			"description": "Some description",
+			"monitoring": "webhook",
+			"webhook_monitoring_service": "custom-jsonpath",
+			"webhook_custom_jsonpath_settings": {
+				"jsonpath": "$.status",
+				"expected_result": "\"up\""
+			},
+			"inbound_email_address": "",
+			"incoming_webhook_url": "https://local.statuspal.io:4001/api/v2/status_pages/apple-com-7/services/d346f35e-0749-4ed7-a88b-7caa679d1959/automate/custom-jsonpath",
 			"inserted_at": "2023-11-15T10:03:20",
 			"updated_at": "2024-05-16T10:00:00",
 			"order": 3,
@@ -43,20 +46,20 @@ func TestAccServiceResource(t *testing.T) {
 					"description": ""
 				}
 			},
-			"auto_notify": false,
+			"auto_notify": true,
 			"current_incident_type": "custom-type",
 			"parent_incident_type": null,
 			"children_ids": [
 				343,
 				656
 			],
-			"is_up": null,
-			"auto_incident": false,
-			"ping_url": null,
-			"pause_monitoring_during_maintenances": false,
-			"private_description": null,
-			"display_response_time_chart": false,
-			"display_uptime_graph": false,
+			"is_up": true,
+			"auto_incident": true,
+			"ping_url": "www.statuspal.io",
+			"pause_monitoring_during_maintenances": true,
+			"private_description": "This is a private description",
+			"display_response_time_chart": true,
+			"display_uptime_graph": true,
 			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959"
 		}
 	}`
@@ -197,10 +200,21 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						private = true
+						description = "Some description"
+						private_description = "This is a private description"
+						monitoring = "webhook"
+						webhook_monitoring_service = "custom-jsonpath"
 						webhook_custom_jsonpath_settings = {
-							jsonpath = ""
-							expected_result = ""
+							jsonpath = "$.status"
+							expected_result = "\"up\""
 						}
+						auto_notify = true
+						auto_incident = true
+						ping_url = "www.statuspal.io"
+						pause_monitoring_during_maintenances = true
+						display_response_time_chart = true
+						display_uptime_graph = true
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -209,25 +223,25 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Test Service from Terraform"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", "Some description"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", "This is a private description"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", "webhook"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", "custom-jsonpath"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.%", "2"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", "$.status"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", "\"up\""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_address", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", "https://local.statuspal.io:4001/api/v2/status_pages/apple-com-7/services/d346f35e-0749-4ed7-a88b-7caa679d1959/automate/custom-jsonpath"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", "www.statuspal.io"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.incident_type", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_incident_type", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.is_up", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.pause_monitoring_during_maintenances", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.is_up", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.pause_monitoring_during_maintenances", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_id", "d346f35e-0749-4ed7-a88b-7caa679d1959"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_incident", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_notify", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_incident", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_notify", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.#", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.0", "343"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.1", "656"),
@@ -241,9 +255,9 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.%", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.name", "web FR"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.description", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.private", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_uptime_graph", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_response_time_chart", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.private", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_uptime_graph", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_response_time_chart", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.order", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inserted_at", "2023-11-15T10:03:20"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.updated_at", "2024-05-16T10:00:00"),
@@ -285,10 +299,21 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						private = true
+						description = "Some description"
+						private_description = "This is a private description"
+						monitoring = "webhook"
+						webhook_monitoring_service = "custom-jsonpath"
 						webhook_custom_jsonpath_settings = {
-							jsonpath = ""
-							expected_result = ""
+							jsonpath = "$.status"
+							expected_result = "\"up\""
 						}
+						auto_notify = true
+						auto_incident = true
+						ping_url = "www.statuspal.io"
+						pause_monitoring_during_maintenances = true
+						display_response_time_chart = true
+						display_uptime_graph = true
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -297,25 +322,25 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Edited Test Service from Terraform"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", "Some description"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.private_description", "This is a private description"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.current_incident_type", "custom-type"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.monitoring", "webhook"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_monitoring_service", "custom-jsonpath"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.%", "2"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.jsonpath", "$.status"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.webhook_custom_jsonpath_settings.expected_result", "\"up\""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_address", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", ""),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.incoming_webhook_url", "https://local.statuspal.io:4001/api/v2/status_pages/apple-com-7/services/d346f35e-0749-4ed7-a88b-7caa679d1959/automate/custom-jsonpath"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.ping_url", "www.statuspal.io"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.incident_type", ""),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_incident_type", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.is_up", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.pause_monitoring_during_maintenances", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.is_up", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.pause_monitoring_during_maintenances", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inbound_email_id", "d346f35e-0749-4ed7-a88b-7caa679d1959"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_incident", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_notify", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_incident", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.auto_notify", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.#", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.0", "343"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.children_ids.1", "656"),
@@ -329,9 +354,9 @@ func TestAccServiceResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.%", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.name", "web FR"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.translations.fr.description", ""),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.private", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_uptime_graph", "false"),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_response_time_chart", "false"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.private", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_uptime_graph", "true"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.display_response_time_chart", "true"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.order", "3"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.inserted_at", "2023-11-15T10:03:20"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.updated_at", "2024-05-20T10:00:00"),
@@ -359,10 +384,21 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						private = true
+						description = "Some description"
+						private_description = "This is a private description"
+						monitoring = "webhook"
+						webhook_monitoring_service = "custom-jsonpath"
 						webhook_custom_jsonpath_settings = {
-							jsonpath = ""
-							expected_result = ""
+							jsonpath = "$.status"
+							expected_result = "\"up\""
 						}
+						auto_notify = true
+						auto_incident = true
+						ping_url = "www.statuspal.io"
+						pause_monitoring_during_maintenances = true
+						display_response_time_chart = true
+						display_uptime_graph = true
 					}
 				}
 
@@ -385,10 +421,21 @@ func TestAccServiceResource(t *testing.T) {
 								description = ""
 							}
 						}
+						private = true
+						description = "Some description"
+						private_description = "This is a private description"
+						monitoring = "webhook"
+						webhook_monitoring_service = "custom-jsonpath"
 						webhook_custom_jsonpath_settings = {
-							jsonpath = ""
-							expected_result = ""
+							jsonpath = "$.status"
+							expected_result = "\"up\""
 						}
+						auto_notify = true
+						auto_incident = true
+						ping_url = "www.statuspal.io"
+						pause_monitoring_during_maintenances = true
+						display_response_time_chart = true
+						display_uptime_graph = true
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
