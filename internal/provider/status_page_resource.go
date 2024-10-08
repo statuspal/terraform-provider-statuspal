@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -20,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -121,6 +121,8 @@ type statusPageModel struct {
 	EmailConfirmationTemplate      types.String `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool   `tfsdk:"email_templates_enabled"`
+	ZoomNotificationsEnabled       types.Bool   `tfsdk:"zoom_notifications_enabled"`
+	AllowedEmailDomains            types.String `tfsdk:"allowed_email_domains"`	
 	InsertedAt                     types.String `tfsdk:"inserted_at"`
 	UpdatedAt                      types.String `tfsdk:"updated_at"`
 }
@@ -607,6 +609,16 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 					},
+					"zoom_notifications_enabled": schema.BoolAttribute{
+						Description: "Allow your customers to receive notifications on Zoom.",
+						Default:     booldefault.StaticBool(false),
+						Computed:    true,
+					},
+					"allowed_email_domains": schema.StringAttribute{
+						MarkdownDescription: "Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')",
+						Optional:    true,
+						Computed:    true,
+					},					
 					"inserted_at": schema.StringAttribute{
 						Description: "Datetime at which the status page was inserted.",
 						Computed:    true,
@@ -928,6 +940,8 @@ func mapStatusPageModelToRequestBody(ctx *context.Context, statusPage *statusPag
 		EmailConfirmationTemplate:      statusPage.EmailConfirmationTemplate.ValueString(),
 		EmailNotificationTemplate:      statusPage.EmailNotificationTemplate.ValueString(),
 		EmailTemplatesEnabled:          statusPage.EmailTemplatesEnabled.ValueBool(),
+		ZoomNotificationsEnabled:       statusPage.ZoomNotificationsEnabled.ValueBool(),
+	    AllowedEmailDomains:            statusPage.AllowedEmailDomains.ValueString(),
 	}
 }
 
@@ -1057,6 +1071,8 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 		EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 		EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+		ZoomNotificationsEnabled:       types.BoolValue(statusPage.ZoomNotificationsEnabled),
+	    AllowedEmailDomains:            types.StringValue(statusPage.AllowedEmailDomains),
 		InsertedAt:                     types.StringValue(statusPage.InsertedAt),
 		UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 	}

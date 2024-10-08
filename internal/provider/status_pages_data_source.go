@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -110,6 +110,8 @@ type statusPagesModel struct {
 	EmailConfirmationTemplate      types.String                 `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String                 `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool                   `tfsdk:"email_templates_enabled"`
+	ZoomNotificationsEnabled       types.Bool                   `tfsdk:"zoom_notifications_enabled"`
+	AllowedEmailDomains            types.String                 `tfsdk:"allowed_email_domains"`		
 	InsertedAt                     types.String                 `tfsdk:"inserted_at"`
 	UpdatedAt                      types.String                 `tfsdk:"updated_at"`
 }
@@ -482,6 +484,14 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "The templates won't be used until this is enabled, but you can send test emails.",
 							Computed:    true,
 						},
+						"zoom_notifications_enabled": schema.BoolAttribute{
+							Description: "Allow your customers to receive notifications on Zoom.",
+							Computed:    true,
+						},
+						"allowed_email_domains": schema.StringAttribute{
+							MarkdownDescription: "Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')",
+							Computed:    true,
+						},											
 						"inserted_at": schema.StringAttribute{
 							Description: "Datetime at which the status page was inserted.",
 							Computed:    true,
@@ -612,6 +622,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 			EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 			EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+			ZoomNotificationsEnabled:       types.BoolValue(statusPage.ZoomNotificationsEnabled),
+	        AllowedEmailDomains:            types.StringValue(statusPage.AllowedEmailDomains),
 			InsertedAt:                     types.StringValue(statusPage.InsertedAt),
 			UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 		}

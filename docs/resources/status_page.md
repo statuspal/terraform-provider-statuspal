@@ -127,6 +127,8 @@ Optional:
 - `tweeting_enabled` (Boolean) Allows to send tweets when creating or updating an incident.
 - `twitter_public_screen_name` (String) Twitter handle name (e.g. yourcompany).
 - `uptime_graph_days` (Number) Uptime graph period.
+- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., "acme.corp\nnapster.com").
+- `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications via Zoom.
 
 Read-Only:
 

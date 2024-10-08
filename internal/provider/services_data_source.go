@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -46,6 +46,7 @@ type servicesModel struct {
 	Monitoring                        types.String                                `tfsdk:"monitoring"`
 	WebhookMonitoringService          types.String                                `tfsdk:"webhook_monitoring_service"`
 	WebhookCustomJsonpathSettings     *servicesWebhookCustomJsonpathSettingsModel `tfsdk:"webhook_custom_jsonpath_settings"`
+	MonitoringOptions                 *servicesMonitoringOptionsModel             `tfsdk:"monitoring_options"`
 	InboundEmailAddress               types.String                                `tfsdk:"inbound_email_address"`
 	IncomingWebhookUrl                types.String                                `tfsdk:"incoming_webhook_url"`
 	PingUrl                           types.String                                `tfsdk:"ping_url"`
@@ -76,6 +77,13 @@ type servicesTranslationsModel map[string]servicesTranslationModel
 type servicesTranslationModel struct {
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
+}
+
+type servicesMonitoringOptionsModel struct {
+	Method      types.String   `tfsdk:"method"`
+	Headers     []types.Object `tfsdk:"headers"`
+	KeywordDown types.String   `tfsdk:"keyword_down"`
+	KeywordUp   types.String   `tfsdk:"keyword_up"`
 }
 
 // Metadata returns the data source type name.
@@ -156,6 +164,41 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 								},
 								"expected_result": schema.StringAttribute{
 									MarkdownDescription: "The expected result in the JSON, e.g. `\"up\"`",
+									Computed:            true,
+								},
+							},
+						},
+						"monitoring_options": schema.SingleNestedAttribute{
+							MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
+							Optional:            true,
+							Computed:            true,
+							Attributes: map[string]schema.Attribute{
+								"method": schema.StringAttribute{
+									MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
+									Computed:            true,
+								},
+								"headers": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`.",
+									Computed:            true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the header. Example: `Authorization`.",
+												Computed:            true,
+											},
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the header. Example: `Bearer token`.",
+												Computed:            true,
+											},
+										},
+									},
+								},
+								"keyword_up": schema.StringAttribute{
+									MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
+									Computed:            true,
+								},
+								"keyword_down": schema.StringAttribute{
+									MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
 									Computed:            true,
 								},
 							},
@@ -290,6 +333,7 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 	// Map response body to model
 	for _, service := range *services {
 		var webhookCustomJsonpathSettings *servicesWebhookCustomJsonpathSettingsModel
+		var monitoringOptions *servicesMonitoringOptionsModel
 
 		// Create the translationData object dynamically
 		translationData := make(servicesTranslationsModel)
@@ -314,6 +358,30 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			}
 		}
 
+		// if service.Monitoring == "3rd_party" || service.Monitoring == "internal" {
+		// 	headersData := make([]attr.Value, 0, len(service.MonitoringOptions.Headers))
+		// 	for _, header := range service.MonitoringOptions.Headers {
+		// 		headerObj := map[string]attr.Value{
+		// 			"key":   types.StringValue(header.Key),
+		// 			"value": types.StringValue(header.Value),
+		// 		}
+		// 		headersData = append(headersData, types.ObjectValueMust(
+		// 			map[string]attr.Type{
+		// 				"key":   types.StringType,
+		// 				"value": types.StringType,
+		// 			},
+		// 			headerObj,
+		// 		))
+		// 	}
+
+		// 	monitoringOptions = &servicesMonitoringOptionsModel{
+		// 		Method:      types.StringValue(service.MonitoringOptions.Method),
+		// 		Headers:     types.ListValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}, headersData),
+		// 		KeywordDown: types.StringValue(service.MonitoringOptions.KeywordDown),
+		// 		KeywordUp:   types.StringValue(service.MonitoringOptions.KeywordUp),
+		// 	}
+		// }
+
 		serviceState := servicesModel{
 			ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
 			Name:                              types.StringValue(service.Name),
@@ -324,6 +392,7 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			Monitoring:                        types.StringValue(service.Monitoring),
 			WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
 			WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
+			MonitoringOptions:                 monitoringOptions,
 			InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 			IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 			PingUrl:                           types.StringValue(service.PingUrl),

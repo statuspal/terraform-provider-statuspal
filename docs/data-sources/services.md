@@ -101,6 +101,9 @@ Read-Only:
   - `status-cake` - StatusCake monitoring service.
   - `uptime-robot` - UptimeRobot monitoring service.
   - `3rd_party` - Custom JSONPath.
+- `monitoring_options` (Attributes) Configuration options for monitoring the service. The options vary depending on
+   whether the monitoring type is internal or third-party.
+→ (see [below for nested schema](#nestedatt--service--monitoring-options))
 
 <a id="nestedatt--services--translations"></a>
 ### Nested Schema for `services.translations`
@@ -118,3 +121,21 @@ Read-Only:
 
 - `expected_result` (String) The expected result in the JSON, e.g. `"up"`
 - `jsonpath` (String) The path in the JSON, e.g. `$.status`
+
+<a id="nestedatt--service--monitoring-options"></a>
+### Nested Schema for `service.monitoring_options`
+
+Read-Only:
+
+- `method` (String): The HTTP method to be used when sending requests for monitoring.
+  This should be set to a valid HTTP method (e.g., GET, HEAD) when monitoring type is internal, e.g. `"HEAD"`
+- `headers` (Array): Custom headers to be included in the monitoring request. This should be set when the
+  monitoring type is internal to specify any necessary header fields for the request.
+  - `items` 
+    - `key` (String): The name of the header field, e.g `"accept-language"`
+    - `value` (String): The value for the header field, e.g `"en"`
+- `keyword_down` (String): A custom keyword that indicates a 'down' status when monitoring a third-party service.
+  This keyword is used to parse and understand service
+  responses, e.g. `"down"`   
+- `keyword_up` (String): A custom keyword that indicates an 'up' status when  monitoring a third-party service.
+  This keyword is used to parse and understand service responses., e.g. `"up"`           

@@ -60,7 +60,22 @@ func TestAccServiceResource(t *testing.T) {
 			"private_description": "This is a private description",
 			"display_response_time_chart": true,
 			"display_uptime_graph": true,
-			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959"
+			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959",
+			"monitoring_options": {
+				"headers": [
+					{
+						"value": "eg",
+						"key": "accept-languag"
+					},
+					{
+						"value": "es",
+						"key": "accept-language"
+					}
+				],
+				"method": "head",
+				"keyword_down": null,
+				"keyword_up": null,
+        	}
 		}
 	}`
 	updatedResponseBody := strings.Replace(basicResponseBody, `"name": "Test Service from Terraform"`, `"name": "Edited Test Service from Terraform"`, 2)

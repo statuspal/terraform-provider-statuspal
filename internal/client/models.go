@@ -61,6 +61,8 @@ type StatusPage struct {
 	SlackSubscriptionsEnabled      bool                   `json:"slack_subscriptions_enabled"`
 	DiscordNotificationsEnabled    bool                   `json:"discord_notifications_enabled"`
 	TeamsNotificationsEnabled      bool                   `json:"teams_notifications_enabled"`
+	ZoomNotificationsEnabled       bool                   `json:"zoom_notifications_enabled"`
+	AllowedEmailDomains            string                 `json:"allowed_email_domains"`
 	GoogleChatNotificationsEnabled bool                   `json:"google_chat_notifications_enabled"`
 	MattermostNotificationsEnabled bool                   `json:"mattermost_notifications_enabled"`
 	SmsNotificationsEnabled        bool                   `json:"sms_notifications_enabled"`
@@ -125,6 +127,7 @@ type Service struct {
 	DisplayUptimeGraph                bool                           `json:"display_uptime_graph"`
 	DisplayResponseTimeChart          bool                           `json:"display_response_time_chart"`
 	Order                             int64                          `json:"order,omitempty"`
+	MonitoringOptions                 *MonitoringOptions             `json:"monitoring_options,omitempty"`
 	InsertedAt                        string                         `json:"inserted_at,omitempty"`
 	UpdatedAt                         string                         `json:"updated_at,omitempty"`
 }
@@ -140,3 +143,19 @@ type ServiceTranslation struct {
 	Name        string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
 }
+
+// MonitoringOptions struct defines the monitoring configuration for services.
+type MonitoringOptions struct {
+	Method               string            `json:"method,omitempty"`
+	Headers              []Header          `json:"headers,omitempty"`
+	KeywordDown          string            `json:"keyword_down,omitempty"`
+	KeywordUp            string            `json:"keyword_up,omitempty"`
+	ExternalServiceStatuses []string       `json:"external_service_statuses,omitempty"`
+}
+
+// Header struct defines the key-value pair for HTTP headers.
+type Header struct {
+	Key   string `json:"key,omitempty"`
+	Value string `json:"value,omitempty"`
+}
+

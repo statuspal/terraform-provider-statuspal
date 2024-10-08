@@ -124,6 +124,8 @@ Read-Only:
 - `updated_at` (String) Datetime at which the status page was last updated.
 - `uptime_graph_days` (Number) Uptime graph period.
 - `url` (String) The website to your company, project or service.
+- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., "acme.corp\nnapster.com").
+- `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications via Zoom.
 
 <a id="nestedatt--status_pages--theme_configs"></a>
 ### Nested Schema for `status_pages.theme_configs`
