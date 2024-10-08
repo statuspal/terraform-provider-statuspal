@@ -6,7 +6,7 @@ This a Terraform provider for interacting with [StatusPal API](https://www.statu
 
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2
 - [Go](https://golang.org/doc/install) >= 1.22
 
 ## Building The Provider
