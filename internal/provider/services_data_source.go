@@ -80,10 +80,16 @@ type servicesTranslationModel struct {
 }
 
 type servicesMonitoringOptionsModel struct {
-	Method      types.String   `tfsdk:"method"`
-	Headers     []types.Object `tfsdk:"headers"`
-	KeywordDown types.String   `tfsdk:"keyword_down"`
-	KeywordUp   types.String   `tfsdk:"keyword_up"`
+	Method      types.String                     `tfsdk:"method"`
+	Headers     servicesMonitoringOptionsHeaders `tfsdk:"headers"`
+	KeywordDown types.String                     `tfsdk:"keyword_down"`
+	KeywordUp   types.String                     `tfsdk:"keyword_up"`
+}
+
+type servicesMonitoringOptionsHeaders []servicesMonitoringOptionsHeader
+type servicesMonitoringOptionsHeader struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
 }
 
 // Metadata returns the data source type name.
@@ -333,7 +339,6 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 	// Map response body to model
 	for _, service := range *services {
 		var webhookCustomJsonpathSettings *servicesWebhookCustomJsonpathSettingsModel
-		var monitoringOptions *servicesMonitoringOptionsModel
 
 		// Create the translationData object dynamically
 		translationData := make(servicesTranslationsModel)
@@ -358,29 +363,23 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			}
 		}
 
-		// if service.Monitoring == "3rd_party" || service.Monitoring == "internal" {
-		// 	headersData := make([]attr.Value, 0, len(service.MonitoringOptions.Headers))
-		// 	for _, header := range service.MonitoringOptions.Headers {
-		// 		headerObj := map[string]attr.Value{
-		// 			"key":   types.StringValue(header.Key),
-		// 			"value": types.StringValue(header.Value),
-		// 		}
-		// 		headersData = append(headersData, types.ObjectValueMust(
-		// 			map[string]attr.Type{
-		// 				"key":   types.StringType,
-		// 				"value": types.StringType,
-		// 			},
-		// 			headerObj,
-		// 		))
-		// 	}
+		var monitoringOptions *servicesMonitoringOptionsModel
+		if (service.Monitoring == "3rd_party" || service.Monitoring == "internal") && service.MonitoringOptions != nil {
+			headersData := []servicesMonitoringOptionsHeader{}
+			for _, header := range service.MonitoringOptions.Headers {
+				headersData = append(headersData, servicesMonitoringOptionsHeader{
+					Key:   types.StringValue(header.Key),
+					Value: types.StringValue(header.Value),
+				})
+			}
 
-		// 	monitoringOptions = &servicesMonitoringOptionsModel{
-		// 		Method:      types.StringValue(service.MonitoringOptions.Method),
-		// 		Headers:     types.ListValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}, headersData),
-		// 		KeywordDown: types.StringValue(service.MonitoringOptions.KeywordDown),
-		// 		KeywordUp:   types.StringValue(service.MonitoringOptions.KeywordUp),
-		// 	}
-		// }
+			monitoringOptions = &servicesMonitoringOptionsModel{
+				Method:      types.StringValue(service.MonitoringOptions.Method),
+				Headers:     headersData, // Set the headers
+				KeywordDown: types.StringValue(service.MonitoringOptions.KeywordDown),
+				KeywordUp:   types.StringValue(service.MonitoringOptions.KeywordUp),
+			}
+		}
 
 		serviceState := servicesModel{
 			ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),

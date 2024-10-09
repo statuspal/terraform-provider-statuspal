@@ -60,23 +60,7 @@ func TestAccServiceResource(t *testing.T) {
 			"private_description": "This is a private description",
 			"display_response_time_chart": true,
 			"display_uptime_graph": true,
-			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959",
-			"monitoring_options": {
-				"headers": [
-					{
-						"value": "eg",
-						"key": "accept-languag"
-					},
-					{
-						"value": "es",
-						"key": "accept-language"
-					}
-				],
-				"method": "head",
-				"keyword_down": null,
-				"keyword_up": null,
-        	}
-		}
+			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959"
 	}`
 	updatedResponseBody := strings.Replace(basicResponseBody, `"name": "Test Service from Terraform"`, `"name": "Edited Test Service from Terraform"`, 2)
 	updatedResponseBody = strings.Replace(updatedResponseBody, `"updated_at": "2024-05-16T10:00:00"`, `"updated_at": "2024-05-20T10:00:00"`, 1)
@@ -235,7 +219,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "28"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", "Some description"),
@@ -334,7 +318,7 @@ func TestAccServiceResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_service.test", "status_page_subdomain", "terraform-test-updated"),
 					// Verify service
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "27"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.%", "28"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.id", "2"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.name", "Edited Test Service from Terraform"),
 					resource.TestCheckResourceAttr("statuspal_service.test", "service.description", "Some description"),

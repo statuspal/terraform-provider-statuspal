@@ -47,34 +47,34 @@ type serviceResourceModel struct {
 
 // serviceModel maps service schema data.
 type serviceModel struct {
-	ID                                types.String `tfsdk:"id"`
-	Name                              types.String `tfsdk:"name"`
-	Description                       types.String `tfsdk:"description"`
-	PrivateDescription                types.String `tfsdk:"private_description"`
-	ParentID                          types.String `tfsdk:"parent_id"`
-	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
-	Monitoring                        types.String `tfsdk:"monitoring"`
-	WebhookMonitoringService          types.String `tfsdk:"webhook_monitoring_service"`
-	WebhookCustomJsonpathSettings     types.Object `tfsdk:"webhook_custom_jsonpath_settings"`
-	InboundEmailAddress               types.String `tfsdk:"inbound_email_address"`
-	IncomingWebhookUrl                types.String `tfsdk:"incoming_webhook_url"`
-	PingUrl                           types.String `tfsdk:"ping_url"`
-	IncidentType                      types.String `tfsdk:"incident_type"`
-	ParentIncidentType                types.String `tfsdk:"parent_incident_type"`
-	IsUp                              types.Bool   `tfsdk:"is_up"`
-	PauseMonitoringDuringMaintenances types.Bool   `tfsdk:"pause_monitoring_during_maintenances"`
-	InboundEmailID                    types.String `tfsdk:"inbound_email_id"`
-	AutoIncident                      types.Bool   `tfsdk:"auto_incident"`
-	AutoNotify                        types.Bool   `tfsdk:"auto_notify"`
-	ChildrenIDs                       types.List   `tfsdk:"children_ids"`
-	Translations                      types.Map    `tfsdk:"translations"`
-	Private                           types.Bool   `tfsdk:"private"`
-	DisplayUptimeGraph                types.Bool   `tfsdk:"display_uptime_graph"`
-	DisplayResponseTimeChart          types.Bool   `tfsdk:"display_response_time_chart"`
-	Order                             types.Int64  `tfsdk:"order"`
-	MonitoringOptions                 types.Object `tfsdk:"monitoring_options"`
-	InsertedAt                        types.String `tfsdk:"inserted_at"`
-	UpdatedAt                         types.String `tfsdk:"updated_at"`
+	ID                                types.String  `tfsdk:"id"`
+	Name                              types.String  `tfsdk:"name"`
+	Description                       types.String  `tfsdk:"description"`
+	PrivateDescription                types.String  `tfsdk:"private_description"`
+	ParentID                          types.String  `tfsdk:"parent_id"`
+	CurrentIncidentType               types.String  `tfsdk:"current_incident_type"`
+	Monitoring                        types.String  `tfsdk:"monitoring"`
+	WebhookMonitoringService          types.String  `tfsdk:"webhook_monitoring_service"`
+	WebhookCustomJsonpathSettings     types.Object  `tfsdk:"webhook_custom_jsonpath_settings"`
+	InboundEmailAddress               types.String  `tfsdk:"inbound_email_address"`
+	IncomingWebhookUrl                types.String  `tfsdk:"incoming_webhook_url"`
+	PingUrl                           types.String  `tfsdk:"ping_url"`
+	IncidentType                      types.String  `tfsdk:"incident_type"`
+	ParentIncidentType                types.String  `tfsdk:"parent_incident_type"`
+	IsUp                              types.Bool    `tfsdk:"is_up"`
+	PauseMonitoringDuringMaintenances types.Bool    `tfsdk:"pause_monitoring_during_maintenances"`
+	InboundEmailID                    types.String  `tfsdk:"inbound_email_id"`
+	AutoIncident                      types.Bool    `tfsdk:"auto_incident"`
+	AutoNotify                        types.Bool    `tfsdk:"auto_notify"`
+	ChildrenIDs                       types.List    `tfsdk:"children_ids"`
+	Translations                      types.Map     `tfsdk:"translations"`
+	Private                           types.Bool    `tfsdk:"private"`
+	DisplayUptimeGraph                types.Bool    `tfsdk:"display_uptime_graph"`
+	DisplayResponseTimeChart          types.Bool    `tfsdk:"display_response_time_chart"`
+	Order                             types.Int64   `tfsdk:"order"`
+	MonitoringOptions                 types.Object  `tfsdk:"monitoring_options"`
+	InsertedAt                        types.String  `tfsdk:"inserted_at"`
+	UpdatedAt                         types.String  `tfsdk:"updated_at"`
 }
 
 type serviceWebhookCustomJsonpathSettingsModel struct {
@@ -83,10 +83,10 @@ type serviceWebhookCustomJsonpathSettingsModel struct {
 }
 
 type serviceMonitoringOptionsModel struct {
-	Method      types.String                `tfsdk:"method"`
-	Headers     map[string]statuspal.Header `tfsdk:"headers"`
-	KeywordDown types.String                `tfsdk:"keyword_down"`
-	KeywordUp   types.String                `tfsdk:"keyword_up"`
+	Method      types.String                       `tfsdk:"method"`
+	Headers     statuspal.MonitoringOptionsHeaders `tfsdk:"headers"`
+	KeywordDown types.String                       `tfsdk:"keyword_down"`
+	KeywordUp   types.String                       `tfsdk:"keyword_up"`
 }
 
 type serviceTranslationsModel map[string]serviceTranslationModel
@@ -562,38 +562,38 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 		}
 	}
 
-	// if (monitoring == "3rd_party" || monitoring == "internal") && !service.MonitoringOptions.IsNull() && !service.MonitoringOptions.IsUnknown() {
-	// 	var monitoringOptionsModel serviceMonitoringOptionsModel
+	if (monitoring == "3rd_party" || monitoring == "internal") && !service.MonitoringOptions.IsNull() && !service.MonitoringOptions.IsUnknown() {
+		var monitoringOptionsModel serviceMonitoringOptionsModel
 
-	// 	diags := service.MonitoringOptions.As(*ctx, &monitoringOptionsModel, basetypes.ObjectAsOptions{})
-	// 	diagnostics.Append(diags...)
-	// 	if diagnostics.HasError() {
-	// 		return nil
-	// 	}
+		diags := service.MonitoringOptions.As(*ctx, &monitoringOptionsModel, basetypes.ObjectAsOptions{})
+		diagnostics.Append(diags...)
+		if diagnostics.HasError() {
+			return nil
+		}
 
-	// 	// Initialize headers slice directly
-	// 	headers := make([]statuspal.Header, 0, len(monitoringOptionsModel.Headers))
+		// Initialize headers slice directly
+		headers := make(statuspal.MonitoringOptionsHeaders, 0, len(monitoringOptionsModel.Headers))
 
-	// 	// Iterate through the headers in monitoringOptionsModel.Headers
-	// 	for _, headerObj := range monitoringOptionsModel.Headers {
-	// 		// Extract key and value directly assuming they're accessible
-	// 		key := headerObj.Key
-	// 		value := headerObj.Value
+		// Iterate through the headers in monitoringOptionsModel.Headers
+		for _, headerObj := range monitoringOptionsModel.Headers {
+			// Extract key and value directly assuming they're accessible
+			key := headerObj.Key
+			value := headerObj.Value
 
-	// 		// Append to headers slice directly, assuming Key and Value are valid
-	// 		headers = append(headers, statuspal.Header{
-	// 			Key:   key,
-	// 			Value: value,
-	// 		})
-	// 	}
+			// Append to headers slice directly, assuming Key and Value are valid
+			headers = append(headers, statuspal.MonitoringOptionsHeader{
+				Key:   key,
+				Value: value,
+			})
+		}
 
-	// 	monitoringOptions = &statuspal.MonitoringOptions{
-	// 		Method:      monitoringOptionsModel.Method.ValueString(),
-	// 		Headers:     headers, // Use the constructed headers slice
-	// 		KeywordDown: monitoringOptionsModel.KeywordDown.ValueString(),
-	// 		KeywordUp:   monitoringOptionsModel.KeywordUp.ValueString(),
-	// 	}
-	// }
+		monitoringOptions = &statuspal.MonitoringOptions{
+			Method:      monitoringOptionsModel.Method.ValueString(),
+			Headers:     headers, // Use the constructed headers slice
+			KeywordDown: monitoringOptionsModel.KeywordDown.ValueString(),
+			KeywordUp:   monitoringOptionsModel.KeywordUp.ValueString(),
+		}
+	}
 
 	// Create the translationData object dynamically
 	translationData := make(statuspal.ServiceTranslations)
@@ -701,36 +701,48 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		)
 	}
 
-	// var monitoringOptionsData attr.Value
-	// if service.MonitoringOptions != nil {
-	// 	monitoringOptionsSchema := map[string]attr.Type{
-	// 		"method":       types.StringType,
-	// 		"keyword_up":   types.StringType,
-	// 		"keyword_down": types.StringType,
-	// 		"headers":      types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}},
-	// 	}
+	// Prepare the monitoring options if applicable
+	var monitoringOptionsData types.Object
 
-	// 	// Create headers data
-	// 	headersData := make([]attr.Value, 0, len(service.MonitoringOptions.Headers))
-	// 	for _, header := range service.MonitoringOptions.Headers {
-	// 		headerObj := map[string]attr.Value{
-	// 			"key":   types.StringValue(header.Key),
-	// 			"value": types.StringValue(header.Value),
-	// 		}
-	// 		headersData = append(headersData, types.ObjectValueMust(monitoringOptionsSchema, headerObj))
-	// 	}
+	// If monitoring options exist, populate them
+	if service.MonitoringOptions != nil {
+		// Define the schema for monitoring options
+		monitoringOptionsSchema := map[string]attr.Type{
+			"method":       types.StringType,
+			"keyword_up":   types.StringType,
+			"keyword_down": types.StringType,
+			"headers":      types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}},
+		}
 
-	// 	// Create the monitoring options object
-	// 	monitoringOptionsData = types.ObjectValueMust(
-	// 		monitoringOptionsSchema,
-	// 		map[string]attr.Value{
-	// 			"method":       types.StringValue(service.MonitoringOptions.Method),
-	// 			"keyword_up":   types.StringValue(service.MonitoringOptions.KeywordUp),
-	// 			"keyword_down": types.StringValue(service.MonitoringOptions.KeywordDown),
-	// 			"headers":      types.ListValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}, headersData),
-	// 		},
-	// 	)
-	// }
+		// Create headers data
+		headersData := make([]attr.Value, len(service.MonitoringOptions.Headers))
+		if len(service.MonitoringOptions.Headers) > 0 {
+			for i, header := range service.MonitoringOptions.Headers {
+				headersData[i] = types.ObjectValueMust(
+					map[string]attr.Type{
+						"key":   types.StringType,
+						"value": types.StringType,
+					},
+					map[string]attr.Value{
+						"key":   types.StringValue(header.Key),
+						"value": types.StringValue(header.Value),
+					},
+				)
+			}
+		} 
+
+		// Set monitoring options object
+		monitoringOptionsData = types.ObjectValueMust(
+			monitoringOptionsSchema,
+			map[string]attr.Value{
+				"method":       types.StringValue(service.MonitoringOptions.Method),
+				"keyword_up":   types.StringValue(service.MonitoringOptions.KeywordUp),
+				"keyword_down": types.StringValue(service.MonitoringOptions.KeywordDown),
+				"headers":      types.ListValueMust(types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}, headersData),
+			},
+		)
+	}
+
 	return &serviceModel{
 		ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
 		Name:                              types.StringValue(service.Name),
@@ -741,7 +753,7 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		Monitoring:                        types.StringValue(service.Monitoring),
 		WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
 		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
-		// MonitoringOptions:                 monitoringOptionsData,
+		MonitoringOptions:                 monitoringOptionsData,
 		InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 		IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 		PingUrl:                           types.StringValue(service.PingUrl),

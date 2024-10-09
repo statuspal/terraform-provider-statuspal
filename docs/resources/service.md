@@ -63,6 +63,7 @@ Optional:
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
   - `webhook` - Incoming webhook monitoring.
+- `monitoring_options` (Attributes) Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party. (see [below for nested schema](#nestedatt--service--monitoring_options))
 - `order` (Number) Service's position in the service list.
 - `parent_id` (String) The service parent ID.
 - `pause_monitoring_during_maintenances` (Boolean) Pause the the service monitoring during maintenances?
@@ -92,9 +93,7 @@ Optional:
   - `status-cake` - StatusCake monitoring service.
   - `uptime-robot` - UptimeRobot monitoring service.
   - `3rd_party` - Custom JSONPath.
-- `monitoring_options` (Attributes) Configuration options for monitoring the service. The options vary depending on whether the
-  monitoring type is internal or third-party.
-→ (see [below for nested schema](#nestedatt--service--monitoring-options))  
+
 Read-Only:
 
 - `children_ids` (List of Number) IDs of the service's children.
@@ -122,6 +121,26 @@ Read-Only:
   - `major` - A major incident is currently taking place.
 - `updated_at` (String) Datetime at which the service was last updated.
 
+<a id="nestedatt--service--monitoring_options"></a>
+### Nested Schema for `service.monitoring_options`
+
+Read-Only:
+
+- `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`. (see [below for nested schema](#nestedatt--service--monitoring_options--headers))
+- `keyword_down` (String) A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.
+- `keyword_up` (String) A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service
+- `method` (String) The HTTP method used for monitoring requests. Example: `HEAD`.
+
+<a id="nestedatt--service--monitoring_options--headers"></a>
+### Nested Schema for `service.monitoring_options.headers`
+
+Read-Only:
+
+- `key` (String) The key of the header. Example: `Authorization`.
+- `value` (String) The value of the header. Example: `Bearer token`.
+
+
+
 <a id="nestedatt--service--translations"></a>
 ### Nested Schema for `service.translations`
 
@@ -138,23 +157,6 @@ Required:
 
 - `expected_result` (String) The expected result in the JSON, e.g. `"up"`
 - `jsonpath` (String) The path in the JSON, e.g. `$.status`
-
-<a id="nestedatt--service--monitoring-options"></a>
-### Nested Schema for `service.monitoring_options`
-
-Optional:
-
-- `method` (String): The HTTP method to be used when sending requests for monitoring.
-  This should be set to a valid HTTP method (e.g., GET, HEAD) when monitoring type is internal, e.g. `"HEAD"`
-- `headers` (Array): Custom headers to be included in the monitoring request. This should be set when the  monitoring type is internal to specify any necessary header
-  fields for the request.
-  - `items` 
-    - `key` (String): The name of the header field, e.g `"accept-language"`
-    - `value` (String): The value for the header field, e.g `"en"`
-- `keyword_down` (String): A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service
-  responses, e.g. `"down"`   
-- `keyword_up` (String): A custom keyword that indicates an 'up' status when  monitoring a third-party service. This keyword is used to parse and understand service
-  responses., e.g. `"up"`                       
 
 ## Import
 

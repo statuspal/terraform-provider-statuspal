@@ -146,16 +146,20 @@ type ServiceTranslation struct {
 
 // MonitoringOptions struct defines the monitoring configuration for services.
 type MonitoringOptions struct {
-	Method               string            `json:"method,omitempty"`
-	Headers              []Header          `json:"headers,omitempty"`
-	KeywordDown          string            `json:"keyword_down,omitempty"`
-	KeywordUp            string            `json:"keyword_up,omitempty"`
-	ExternalServiceStatuses []string       `json:"external_service_statuses,omitempty"`
+	Method                  string                   `json:"method,omitempty"`
+	Headers                 MonitoringOptionsHeaders `json:"headers,omitempty"`
+	KeywordDown             string                   `json:"keyword_down,omitempty"`
+	KeywordUp               string                   `json:"keyword_up,omitempty"`
+	ExternalServiceStatuses []string                 `json:"external_service_statuses,omitempty"`
 }
 
-// Header struct defines the key-value pair for HTTP headers.
-type Header struct {
+type MonitoringOptionsHeaders []MonitoringOptionsHeader
+type MonitoringOptionsHeader struct {
 	Key   string `json:"key,omitempty"`
 	Value string `json:"value,omitempty"`
 }
 
+type NotificationRecipient struct {
+	ID    int64  `json:"id,omitempty"`
+	Email string `json:"email,omitempty"` // Add more fields as needed
+}

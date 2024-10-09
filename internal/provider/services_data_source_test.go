@@ -30,7 +30,7 @@ func TestAccServicesDataSource(t *testing.T) {
 					"name": "api",
 					"private": false,
 					"description": null,
-					"monitoring": null,
+					"monitoring": "3rd_party",
 					"webhook_monitoring_service": null,
 					"webhook_custom_jsonpath_settings": null,
 					"inbound_email_address": null,
@@ -67,7 +67,13 @@ func TestAccServicesDataSource(t *testing.T) {
 					"private_description": null,
 					"display_response_time_chart": false,
 					"display_uptime_graph": false,
-					"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959"
+					"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959",
+					"monitoring_options": {
+						"headers": [],
+						"method": "",
+						"keyword_down": "DOWN",
+						"keyword_up": "UP"
+					}					
 				},
 				{
 					"id": 1,
@@ -120,7 +126,7 @@ func TestAccServicesDataSource(t *testing.T) {
 					"name": "new service",
 					"private": true,
 					"description": "",
-					"monitoring": null,
+					"monitoring": "internal",
 					"webhook_monitoring_service": null,
 					"webhook_custom_jsonpath_settings": null,
 					"inbound_email_address": null,
@@ -150,7 +156,22 @@ func TestAccServicesDataSource(t *testing.T) {
 					"private_description": null,
 					"display_response_time_chart": false,
 					"display_uptime_graph": false,
-					"inbound_email_id": "ca237edd-72ac-4793-b278-5e682e3d7b47"
+					"inbound_email_id": "ca237edd-72ac-4793-b278-5e682e3d7b47",
+					"monitoring_options": {
+						"headers": [
+							{
+								"value": "abcdef",
+								"key": "Authorization"
+							},
+							{
+								"value": "es",
+								"key": "accept-language"
+							}
+						],
+						"method": "head",
+						"keyword_down": null,
+						"keyword_up": null
+					}
 				}
 			]
 		}`)); err != nil {
@@ -180,14 +201,14 @@ func TestAccServicesDataSource(t *testing.T) {
 					// Verify number of services returned
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.#", "3"),
 					// Verify the first service to ensure all attributes are set
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.%", "27"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.%", "28"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.id", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.name", "api"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.description", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.private_description", ""),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.parent_id", "3"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.current_incident_type", "custom-type"),
-					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring", ""),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring", "3rd_party"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.webhook_monitoring_service", ""),
 					resource.TestCheckNoResourceAttr("data.statuspal_services.test", "services.0.webhook_custom_jsonpath_settings"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.inbound_email_address", ""),
@@ -219,6 +240,8 @@ func TestAccServicesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.order", "3"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.inserted_at", "2023-11-15T10:03:20"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.updated_at", "2024-05-16T10:00:00"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring_options.keyword_up", "UP"),
+					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.0.monitoring_options.keyword_down", "DOWN"),
 					// Verify the second service webhook_custom_jsonpath_settings attribute
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.%", "2"),
 					resource.TestCheckResourceAttr("data.statuspal_services.test", "services.1.webhook_custom_jsonpath_settings.jsonpath", "$.status"),
