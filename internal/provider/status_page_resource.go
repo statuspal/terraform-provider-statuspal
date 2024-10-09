@@ -122,7 +122,7 @@ type statusPageModel struct {
 	EmailNotificationTemplate      types.String `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool   `tfsdk:"email_templates_enabled"`
 	ZoomNotificationsEnabled       types.Bool   `tfsdk:"zoom_notifications_enabled"`
-	AllowedEmailDomains            types.String `tfsdk:"allowed_email_domains"`	
+	AllowedEmailDomains            types.String `tfsdk:"allowed_email_domains"`
 	InsertedAt                     types.String `tfsdk:"inserted_at"`
 	UpdatedAt                      types.String `tfsdk:"updated_at"`
 }
@@ -616,9 +616,9 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					},
 					"allowed_email_domains": schema.StringAttribute{
 						MarkdownDescription: "Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')",
-						Optional:    true,
-						Computed:    true,
-					},					
+						Optional:            true,
+						Computed:            true,
+					},
 					"inserted_at": schema.StringAttribute{
 						Description: "Datetime at which the status page was inserted.",
 						Computed:    true,
@@ -941,7 +941,7 @@ func mapStatusPageModelToRequestBody(ctx *context.Context, statusPage *statusPag
 		EmailNotificationTemplate:      statusPage.EmailNotificationTemplate.ValueString(),
 		EmailTemplatesEnabled:          statusPage.EmailTemplatesEnabled.ValueBool(),
 		ZoomNotificationsEnabled:       statusPage.ZoomNotificationsEnabled.ValueBool(),
-	    AllowedEmailDomains:            statusPage.AllowedEmailDomains.ValueString(),
+		AllowedEmailDomains:            statusPage.AllowedEmailDomains.ValueString(),
 	}
 }
 
@@ -1072,7 +1072,7 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 		EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
 		ZoomNotificationsEnabled:       types.BoolValue(statusPage.ZoomNotificationsEnabled),
-	    AllowedEmailDomains:            types.StringValue(statusPage.AllowedEmailDomains),
+		AllowedEmailDomains:            types.StringValue(statusPage.AllowedEmailDomains),
 		InsertedAt:                     types.StringValue(statusPage.InsertedAt),
 		UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 	}

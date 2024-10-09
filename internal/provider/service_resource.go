@@ -47,34 +47,34 @@ type serviceResourceModel struct {
 
 // serviceModel maps service schema data.
 type serviceModel struct {
-	ID                                types.String  `tfsdk:"id"`
-	Name                              types.String  `tfsdk:"name"`
-	Description                       types.String  `tfsdk:"description"`
-	PrivateDescription                types.String  `tfsdk:"private_description"`
-	ParentID                          types.String  `tfsdk:"parent_id"`
-	CurrentIncidentType               types.String  `tfsdk:"current_incident_type"`
-	Monitoring                        types.String  `tfsdk:"monitoring"`
-	WebhookMonitoringService          types.String  `tfsdk:"webhook_monitoring_service"`
-	WebhookCustomJsonpathSettings     types.Object  `tfsdk:"webhook_custom_jsonpath_settings"`
-	InboundEmailAddress               types.String  `tfsdk:"inbound_email_address"`
-	IncomingWebhookUrl                types.String  `tfsdk:"incoming_webhook_url"`
-	PingUrl                           types.String  `tfsdk:"ping_url"`
-	IncidentType                      types.String  `tfsdk:"incident_type"`
-	ParentIncidentType                types.String  `tfsdk:"parent_incident_type"`
-	IsUp                              types.Bool    `tfsdk:"is_up"`
-	PauseMonitoringDuringMaintenances types.Bool    `tfsdk:"pause_monitoring_during_maintenances"`
-	InboundEmailID                    types.String  `tfsdk:"inbound_email_id"`
-	AutoIncident                      types.Bool    `tfsdk:"auto_incident"`
-	AutoNotify                        types.Bool    `tfsdk:"auto_notify"`
-	ChildrenIDs                       types.List    `tfsdk:"children_ids"`
-	Translations                      types.Map     `tfsdk:"translations"`
-	Private                           types.Bool    `tfsdk:"private"`
-	DisplayUptimeGraph                types.Bool    `tfsdk:"display_uptime_graph"`
-	DisplayResponseTimeChart          types.Bool    `tfsdk:"display_response_time_chart"`
-	Order                             types.Int64   `tfsdk:"order"`
-	MonitoringOptions                 types.Object  `tfsdk:"monitoring_options"`
-	InsertedAt                        types.String  `tfsdk:"inserted_at"`
-	UpdatedAt                         types.String  `tfsdk:"updated_at"`
+	ID                                types.String `tfsdk:"id"`
+	Name                              types.String `tfsdk:"name"`
+	Description                       types.String `tfsdk:"description"`
+	PrivateDescription                types.String `tfsdk:"private_description"`
+	ParentID                          types.String `tfsdk:"parent_id"`
+	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
+	Monitoring                        types.String `tfsdk:"monitoring"`
+	WebhookMonitoringService          types.String `tfsdk:"webhook_monitoring_service"`
+	WebhookCustomJsonpathSettings     types.Object `tfsdk:"webhook_custom_jsonpath_settings"`
+	InboundEmailAddress               types.String `tfsdk:"inbound_email_address"`
+	IncomingWebhookUrl                types.String `tfsdk:"incoming_webhook_url"`
+	PingUrl                           types.String `tfsdk:"ping_url"`
+	IncidentType                      types.String `tfsdk:"incident_type"`
+	ParentIncidentType                types.String `tfsdk:"parent_incident_type"`
+	IsUp                              types.Bool   `tfsdk:"is_up"`
+	PauseMonitoringDuringMaintenances types.Bool   `tfsdk:"pause_monitoring_during_maintenances"`
+	InboundEmailID                    types.String `tfsdk:"inbound_email_id"`
+	AutoIncident                      types.Bool   `tfsdk:"auto_incident"`
+	AutoNotify                        types.Bool   `tfsdk:"auto_notify"`
+	ChildrenIDs                       types.List   `tfsdk:"children_ids"`
+	Translations                      types.Map    `tfsdk:"translations"`
+	Private                           types.Bool   `tfsdk:"private"`
+	DisplayUptimeGraph                types.Bool   `tfsdk:"display_uptime_graph"`
+	DisplayResponseTimeChart          types.Bool   `tfsdk:"display_response_time_chart"`
+	Order                             types.Int64  `tfsdk:"order"`
+	MonitoringOptions                 types.Object `tfsdk:"monitoring_options"`
+	InsertedAt                        types.String `tfsdk:"inserted_at"`
+	UpdatedAt                         types.String `tfsdk:"updated_at"`
 }
 
 type serviceWebhookCustomJsonpathSettingsModel struct {
@@ -729,7 +729,7 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 					},
 				)
 			}
-		} 
+		}
 
 		// Set monitoring options object
 		monitoringOptionsData = types.ObjectValueMust(
