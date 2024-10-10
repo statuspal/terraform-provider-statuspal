@@ -109,7 +109,7 @@ Read-Only:
 <a id="nestedatt--services--monitoring_options"></a>
 ### Nested Schema for `services.monitoring_options`
 
-Read-Only:
+Optional:
 
 - `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`. (see [below for nested schema](#nestedatt--services--monitoring_options--headers))
 - `keyword_down` (String) A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.
@@ -119,7 +119,7 @@ Read-Only:
 <a id="nestedatt--services--monitoring_options--headers"></a>
 ### Nested Schema for `services.monitoring_options.headers`
 
-Read-Only:
+Optional:
 
 - `key` (String) The key of the header. Example: `Authorization`.
 - `value` (String) The value of the header. Example: `Bearer token`.

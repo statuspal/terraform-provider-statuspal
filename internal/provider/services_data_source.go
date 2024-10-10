@@ -181,35 +181,34 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 						"monitoring_options": schema.SingleNestedAttribute{
 							MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
 							Optional:            true,
-							Computed:            true,
 							Attributes: map[string]schema.Attribute{
 								"method": schema.StringAttribute{
 									MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
-									Computed:            true,
+									Optional:            true,
 								},
 								"headers": schema.ListNestedAttribute{
 									MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`.",
-									Computed:            true,
+									Optional:            true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"key": schema.StringAttribute{
 												MarkdownDescription: "The key of the header. Example: `Authorization`.",
-												Computed:            true,
+												Optional:            true,
 											},
 											"value": schema.StringAttribute{
 												MarkdownDescription: "The value of the header. Example: `Bearer token`.",
-												Computed:            true,
+												Optional:            true,
 											},
 										},
 									},
 								},
 								"keyword_up": schema.StringAttribute{
 									MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
-									Computed:            true,
+									Optional:            true,
 								},
 								"keyword_down": schema.StringAttribute{
 									MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
-									Computed:            true,
+									Optional:            true,
 								},
 							},
 						},
