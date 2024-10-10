@@ -109,7 +109,9 @@ func TestAccStatusPageResource(t *testing.T) {
 			"major_notification_hours": 3,
 			"incident_header_color": "009688",
 			"reply_to_email": null,
-			"noindex": false
+			"noindex": false,
+			"zoom_notifications_enabled": false,
+			"allowed_email_domains": "acme.corp\nbbc.com"
 		}
 	}`
 	updatedResponseBody := strings.Replace(responseBody, `"name": "Test Status Page from Terraform"`, `"name": "Edited Test Status Page from Terraform"`, 1)
@@ -201,7 +203,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -290,6 +292,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.reply_to_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.noindex", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.zoom_notifications_enabled", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.allowed_email_domains", "acme.corp\nbbc.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-20T11:22:32"),
 					// Verify placeholder id attribute
@@ -338,7 +342,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "75"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -425,6 +429,8 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.reply_to_email", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.noindex", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.zoom_notifications_enabled", "false"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.allowed_email_domains", "acme.corp\nbbc.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-25T11:22:32"),
 					// Verify placeholder id attribute

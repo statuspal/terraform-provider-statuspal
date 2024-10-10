@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -46,6 +46,7 @@ type servicesModel struct {
 	Monitoring                        types.String                                `tfsdk:"monitoring"`
 	WebhookMonitoringService          types.String                                `tfsdk:"webhook_monitoring_service"`
 	WebhookCustomJsonpathSettings     *servicesWebhookCustomJsonpathSettingsModel `tfsdk:"webhook_custom_jsonpath_settings"`
+	MonitoringOptions                 *servicesMonitoringOptionsModel             `tfsdk:"monitoring_options"`
 	InboundEmailAddress               types.String                                `tfsdk:"inbound_email_address"`
 	IncomingWebhookUrl                types.String                                `tfsdk:"incoming_webhook_url"`
 	PingUrl                           types.String                                `tfsdk:"ping_url"`
@@ -78,8 +79,25 @@ type servicesTranslationModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
+type servicesMonitoringOptionsModel struct {
+	Method      types.String                     `tfsdk:"method"`
+	Headers     servicesMonitoringOptionsHeaders `tfsdk:"headers"`
+	KeywordDown types.String                     `tfsdk:"keyword_down"`
+	KeywordUp   types.String                     `tfsdk:"keyword_up"`
+}
+
+type servicesMonitoringOptionsHeaders []servicesMonitoringOptionsHeader
+type servicesMonitoringOptionsHeader struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
+}
+
 // Metadata returns the data source type name.
-func (d *servicesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *servicesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_services"
 }
 
@@ -157,6 +175,40 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 								"expected_result": schema.StringAttribute{
 									MarkdownDescription: "The expected result in the JSON, e.g. `\"up\"`",
 									Computed:            true,
+								},
+							},
+						},
+						"monitoring_options": schema.SingleNestedAttribute{
+							MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
+							Optional:            true,
+							Attributes: map[string]schema.Attribute{
+								"method": schema.StringAttribute{
+									MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
+									Optional:            true,
+								},
+								"headers": schema.ListNestedAttribute{
+									MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`.",
+									Optional:            true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												MarkdownDescription: "The key of the header. Example: `Authorization`.",
+												Optional:            true,
+											},
+											"value": schema.StringAttribute{
+												MarkdownDescription: "The value of the header. Example: `Bearer token`.",
+												Optional:            true,
+											},
+										},
+									},
+								},
+								"keyword_up": schema.StringAttribute{
+									MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
+									Optional:            true,
+								},
+								"keyword_down": schema.StringAttribute{
+									MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
+									Optional:            true,
 								},
 							},
 						},
@@ -307,10 +359,29 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			return
 		}
 
-		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" && service.WebhookCustomJsonpathSettings != nil {
+		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
+			service.WebhookCustomJsonpathSettings != nil {
 			webhookCustomJsonpathSettings = &servicesWebhookCustomJsonpathSettingsModel{
 				Jsonpath:       types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
 				ExpectedResult: types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
+			}
+		}
+
+		var monitoringOptions *servicesMonitoringOptionsModel
+		if (service.Monitoring == "3rd_party" || service.Monitoring == "internal") && service.MonitoringOptions != nil {
+			headersData := []servicesMonitoringOptionsHeader{}
+			for _, header := range service.MonitoringOptions.Headers {
+				headersData = append(headersData, servicesMonitoringOptionsHeader{
+					Key:   types.StringValue(header.Key),
+					Value: types.StringValue(header.Value),
+				})
+			}
+
+			monitoringOptions = &servicesMonitoringOptionsModel{
+				Method:      types.StringValue(service.MonitoringOptions.Method),
+				Headers:     headersData, // Set the headers
+				KeywordDown: types.StringValue(service.MonitoringOptions.KeywordDown),
+				KeywordUp:   types.StringValue(service.MonitoringOptions.KeywordUp),
 			}
 		}
 
@@ -324,6 +395,7 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			Monitoring:                        types.StringValue(service.Monitoring),
 			WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
 			WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
+			MonitoringOptions:                 monitoringOptions,
 			InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 			IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 			PingUrl:                           types.StringValue(service.PingUrl),
@@ -357,7 +429,11 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *servicesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *servicesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	// Add a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
@@ -368,7 +444,10 @@ func (d *servicesDataSource) Configure(_ context.Context, req datasource.Configu
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return
