@@ -210,7 +210,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 								Optional:            true,
 							},
 							"headers": schema.ListNestedAttribute{
-								MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`.",
+								MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`.",
 								Optional:            true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{

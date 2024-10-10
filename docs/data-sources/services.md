@@ -111,7 +111,7 @@ Read-Only:
 
 Optional:
 
-- `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `name` and `value`. (see [below for nested schema](#nestedatt--services--monitoring_options--headers))
+- `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`. (see [below for nested schema](#nestedatt--services--monitoring_options--headers))
 - `keyword_down` (String) A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.
 - `keyword_up` (String) A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service
 - `method` (String) The HTTP method used for monitoring requests. Example: `HEAD`.
