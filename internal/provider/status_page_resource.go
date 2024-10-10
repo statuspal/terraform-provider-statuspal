@@ -147,7 +147,11 @@ type statusPageTranslationModel struct {
 }
 
 // Metadata returns the resource type name.
-func (r *statusPageResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *statusPageResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_status_page"
 }
 
@@ -615,9 +619,9 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Computed:    true,
 					},
 					"allowed_email_domains": schema.StringAttribute{
-						MarkdownDescription: "Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')",
-						Optional:            true,
-						Computed:            true,
+						Description: "Allowed email domains. Each domain should be separated by \\n (e.g., 'acme.corp\\nnapster.com')",
+						Optional:    true,
+						Computed:    true,
 					},
 					"inserted_at": schema.StringAttribute{
 						Description: "Datetime at which the status page was inserted.",
@@ -792,7 +796,11 @@ func (r *statusPageResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-func (r *statusPageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *statusPageResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Split the ID based on the delimiter used during import
 	parts := strings.Split(req.ID, " ")
 	if len(parts) != 2 {
@@ -810,7 +818,11 @@ func (r *statusPageResource) ImportState(ctx context.Context, req resource.Impor
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *statusPageResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *statusPageResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	// Add a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
@@ -822,7 +834,10 @@ func (r *statusPageResource) Configure(_ context.Context, req resource.Configure
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return
@@ -831,7 +846,11 @@ func (r *statusPageResource) Configure(_ context.Context, req resource.Configure
 	r.client = client
 }
 
-func mapStatusPageModelToRequestBody(ctx *context.Context, statusPage *statusPageModel, diagnostics *diag.Diagnostics) *statuspal.StatusPage {
+func mapStatusPageModelToRequestBody(
+	ctx *context.Context,
+	statusPage *statusPageModel,
+	diagnostics *diag.Diagnostics,
+) *statuspal.StatusPage {
 	// Create the translationData object dynamically
 	translationData := make(statuspal.StatusPageTranslations)
 	if !statusPage.Translations.IsNull() && !statusPage.Translations.IsUnknown() {

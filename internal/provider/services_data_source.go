@@ -93,7 +93,11 @@ type servicesMonitoringOptionsHeader struct {
 }
 
 // Metadata returns the data source type name.
-func (d *servicesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *servicesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_services"
 }
 
@@ -356,7 +360,8 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			return
 		}
 
-		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" && service.WebhookCustomJsonpathSettings != nil {
+		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
+			service.WebhookCustomJsonpathSettings != nil {
 			webhookCustomJsonpathSettings = &servicesWebhookCustomJsonpathSettingsModel{
 				Jsonpath:       types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
 				ExpectedResult: types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
@@ -425,7 +430,11 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *servicesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *servicesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	// Add a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
@@ -436,7 +445,10 @@ func (d *servicesDataSource) Configure(_ context.Context, req datasource.Configu
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return

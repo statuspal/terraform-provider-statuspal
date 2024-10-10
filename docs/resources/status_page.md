@@ -48,9 +48,7 @@ Required:
 Optional:
 
 - `about` (String) Customize the about information displayed in your status page.
-- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by 
- (e.g., 'acme.corp
-napster.com')
+- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
