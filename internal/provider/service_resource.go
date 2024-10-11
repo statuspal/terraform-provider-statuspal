@@ -725,9 +725,6 @@ func mapResponseToServiceModel(
 		)
 	}
 
-	// Prepare the monitoring options if applicable
-	var monitoringOptionsData types.Object
-
 	// Define the schema for monitoring options
 	monitoringOptionsSchema := map[string]attr.Type{
 		"method":       types.StringType,
@@ -739,6 +736,8 @@ func mapResponseToServiceModel(
 			},
 		},
 	}
+
+	monitoringOptionsData := types.ObjectNull(monitoringOptionsSchema)
 
 	// If monitoring options exist, populate them
 	if service.MonitoringOptions != nil {
@@ -772,10 +771,8 @@ func mapResponseToServiceModel(
 				),
 			},
 		)
-	} else {
-		// If MonitoringOptions is nil, create a null object
-		monitoringOptionsData = types.ObjectNull(monitoringOptionsSchema)
 	}
+
 	return &serviceModel{
 		ID:                                types.StringValue(strconv.FormatInt(service.ID, 10)),
 		Name:                              types.StringValue(service.Name),
