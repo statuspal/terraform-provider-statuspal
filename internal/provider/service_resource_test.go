@@ -713,8 +713,8 @@ func TestAccServiceResource(t *testing.T) {
 			// Test case for internal monitoring
 			{
 				Config: *providerConfig + `resource "statuspal_service" "test_internal" {
-                    status_page_subdomain = "terraform-test-internal"
-                    service = {
+					status_page_subdomain = "terraform-test-internal"
+					service = {
 						name = "Test Service from Terraform"
 						translations = {
 							en = {
@@ -734,25 +734,25 @@ func TestAccServiceResource(t *testing.T) {
 						description = "Some description"
 						private_description = "This is a private description"
 						monitoring = "internal"
-                        auto_notify = true
-                        auto_incident = true
+						auto_notify = true
+						auto_incident = true
 						monitoring_options = {
-						    headers = [
+							headers = [
 							  {
-								value = "abcdef"
-								key = "Authorization"
+									value = "abcdef"
+									key = "Authorization"
 							  },
 							  {
-								value = "es"
-								key = "accept-language"
+									value = "es"
+									key = "accept-language"
 							  }
-						    ]
-						    method = "head"
+							]
+							method = "head"
 							keyword_down = ""
-						    keyword_up = ""
-					    }						
-                    }
-                }`,
+							keyword_up = ""
+						}
+					}
+				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"statuspal_service.test_internal",
@@ -798,8 +798,8 @@ func TestAccServiceResource(t *testing.T) {
 			// Test case for 3rd_party monitoring
 			{
 				Config: *providerConfig + `resource "statuspal_service" "test_3rd_party" {
-                    status_page_subdomain = "terraform-test-3rd-party"
-                    service = {
+					status_page_subdomain = "terraform-test-3rd-party"
+					service = {
 						name = "Test Service from Terraform"
 						translations = {
 							en = {
@@ -818,17 +818,17 @@ func TestAccServiceResource(t *testing.T) {
 						private = true
 						description = "Some description"
 						private_description = "This is a private description"
-                        monitoring = "3rd_party"
-                        auto_notify = true
-                        auto_incident = true
+						monitoring = "3rd_party"
+						auto_notify = true
+						auto_incident = true
 						monitoring_options = {
 							method = ""
 							headers = []
-						    keyword_down = "DOWN"
-						    keyword_up = "UP"
-					    }
-                    }
-                }`,
+							keyword_down = "DOWN"
+							keyword_up = "UP"
+						}
+					}
+				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"statuspal_service.test_3rd_party",
