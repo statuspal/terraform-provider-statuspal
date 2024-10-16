@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -72,6 +72,7 @@ type serviceModel struct {
 	DisplayUptimeGraph                types.Bool   `tfsdk:"display_uptime_graph"`
 	DisplayResponseTimeChart          types.Bool   `tfsdk:"display_response_time_chart"`
 	Order                             types.Int64  `tfsdk:"order"`
+	MonitoringOptions                 types.Object `tfsdk:"monitoring_options"`
 	InsertedAt                        types.String `tfsdk:"inserted_at"`
 	UpdatedAt                         types.String `tfsdk:"updated_at"`
 }
@@ -79,6 +80,18 @@ type serviceModel struct {
 type serviceWebhookCustomJsonpathSettingsModel struct {
 	Jsonpath       types.String `tfsdk:"jsonpath"`
 	ExpectedResult types.String `tfsdk:"expected_result"`
+}
+
+type MonitoringOptionsHeader struct {
+	Key   string `tfsdk:"key"`
+	Value string `tfsdk:"value"`
+}
+
+type serviceMonitoringOptionsModel struct {
+	Method      types.String              `tfsdk:"method"`
+	Headers     []MonitoringOptionsHeader `tfsdk:"headers"`
+	KeywordDown types.String              `tfsdk:"keyword_down"`
+	KeywordUp   types.String              `tfsdk:"keyword_up"`
 }
 
 type serviceTranslationsModel map[string]serviceTranslationModel
@@ -184,6 +197,41 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 							"expected_result": schema.StringAttribute{
 								MarkdownDescription: "The expected result in the JSON, e.g. `\"up\"`",
 								Required:            true,
+							},
+						},
+					},
+					"monitoring_options": schema.SingleNestedAttribute{
+						MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
+						Optional:            true,
+						Computed:            true,
+						Attributes: map[string]schema.Attribute{
+							"method": schema.StringAttribute{
+								MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
+								Optional:            true,
+							},
+							"headers": schema.ListNestedAttribute{
+								MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`.",
+								Optional:            true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"key": schema.StringAttribute{
+											MarkdownDescription: "The key of the header. Example: `Authorization`.",
+											Required:            true,
+										},
+										"value": schema.StringAttribute{
+											MarkdownDescription: "The value of the header. Example: `Bearer token`.",
+											Required:            true,
+										},
+									},
+								},
+							},
+							"keyword_up": schema.StringAttribute{
+								MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
+								Optional:            true,
+							},
+							"keyword_down": schema.StringAttribute{
+								MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
+								Optional:            true,
 							},
 						},
 					},
@@ -456,7 +504,11 @@ func (r *serviceResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 }
 
-func (r *serviceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *serviceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Split the ID based on the delimiter used during import
 	parts := strings.Split(req.ID, " ")
 	if len(parts) != 2 {
@@ -474,7 +526,11 @@ func (r *serviceResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *serviceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *serviceResource) Configure(
+	_ context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
 	// Add a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
@@ -486,7 +542,10 @@ func (r *serviceResource) Configure(_ context.Context, req resource.ConfigureReq
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return
@@ -495,18 +554,28 @@ func (r *serviceResource) Configure(_ context.Context, req resource.ConfigureReq
 	r.client = client
 }
 
-func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, diagnostics *diag.Diagnostics) *statuspal.Service {
+func mapServiceModelToRequestBody(
+	ctx *context.Context,
+	service *serviceModel,
+	diagnostics *diag.Diagnostics,
+) *statuspal.Service {
 	monitoring := service.Monitoring.ValueString()
 	var webhookMonitoringService string
 	var webhookCustomJsonpathSettings *statuspal.WebhookCustomJsonpathSettings
+	var monitoringOptions *statuspal.MonitoringOptions
 
 	if monitoring == "webhook" {
 		webhookMonitoringService = service.WebhookMonitoringService.ValueString()
 	}
-	if webhookMonitoringService == "custom-jsonpath" && !service.WebhookCustomJsonpathSettings.IsNull() && !service.WebhookCustomJsonpathSettings.IsUnknown() {
+	if webhookMonitoringService == "custom-jsonpath" && !service.WebhookCustomJsonpathSettings.IsNull() &&
+		!service.WebhookCustomJsonpathSettings.IsUnknown() {
 		var webhookCustomJsonpathSettingsModel serviceWebhookCustomJsonpathSettingsModel
 
-		diags := service.WebhookCustomJsonpathSettings.As(*ctx, &webhookCustomJsonpathSettingsModel, basetypes.ObjectAsOptions{})
+		diags := service.WebhookCustomJsonpathSettings.As(
+			*ctx,
+			&webhookCustomJsonpathSettingsModel,
+			basetypes.ObjectAsOptions{},
+		)
 		diagnostics.Append(diags...)
 		if diagnostics.HasError() {
 			return nil
@@ -515,6 +584,33 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 		webhookCustomJsonpathSettings = &statuspal.WebhookCustomJsonpathSettings{
 			Jsonpath:       webhookCustomJsonpathSettingsModel.Jsonpath.ValueString(),
 			ExpectedResult: webhookCustomJsonpathSettingsModel.ExpectedResult.ValueString(),
+		}
+	}
+
+	if (monitoring == "3rd_party" || monitoring == "internal") && !service.MonitoringOptions.IsNull() &&
+		!service.MonitoringOptions.IsUnknown() {
+		var monitoringOptionsModel serviceMonitoringOptionsModel
+
+		diags := service.MonitoringOptions.As(*ctx, &monitoringOptionsModel, basetypes.ObjectAsOptions{})
+		diagnostics.Append(diags...)
+		if diagnostics.HasError() {
+			return nil
+		}
+
+		headers := make(statuspal.MonitoringOptionsHeaders, 0, len(monitoringOptionsModel.Headers))
+
+		for _, header := range monitoringOptionsModel.Headers {
+			headers = append(headers, statuspal.MonitoringOptionsHeader{
+				Key:   header.Key,
+				Value: header.Value,
+			})
+		}
+
+		monitoringOptions = &statuspal.MonitoringOptions{
+			Method:      monitoringOptionsModel.Method.ValueString(),
+			Headers:     headers,
+			KeywordDown: monitoringOptionsModel.KeywordDown.ValueString(),
+			KeywordUp:   monitoringOptionsModel.KeywordUp.ValueString(),
 		}
 	}
 
@@ -556,6 +652,7 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 		Monitoring:                        monitoring,
 		WebhookMonitoringService:          webhookMonitoringService,
 		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
+		MonitoringOptions:                 monitoringOptions,
 		PingUrl:                           service.PingUrl.ValueString(),
 		PauseMonitoringDuringMaintenances: service.PauseMonitoringDuringMaintenances.ValueBool(),
 		AutoIncident:                      service.AutoIncident.ValueBool(),
@@ -568,7 +665,11 @@ func mapServiceModelToRequestBody(ctx *context.Context, service *serviceModel, d
 	}
 }
 
-func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service, diagnostics *diag.Diagnostics) *serviceModel {
+func mapResponseToServiceModel(
+	ctx *context.Context,
+	service *statuspal.Service,
+	diagnostics *diag.Diagnostics,
+) *serviceModel {
 	webhookCustomJsonpathSettingsSchema := map[string]attr.Type{
 		"jsonpath":        types.StringType,
 		"expected_result": types.StringType,
@@ -613,12 +714,61 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		return nil
 	}
 
-	if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" && service.WebhookCustomJsonpathSettings != nil {
+	if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
+		service.WebhookCustomJsonpathSettings != nil {
 		webhookCustomJsonpathSettings = types.ObjectValueMust(
 			webhookCustomJsonpathSettingsSchema,
 			map[string]attr.Value{
 				"jsonpath":        types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
 				"expected_result": types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
+			},
+		)
+	}
+
+	// Define the schema for monitoring options
+	monitoringOptionsSchema := map[string]attr.Type{
+		"method":       types.StringType,
+		"keyword_up":   types.StringType,
+		"keyword_down": types.StringType,
+		"headers": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType},
+			},
+		},
+	}
+
+	monitoringOptionsData := types.ObjectNull(monitoringOptionsSchema)
+
+	// If monitoring options exist, populate them
+	if service.MonitoringOptions != nil {
+		// Create headers data
+		headersData := make([]attr.Value, len(service.MonitoringOptions.Headers))
+		for i, header := range service.MonitoringOptions.Headers {
+			headersData[i] = types.ObjectValueMust(
+				map[string]attr.Type{
+					"key":   types.StringType,
+					"value": types.StringType,
+				},
+				map[string]attr.Value{
+					"key":   types.StringValue(header.Key),
+					"value": types.StringValue(header.Value),
+				},
+			)
+		}
+
+		// Set monitoring options object
+		monitoringOptionsData = types.ObjectValueMust(
+			monitoringOptionsSchema,
+			map[string]attr.Value{
+				"method":       types.StringValue(service.MonitoringOptions.Method),
+				"keyword_up":   types.StringValue(service.MonitoringOptions.KeywordUp),
+				"keyword_down": types.StringValue(service.MonitoringOptions.KeywordDown),
+				"headers": types.ListValueMust(
+					types.ObjectType{
+						AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType},
+					},
+					headersData,
+				),
 			},
 		)
 	}
@@ -633,6 +783,7 @@ func mapResponseToServiceModel(ctx *context.Context, service *statuspal.Service,
 		Monitoring:                        types.StringValue(service.Monitoring),
 		WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
 		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
+		MonitoringOptions:                 monitoringOptionsData,
 		InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 		IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 		PingUrl:                           types.StringValue(service.PingUrl),

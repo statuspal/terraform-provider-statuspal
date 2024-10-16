@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	statuspal "terraform-provider-statuspal/internal/client"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	statuspal "terraform-provider-statuspal/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -110,6 +110,8 @@ type statusPagesModel struct {
 	EmailConfirmationTemplate      types.String                 `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String                 `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool                   `tfsdk:"email_templates_enabled"`
+	ZoomNotificationsEnabled       types.Bool                   `tfsdk:"zoom_notifications_enabled"`
+	AllowedEmailDomains            types.String                 `tfsdk:"allowed_email_domains"`
 	InsertedAt                     types.String                 `tfsdk:"inserted_at"`
 	UpdatedAt                      types.String                 `tfsdk:"updated_at"`
 }
@@ -134,7 +136,11 @@ type statusPagesTranslationModel struct {
 }
 
 // Metadata returns the data source type name.
-func (d *statusPagesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *statusPagesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_status_pages"
 }
 
@@ -482,6 +488,14 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "The templates won't be used until this is enabled, but you can send test emails.",
 							Computed:    true,
 						},
+						"zoom_notifications_enabled": schema.BoolAttribute{
+							Description: "Allow your customers to receive notifications on Zoom.",
+							Computed:    true,
+						},
+						"allowed_email_domains": schema.StringAttribute{
+							Description: "Allowed email domains. Each domain should be separated by \\n (e.g., 'acme.corp\\nnapster.com')",
+							Computed:    true,
+						},
 						"inserted_at": schema.StringAttribute{
 							Description: "Datetime at which the status page was inserted.",
 							Computed:    true,
@@ -612,6 +626,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 			EmailConfirmationTemplate:      types.StringValue(statusPage.EmailConfirmationTemplate),
 			EmailNotificationTemplate:      types.StringValue(statusPage.EmailNotificationTemplate),
 			EmailTemplatesEnabled:          types.BoolValue(statusPage.EmailTemplatesEnabled),
+			ZoomNotificationsEnabled:       types.BoolValue(statusPage.ZoomNotificationsEnabled),
+			AllowedEmailDomains:            types.StringValue(statusPage.AllowedEmailDomains),
 			InsertedAt:                     types.StringValue(statusPage.InsertedAt),
 			UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 		}
@@ -629,7 +645,11 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *statusPagesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *statusPagesDataSource) Configure(
+	_ context.Context,
+	req datasource.ConfigureRequest,
+	resp *datasource.ConfigureResponse,
+) {
 	// Add a nil check when handling ProviderData because Terraform
 	// sets that data after it calls the ConfigureProvider RPC.
 	if req.ProviderData == nil {
@@ -640,7 +660,10 @@ func (d *statusPagesDataSource) Configure(_ context.Context, req datasource.Conf
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf(
+				"Expected *statuspal.Client, got: %T. Please report this issue to the provider developers.",
+				req.ProviderData,
+			),
 		)
 
 		return

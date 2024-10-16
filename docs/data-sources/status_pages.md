@@ -37,6 +37,7 @@ data "statuspal_status_pages" "all" {
 Read-Only:
 
 - `about` (String) Customize the about information displayed in your status page.
+- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')
 - `bg_image` (String) Background image url of the status page.
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
@@ -124,6 +125,7 @@ Read-Only:
 - `updated_at` (String) Datetime at which the status page was last updated.
 - `uptime_graph_days` (Number) Uptime graph period.
 - `url` (String) The website to your company, project or service.
+- `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications on Zoom.
 
 <a id="nestedatt--status_pages--theme_configs"></a>
 ### Nested Schema for `status_pages.theme_configs`

@@ -34,6 +34,10 @@ data "statuspal_services" "all" {
 <a id="nestedatt--services"></a>
 ### Nested Schema for `services`
 
+Optional:
+
+- `monitoring_options` (Attributes) Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party. (see [below for nested schema](#nestedatt--services--monitoring_options))
+
 Read-Only:
 
 - `auto_incident` (Boolean) Create an incident automatically when this service is down and close it if/when it comes back up.
@@ -101,6 +105,26 @@ Read-Only:
   - `status-cake` - StatusCake monitoring service.
   - `uptime-robot` - UptimeRobot monitoring service.
   - `3rd_party` - Custom JSONPath.
+
+<a id="nestedatt--services--monitoring_options"></a>
+### Nested Schema for `services.monitoring_options`
+
+Optional:
+
+- `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`. (see [below for nested schema](#nestedatt--services--monitoring_options--headers))
+- `keyword_down` (String) A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.
+- `keyword_up` (String) A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service
+- `method` (String) The HTTP method used for monitoring requests. Example: `HEAD`.
+
+<a id="nestedatt--services--monitoring_options--headers"></a>
+### Nested Schema for `services.monitoring_options.headers`
+
+Optional:
+
+- `key` (String) The key of the header. Example: `Authorization`.
+- `value` (String) The value of the header. Example: `Bearer token`.
+
+
 
 <a id="nestedatt--services--translations"></a>
 ### Nested Schema for `services.translations`

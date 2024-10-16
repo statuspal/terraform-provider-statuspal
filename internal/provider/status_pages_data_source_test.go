@@ -109,7 +109,9 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"major_notification_hours": 3,
 					"incident_header_color": "009688",
 					"reply_to_email": null,
-					"noindex": false
+					"noindex": false,
+					"zoom_notifications_enabled": false,
+					"allowed_email_domains": "acme.corp\nnapster.com"
 				},
 				{
 					"theme_selected": "default",
@@ -196,7 +198,9 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"major_notification_hours": 3,
 					"incident_header_color": "009688",
 					"reply_to_email": null,
-					"noindex": false
+					"noindex": false,
+					"zoom_notifications_enabled": false,
+					"allowed_email_domains": "acme.corp\nabc.com"
 				},
 				{
 					"theme_selected": "default",
@@ -284,7 +288,9 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					"major_notification_hours": 3,
 					"incident_header_color": "009688",
 					"reply_to_email": null,
-					"noindex": false
+					"noindex": false,
+					"zoom_notifications_enabled": false,
+					"allowed_email_domains": "acme.corp\nbbc.com"
 				}
 			]
 		}`)); err != nil {
@@ -314,7 +320,7 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					// Verify number of status pages returned
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.#", "3"),
 					// Verify the first status page to ensure all attributes are set
-					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.%", "75"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.%", "77"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.theme_selected", "default"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.display_uptime_graph", "true"),
@@ -403,6 +409,8 @@ func TestAccStatusPagesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.incident_header_color", "009688"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.reply_to_email", ""),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.noindex", "false"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.zoom_notifications_enabled", "false"),
+					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.allowed_email_domains", "acme.corp\nnapster.com"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.inserted_at", "2024-04-15T11:20:35"),
 					resource.TestCheckResourceAttr("data.statuspal_status_pages.test", "status_pages.0.updated_at", "2024-04-20T11:22:32"),
 					// Verify placeholder id attribute
