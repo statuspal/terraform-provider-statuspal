@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,59 +38,34 @@ type servicesDataSourceModel struct {
 
 // servicesModel maps services schema data.
 type servicesModel struct {
-	ID                                types.String                                `tfsdk:"id"`
-	Name                              types.String                                `tfsdk:"name"`
-	Description                       types.String                                `tfsdk:"description"`
-	PrivateDescription                types.String                                `tfsdk:"private_description"`
-	ParentID                          types.String                                `tfsdk:"parent_id"`
-	CurrentIncidentType               types.String                                `tfsdk:"current_incident_type"`
-	Monitoring                        types.String                                `tfsdk:"monitoring"`
-	WebhookMonitoringService          types.String                                `tfsdk:"webhook_monitoring_service"`
-	WebhookCustomJsonpathSettings     *servicesWebhookCustomJsonpathSettingsModel `tfsdk:"webhook_custom_jsonpath_settings"`
-	MonitoringOptions                 *servicesMonitoringOptionsModel             `tfsdk:"monitoring_options"`
-	InboundEmailAddress               types.String                                `tfsdk:"inbound_email_address"`
-	IncomingWebhookUrl                types.String                                `tfsdk:"incoming_webhook_url"`
-	PingUrl                           types.String                                `tfsdk:"ping_url"`
-	IncidentType                      types.String                                `tfsdk:"incident_type"`
-	ParentIncidentType                types.String                                `tfsdk:"parent_incident_type"`
-	IsUp                              types.Bool                                  `tfsdk:"is_up"`
-	PauseMonitoringDuringMaintenances types.Bool                                  `tfsdk:"pause_monitoring_during_maintenances"`
-	InboundEmailID                    types.String                                `tfsdk:"inbound_email_id"`
-	AutoIncident                      types.Bool                                  `tfsdk:"auto_incident"`
-	AutoNotify                        types.Bool                                  `tfsdk:"auto_notify"`
-	ChildrenIDs                       types.List                                  `tfsdk:"children_ids"`
-	Translations                      servicesTranslationsModel                   `tfsdk:"translations"`
-	Private                           types.Bool                                  `tfsdk:"private"`
-	DisplayUptimeGraph                types.Bool                                  `tfsdk:"display_uptime_graph"`
-	DisplayResponseTimeChart          types.Bool                                  `tfsdk:"display_response_time_chart"`
-	Order                             types.Int64                                 `tfsdk:"order"`
-	InsertedAt                        types.String                                `tfsdk:"inserted_at"`
-	UpdatedAt                         types.String                                `tfsdk:"updated_at"`
-}
-
-type servicesWebhookCustomJsonpathSettingsModel struct {
-	Jsonpath       types.String `tfsdk:"jsonpath"`
-	ExpectedResult types.String `tfsdk:"expected_result"`
-}
-
-type servicesTranslationsModel map[string]servicesTranslationModel
-
-type servicesTranslationModel struct {
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-}
-
-type servicesMonitoringOptionsModel struct {
-	Method      types.String                     `tfsdk:"method"`
-	Headers     servicesMonitoringOptionsHeaders `tfsdk:"headers"`
-	KeywordDown types.String                     `tfsdk:"keyword_down"`
-	KeywordUp   types.String                     `tfsdk:"keyword_up"`
-}
-
-type servicesMonitoringOptionsHeaders []servicesMonitoringOptionsHeader
-type servicesMonitoringOptionsHeader struct {
-	Key   types.String `tfsdk:"key"`
-	Value types.String `tfsdk:"value"`
+	ID                                types.String `tfsdk:"id"`
+	Name                              types.String `tfsdk:"name"`
+	Description                       types.String `tfsdk:"description"`
+	PrivateDescription                types.String `tfsdk:"private_description"`
+	ParentID                          types.String `tfsdk:"parent_id"`
+	CurrentIncidentType               types.String `tfsdk:"current_incident_type"`
+	Monitoring                        types.String `tfsdk:"monitoring"`
+	WebhookMonitoringService          types.String `tfsdk:"webhook_monitoring_service"`
+	WebhookCustomJsonpathSettings     types.Object `tfsdk:"webhook_custom_jsonpath_settings"`
+	MonitoringOptions                 types.Object `tfsdk:"monitoring_options"`
+	InboundEmailAddress               types.String `tfsdk:"inbound_email_address"`
+	IncomingWebhookUrl                types.String `tfsdk:"incoming_webhook_url"`
+	PingUrl                           types.String `tfsdk:"ping_url"`
+	IncidentType                      types.String `tfsdk:"incident_type"`
+	ParentIncidentType                types.String `tfsdk:"parent_incident_type"`
+	IsUp                              types.Bool   `tfsdk:"is_up"`
+	PauseMonitoringDuringMaintenances types.Bool   `tfsdk:"pause_monitoring_during_maintenances"`
+	InboundEmailID                    types.String `tfsdk:"inbound_email_id"`
+	AutoIncident                      types.Bool   `tfsdk:"auto_incident"`
+	AutoNotify                        types.Bool   `tfsdk:"auto_notify"`
+	ChildrenIDs                       types.List   `tfsdk:"children_ids"`
+	Translations                      types.Map    `tfsdk:"translations"`
+	Private                           types.Bool   `tfsdk:"private"`
+	DisplayUptimeGraph                types.Bool   `tfsdk:"display_uptime_graph"`
+	DisplayResponseTimeChart          types.Bool   `tfsdk:"display_response_time_chart"`
+	Order                             types.Int64  `tfsdk:"order"`
+	InsertedAt                        types.String `tfsdk:"inserted_at"`
+	UpdatedAt                         types.String `tfsdk:"updated_at"`
 }
 
 // Metadata returns the data source type name.
@@ -147,8 +123,8 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 							Computed: true,
 						},
 						"monitoring": schema.StringAttribute{
-							MarkdownDescription: "Enum: `null` `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
-								"  - `null` or `\"\"` - No monitoring.\n" +
+							MarkdownDescription: "Enum: `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
+								"  - `\"\"` - No monitoring.\n" +
 								"  - `internal` - StatusPal monitoring.\n" +
 								"  - `3rd_party` - 3rd Party monitoring.\n" +
 								"  - `webhook` - Incoming webhook monitoring.",
@@ -180,35 +156,35 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 						},
 						"monitoring_options": schema.SingleNestedAttribute{
 							MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
-							Optional:            true,
+							Computed:            true,
 							Attributes: map[string]schema.Attribute{
 								"method": schema.StringAttribute{
 									MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
-									Optional:            true,
+									Computed:            true,
 								},
 								"headers": schema.ListNestedAttribute{
 									MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`.",
-									Optional:            true,
+									Computed:            true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"key": schema.StringAttribute{
 												MarkdownDescription: "The key of the header. Example: `Authorization`.",
-												Optional:            true,
+												Computed:            true,
 											},
 											"value": schema.StringAttribute{
 												MarkdownDescription: "The value of the header. Example: `Bearer token`.",
-												Optional:            true,
+												Computed:            true,
 											},
 										},
 									},
 								},
 								"keyword_up": schema.StringAttribute{
 									MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
-									Optional:            true,
+									Computed:            true,
 								},
 								"keyword_down": schema.StringAttribute{
 									MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
-									Optional:            true,
+									Computed:            true,
 								},
 							},
 						},
@@ -323,8 +299,8 @@ func (d *servicesDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	// Retrieve values from config
 	var state servicesDataSourceModel
-	diags := req.Config.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	diagnostics := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diagnostics...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -341,48 +317,118 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	// Map response body to model
 	for _, service := range *services {
-		var webhookCustomJsonpathSettings *servicesWebhookCustomJsonpathSettingsModel
+		// Define the translation object schema
+		translationSchema := map[string]attr.Type{
+			"name":        types.StringType,
+			"description": types.StringType,
+		}
+		translations := types.MapNull(types.ObjectType{AttrTypes: translationSchema})
 
-		// Create the translationData object dynamically
-		translationData := make(servicesTranslationsModel)
-		for lang, data := range service.Translations {
-			translationData[lang] = servicesTranslationModel{
-				Name:        types.StringValue(data.Name),
-				Description: types.StringValue(data.Description),
+		if len(service.Translations) > 0 {
+			// Create the translationData object dynamically
+			translationData := make(map[string]attr.Value)
+			for lang, data := range service.Translations {
+				translationObject, diags := types.ObjectValue(
+					translationSchema,
+					map[string]attr.Value{
+						"name":        types.StringValue(data.Name),
+						"description": types.StringValue(data.Description),
+					},
+				)
+				translationData[lang] = translationObject
+				diagnostics.Append(diags...)
+				if diagnostics.HasError() {
+					return
+				}
 			}
+			// Create the translations map
+			convertedTranslations, diags := types.MapValue(
+				types.ObjectType{AttrTypes: translationSchema},
+				translationData,
+			)
+			diagnostics.Append(diags...)
+			if diagnostics.HasError() {
+				return
+			}
+
+			translations = convertedTranslations
 		}
 
-		// Create the childrenIDsData list from service.ChildrenIDs
-		childrenIDsData, diags := types.ListValueFrom(ctx, types.Int64Type, service.ChildrenIDs)
+		// Create the childrenIDs list from service.ChildrenIDs
+		childrenIDs, diags := types.ListValueFrom(ctx, types.Int64Type, service.ChildrenIDs)
 		resp.Diagnostics.Append(diags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 
-		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
-			service.WebhookCustomJsonpathSettings != nil {
-			webhookCustomJsonpathSettings = &servicesWebhookCustomJsonpathSettingsModel{
-				Jsonpath:       types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
-				ExpectedResult: types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
-			}
+		parentID := ""
+		if service.ParentID != nil {
+			parentID = strconv.FormatInt(*service.ParentID, 10)
 		}
 
-		var monitoringOptions *servicesMonitoringOptionsModel
-		if (service.Monitoring == "3rd_party" || service.Monitoring == "internal") && service.MonitoringOptions != nil {
-			headersData := []servicesMonitoringOptionsHeader{}
-			for _, header := range service.MonitoringOptions.Headers {
-				headersData = append(headersData, servicesMonitoringOptionsHeader{
-					Key:   types.StringValue(header.Key),
-					Value: types.StringValue(header.Value),
-				})
+		webhookCustomJsonpathSettingsSchema := map[string]attr.Type{
+			"jsonpath":        types.StringType,
+			"expected_result": types.StringType,
+		}
+		webhookCustomJsonpathSettings := types.ObjectNull(webhookCustomJsonpathSettingsSchema)
+
+		if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
+			service.WebhookCustomJsonpathSettings != nil {
+			webhookCustomJsonpathSettings = types.ObjectValueMust(
+				webhookCustomJsonpathSettingsSchema,
+				map[string]attr.Value{
+					"jsonpath":        types.StringValue(service.WebhookCustomJsonpathSettings.Jsonpath),
+					"expected_result": types.StringValue(service.WebhookCustomJsonpathSettings.ExpectedResult),
+				},
+			)
+		}
+
+		// Define the schema for monitoring options
+		monitoringOptionsSchema := map[string]attr.Type{
+			"method":       types.StringType,
+			"keyword_up":   types.StringType,
+			"keyword_down": types.StringType,
+			"headers": types.ListType{
+				ElemType: types.ObjectType{
+					AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType},
+				},
+			},
+		}
+
+		monitoringOptions := types.ObjectNull(monitoringOptionsSchema)
+
+		// If monitoring options exist, populate them
+		if service.MonitoringOptions != nil {
+			// Create headers data
+			headersData := make([]attr.Value, len(service.MonitoringOptions.Headers))
+			for i, header := range service.MonitoringOptions.Headers {
+				headersData[i] = types.ObjectValueMust(
+					map[string]attr.Type{
+						"key":   types.StringType,
+						"value": types.StringType,
+					},
+					map[string]attr.Value{
+						"key":   types.StringValue(header.Key),
+						"value": types.StringValue(header.Value),
+					},
+				)
 			}
 
-			monitoringOptions = &servicesMonitoringOptionsModel{
-				Method:      types.StringValue(service.MonitoringOptions.Method),
-				Headers:     headersData, // Set the headers
-				KeywordDown: types.StringValue(service.MonitoringOptions.KeywordDown),
-				KeywordUp:   types.StringValue(service.MonitoringOptions.KeywordUp),
-			}
+			// Set monitoring options object
+			monitoringOptions = types.ObjectValueMust(
+				monitoringOptionsSchema,
+				map[string]attr.Value{
+					"method":       types.StringValue(service.MonitoringOptions.Method),
+					"keyword_up":   types.StringValue(service.MonitoringOptions.KeywordUp),
+					"keyword_down": types.StringValue(service.MonitoringOptions.KeywordDown),
+					"headers": types.ListValueMust(
+						types.ObjectType{
+							AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType},
+						},
+						headersData,
+					),
+				},
+			)
 		}
 
 		serviceState := servicesModel{
@@ -390,7 +436,7 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			Name:                              types.StringValue(service.Name),
 			Description:                       types.StringValue(service.Description),
 			PrivateDescription:                types.StringValue(service.PrivateDescription),
-			ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
+			ParentID:                          types.StringValue(parentID),
 			CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 			Monitoring:                        types.StringValue(service.Monitoring),
 			WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
@@ -406,8 +452,8 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 			InboundEmailID:                    types.StringValue(service.InboundEmailID),
 			AutoIncident:                      types.BoolValue(service.AutoIncident),
 			AutoNotify:                        types.BoolValue(service.AutoNotify),
-			ChildrenIDs:                       childrenIDsData,
-			Translations:                      translationData,
+			ChildrenIDs:                       childrenIDs,
+			Translations:                      translations,
 			Private:                           types.BoolValue(service.Private),
 			DisplayUptimeGraph:                types.BoolValue(service.DisplayUptimeGraph),
 			DisplayResponseTimeChart:          types.BoolValue(service.DisplayResponseTimeChart),
@@ -421,8 +467,8 @@ func (d *servicesDataSource) Read(ctx context.Context, req datasource.ReadReques
 	state.ID = types.StringValue("placeholder") // only for test case
 
 	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	diagnostics = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diagnostics...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

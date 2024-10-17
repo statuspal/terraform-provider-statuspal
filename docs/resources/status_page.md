@@ -48,7 +48,7 @@ Required:
 Optional:
 
 - `about` (String) Customize the about information displayed in your status page.
-- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')
+- `allowed_email_domains` (String) Users with these domains in their email address will be able to sign up via status page invite link. Each domain should be separated by `\n` (e.g., `acme.corp\nnapster.com`).
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
@@ -107,7 +107,6 @@ Optional:
 - `subscribers_enabled` (Boolean) Allow email customers to receive email notifications.
 - `support_email` (String) Your company's support email.
 - `teams_notifications_enabled` (Boolean) Allow your customers to receive notifications on Microsoft Teams.
-- `theme_configs` (Object) Theme configuration for the status page. (see [below for nested schema](#nestedatt--status_page--theme_configs))
 - `theme_selected` (String) The selected theme for state page, it can be "default" and "big-logo".
 - `time_format` (String) Display timestamps of incidents and updates in this format.
 - `translations` (Attributes Map) A translations object. For example:
@@ -128,6 +127,7 @@ Optional:
 - `tweeting_enabled` (Boolean) Allows to send tweets when creating or updating an incident.
 - `twitter_public_screen_name` (String) Twitter handle name (e.g. yourcompany).
 - `uptime_graph_days` (Number) Uptime graph period.
+- `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications on Zoom.
 
 Read-Only:
 
@@ -136,23 +136,6 @@ Read-Only:
 - `inserted_at` (String) Datetime at which the status page was inserted.
 - `logo` (String) Logo url of the status page.
 - `updated_at` (String) Datetime at which the status page was last updated.
-- `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications on Zoom.
-
-<a id="nestedatt--status_page--theme_configs"></a>
-### Nested Schema for `status_page.theme_configs`
-
-Required:
-
-- `header_bg_color1` (String)
-- `header_bg_color2` (String)
-- `header_fg_color` (String)
-- `incident_header_color` (String)
-- `link_color` (String)
-- `status_maintenance_color` (String)
-- `status_major_color` (String)
-- `status_minor_color` (String)
-- `status_ok_color` (String)
-
 
 <a id="nestedatt--status_page--translations"></a>
 ### Nested Schema for `status_page.translations`

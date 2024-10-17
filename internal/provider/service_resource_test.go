@@ -16,7 +16,7 @@ func TestAccServiceResource(t *testing.T) {
 	basicResponseBody := `{
 		"service": {
 			"id": 2,
-			"parent_id": 3,
+			"parent_id": null,
 			"name": "Test Service from Terraform",
 			"private": true,
 			"description": "Some description",
@@ -61,42 +61,46 @@ func TestAccServiceResource(t *testing.T) {
 			"display_response_time_chart": true,
 			"display_uptime_graph": true,
 			"inbound_email_id": "d346f35e-0749-4ed7-a88b-7caa679d1959"
-		}	
+		}
 	}`
 	internalMonitoringResponse := strings.Replace(
 		basicResponseBody,
 		`"monitoring": "webhook",`,
 		`"monitoring": "internal",
-         "monitoring_options": {
-            "headers": [
-               {
-                   "value": "abcdef",
-                   "key": "Authorization"
-               },
-               {
-                   "value": "es",
-                   "key": "accept-language"
-               }
-            ],
-            "method": "head",
+		"monitoring_options": {
+			"headers": [
+				{
+					"key": "Authorization",
+					"value": "abcdef"
+				},
+				{
+					"key": "accept-language",
+					"value": "es"
+				}
+			],
+			"method": "head",
 			"keyword_down": "",
 			"keyword_up": ""
-          },`,
+    },`,
 		1,
 	)
+	internalMonitoringResponse = strings.Replace(internalMonitoringResponse, `"webhook_monitoring_service": "custom-jsonpath"`, `"webhook_monitoring_service": ""`, 1)
+	internalMonitoringResponse = strings.Replace(internalMonitoringResponse, `"ping_url": "www.statuspal.io"`, `"ping_url": ""`, 1)
 
 	thirdPartyMonitoringResponse := strings.Replace(
 		basicResponseBody,
 		`"monitoring": "webhook",`,
 		`"monitoring": "3rd_party",
-         "monitoring_options": {
+		"monitoring_options": {
 			"headers": [],
-			"method": "",  
-            "keyword_down": "DOWN",
-            "keyword_up": "UP"
-          },`,
+			"method": "",
+			"keyword_down": "DOWN",
+			"keyword_up": "UP"
+		},`,
 		1,
 	)
+	thirdPartyMonitoringResponse = strings.Replace(thirdPartyMonitoringResponse, `"webhook_monitoring_service": "custom-jsonpath"`, `"webhook_monitoring_service": ""`, 1)
+	thirdPartyMonitoringResponse = strings.Replace(thirdPartyMonitoringResponse, `"ping_url": "www.statuspal.io"`, `"ping_url": ""`, 1)
 
 	updatedResponseBody := strings.Replace(
 		basicResponseBody,
@@ -168,7 +172,7 @@ func TestAccServiceResource(t *testing.T) {
 		`"name": "Test Child Service from Terraform"`,
 		2,
 	)
-	childResponseBody = strings.Replace(childResponseBody, `"parent_id": 3`, `"parent_id": 2`, 1)
+	childResponseBody = strings.Replace(childResponseBody, `"parent_id": null`, `"parent_id": 2`, 1)
 
 	// Mock create response for parent resource
 	mux.HandleFunc("/status_pages/terraform-test-parent/services", func(w http.ResponseWriter, r *http.Request) {
@@ -383,7 +387,7 @@ func TestAccServiceResource(t *testing.T) {
 						"service.private_description",
 						"This is a private description",
 					),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", ""),
 					resource.TestCheckResourceAttr(
 						"statuspal_service.test",
 						"service.current_incident_type",
@@ -544,7 +548,7 @@ func TestAccServiceResource(t *testing.T) {
 						"service.private_description",
 						"This is a private description",
 					),
-					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", "3"),
+					resource.TestCheckResourceAttr("statuspal_service.test", "service.parent_id", ""),
 					resource.TestCheckResourceAttr(
 						"statuspal_service.test",
 						"service.current_incident_type",

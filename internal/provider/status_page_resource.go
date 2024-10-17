@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	statuspal "terraform-provider-statuspal/internal/client"
 )
@@ -88,7 +88,6 @@ type statusPageModel struct {
 	UptimeGraphDays                types.Int64  `tfsdk:"uptime_graph_days"`
 	CurrentIncidentsPosition       types.String `tfsdk:"current_incidents_position"`
 	ThemeSelected                  types.String `tfsdk:"theme_selected"`
-	ThemeConfigs                   types.Object `tfsdk:"theme_configs"`
 	LinkColor                      types.String `tfsdk:"link_color"`
 	HeaderBgColor1                 types.String `tfsdk:"header_bg_color1"`
 	HeaderBgColor2                 types.String `tfsdk:"header_bg_color2"`
@@ -110,6 +109,7 @@ type statusPageModel struct {
 	GoogleChatNotificationsEnabled types.Bool   `tfsdk:"google_chat_notifications_enabled"`
 	MattermostNotificationsEnabled types.Bool   `tfsdk:"mattermost_notifications_enabled"`
 	SmsNotificationsEnabled        types.Bool   `tfsdk:"sms_notifications_enabled"`
+	ZoomNotificationsEnabled       types.Bool   `tfsdk:"zoom_notifications_enabled"`
 	FeedEnabled                    types.Bool   `tfsdk:"feed_enabled"`
 	CalendarEnabled                types.Bool   `tfsdk:"calendar_enabled"`
 	GoogleCalendarEnabled          types.Bool   `tfsdk:"google_calendar_enabled"`
@@ -121,22 +121,9 @@ type statusPageModel struct {
 	EmailConfirmationTemplate      types.String `tfsdk:"email_confirmation_template"`
 	EmailNotificationTemplate      types.String `tfsdk:"email_notification_template"`
 	EmailTemplatesEnabled          types.Bool   `tfsdk:"email_templates_enabled"`
-	ZoomNotificationsEnabled       types.Bool   `tfsdk:"zoom_notifications_enabled"`
 	AllowedEmailDomains            types.String `tfsdk:"allowed_email_domains"`
 	InsertedAt                     types.String `tfsdk:"inserted_at"`
 	UpdatedAt                      types.String `tfsdk:"updated_at"`
-}
-
-type statusPageThemeConfigsModel struct {
-	LinkColor              types.String `tfsdk:"link_color"`
-	HeaderBgColor1         types.String `tfsdk:"header_bg_color1"`
-	HeaderBgColor2         types.String `tfsdk:"header_bg_color2"`
-	HeaderFgColor          types.String `tfsdk:"header_fg_color"`
-	IncidentHeaderColor    types.String `tfsdk:"incident_header_color"`
-	StatusOkColor          types.String `tfsdk:"status_ok_color"`
-	StatusMinorColor       types.String `tfsdk:"status_minor_color"`
-	StatusMajorColor       types.String `tfsdk:"status_major_color"`
-	StatusMaintenanceColor types.String `tfsdk:"status_maintenance_color"`
 }
 
 type statusPageTranslationsModel map[string]statusPageTranslationModel
@@ -193,16 +180,19 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Your company's support email.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"twitter_public_screen_name": schema.StringAttribute{
 						Description: "Twitter handle name (e.g. yourcompany).",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"about": schema.StringAttribute{
 						Description: "Customize the about information displayed in your status page.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"display_about": schema.BoolAttribute{
 						Description: "Display about information.",
@@ -218,11 +208,13 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"restricted_ips": schema.StringAttribute{
 						Description: `Your status page will be accessible only from this IPs (e.g. "1.1.1.1, 2.2.2.2").`,
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"member_restricted": schema.BoolAttribute{
 						Description: "Only signed in members will be allowed to access your status page.",
@@ -242,21 +234,25 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						MarkdownDescription: "We'll insert this content inside the `<script>` tag at the bottom of your status page `<body>` tag.",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"head_code": schema.StringAttribute{
 						MarkdownDescription: "We'll insert this content inside the `<head>` tag.",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"date_format": schema.StringAttribute{
 						Description: "Display timestamps of incidents and updates in this format.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"time_format": schema.StringAttribute{
 						Description: "Display timestamps of incidents and updates in this format.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"date_format_enforce_everywhere": schema.BoolAttribute{
 						Description: "The above date format will be used everywhere in the status page. Timezone conversion to client's will be disabled.",
@@ -357,6 +353,7 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 ` + "  ```\n→ ",
 						Optional: true,
 						Computed: true,
+						Default:  mapdefault.StaticValue(types.MapNull(types.ObjectType{AttrTypes: map[string]attr.Type{"public_company_name": types.StringType, "header_logo_text": types.StringType}})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"public_company_name": schema.StringAttribute{
@@ -379,6 +376,7 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Displayed at the footer of the status page.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"bg_image": schema.StringAttribute{
 						Description: "Background image url of the status page.",
@@ -423,22 +421,6 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Default:     stringdefault.StaticString("default"),
 						Validators: []validator.String{
 							stringvalidator.OneOf("default", "big-logo"),
-						},
-					},
-					"theme_configs": schema.ObjectAttribute{
-						Description: "Theme configuration for the status page.",
-						Optional:    true,
-						Computed:    true,
-						AttributeTypes: map[string]attr.Type{
-							"link_color":               types.StringType,
-							"header_bg_color1":         types.StringType,
-							"header_bg_color2":         types.StringType,
-							"header_fg_color":          types.StringType,
-							"incident_header_color":    types.StringType,
-							"status_ok_color":          types.StringType,
-							"status_minor_color":       types.StringType,
-							"status_major_color":       types.StringType,
-							"status_maintenance_color": types.StringType,
 						},
 					},
 					"link_color": schema.StringAttribute{
@@ -504,16 +486,19 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						MarkdownDescription: "We'll insert this content inside the `<style>` tag.",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"custom_header": schema.StringAttribute{
 						MarkdownDescription: "A custom header for the status page (e.g. \"`<header>...</header>`\").",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"custom_footer": schema.StringAttribute{
 						MarkdownDescription: "A custom footer for the status page (e.g. \"`<footer>...</footer>`\").",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"notify_by_default": schema.BoolAttribute{
 						Description: "Check the Notify subscribers checkbox by default.",
@@ -555,6 +540,11 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 					},
+					"zoom_notifications_enabled": schema.BoolAttribute{
+						Description: "Allow your customers to receive notifications on Zoom.",
+						Optional:    true,
+						Computed:    true,
+					},
 					"feed_enabled": schema.BoolAttribute{
 						Description: "Allow your customers to receive updates as RSS and Atom feeds.",
 						Optional:    true,
@@ -581,11 +571,13 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Allow your customers to subscribe via email to updates on your status page's status.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"reply_to_email": schema.StringAttribute{
 						Description: "The email address we'll use in the 'reply_to' field in emails to your subscribers. So they can reply to your notification emails.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"tweeting_enabled": schema.BoolAttribute{
 						Description: "Allows to send tweets when creating or updating an incident.",
@@ -597,31 +589,30 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						MarkdownDescription: "Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"email_confirmation_template": schema.StringAttribute{
 						MarkdownDescription: "Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"email_notification_template": schema.StringAttribute{
 						MarkdownDescription: "Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).",
 						Optional:            true,
 						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"email_templates_enabled": schema.BoolAttribute{
 						Description: "The templates won't be used until this is enabled, but you can send test emails.",
 						Optional:    true,
 						Computed:    true,
 					},
-					"zoom_notifications_enabled": schema.BoolAttribute{
-						Description: "Allow your customers to receive notifications on Zoom.",
-						Default:     booldefault.StaticBool(false),
-						Computed:    true,
-					},
 					"allowed_email_domains": schema.StringAttribute{
-						Description: "Allowed email domains. Each domain should be separated by \\n (e.g., 'acme.corp\\nnapster.com')",
-						Optional:    true,
-						Computed:    true,
+						MarkdownDescription: "Users with these domains in their email address will be able to sign up via status page invite link. Each domain should be separated by `\\n` (e.g., `acme.corp\\nnapster.com`).",
+						Optional:            true,
+						Computed:            true,
+						Default:             stringdefault.StaticString(""),
 					},
 					"inserted_at": schema.StringAttribute{
 						Description: "Datetime at which the status page was inserted.",
@@ -869,64 +860,44 @@ func mapStatusPageModelToRequestBody(
 		}
 	}
 
-	var themeConfigs statusPageThemeConfigsModel
-	if !statusPage.ThemeConfigs.IsNull() && !statusPage.ThemeConfigs.IsUnknown() {
-		diags := statusPage.ThemeConfigs.As(*ctx, &themeConfigs, basetypes.ObjectAsOptions{})
-		diagnostics.Append(diags...)
-		if diagnostics.HasError() {
-			return nil
-		}
-	}
-
 	return &statuspal.StatusPage{
-		Name:                         statusPage.Name.ValueString(),
-		Url:                          statusPage.Url.ValueString(),
-		TimeZone:                     statusPage.TimeZone.ValueString(),
-		Subdomain:                    statusPage.Subdomain.ValueString(),
-		SupportEmail:                 statusPage.SupportEmail.ValueString(),
-		TwitterPublicScreenName:      statusPage.TwitterPublicScreenName.ValueString(),
-		About:                        statusPage.About.ValueString(),
-		DisplayAbout:                 statusPage.DisplayAbout.ValueBool(),
-		CustomDomainEnabled:          statusPage.CustomDomainEnabled.ValueBool(),
-		Domain:                       statusPage.Domain.ValueString(),
-		RestrictedIps:                statusPage.RestrictedIps.ValueString(),
-		MemberRestricted:             statusPage.MemberRestricted.ValueBool(),
-		ScheduledMaintenanceDays:     statusPage.ScheduledMaintenanceDays.ValueInt64(),
-		CustomJs:                     statusPage.CustomJs.ValueString(),
-		HeadCode:                     statusPage.HeadCode.ValueString(),
-		DateFormat:                   statusPage.DateFormat.ValueString(),
-		TimeFormat:                   statusPage.TimeFormat.ValueString(),
-		DateFormatEnforceEverywhere:  statusPage.DateFormatEnforceEverywhere.ValueBool(),
-		DisplayCalendar:              statusPage.DisplayCalendar.ValueBool(),
-		HideWatermark:                statusPage.HideWatermark.ValueBool(),
-		MinorNotificationHours:       statusPage.MinorNotificationHours.ValueInt64(),
-		MajorNotificationHours:       statusPage.MajorNotificationHours.ValueInt64(),
-		MaintenanceNotificationHours: statusPage.MaintenanceNotificationHours.ValueInt64(),
-		HistoryLimitDays:             statusPage.HistoryLimitDays.ValueInt64(),
-		CustomIncidentTypesEnabled:   statusPage.CustomIncidentTypesEnabled.ValueBool(),
-		InfoNoticesEnabled:           statusPage.InfoNoticesEnabled.ValueBool(),
-		LockedWhenMaintenance:        statusPage.LockedWhenMaintenance.ValueBool(),
-		Noindex:                      statusPage.Noindex.ValueBool(),
-		EnableAutoTranslations:       statusPage.EnableAutoTranslations.ValueBool(),
-		CaptchaEnabled:               statusPage.CaptchaEnabled.ValueBool(),
-		Translations:                 translationData,
-		HeaderLogoText:               statusPage.HeaderLogoText.ValueString(),
-		PublicCompanyName:            statusPage.PublicCompanyName.ValueString(),
-		DisplayUptimeGraph:           statusPage.DisplayUptimeGraph.ValueBool(),
-		UptimeGraphDays:              statusPage.UptimeGraphDays.ValueInt64(),
-		CurrentIncidentsPosition:     statusPage.CurrentIncidentsPosition.ValueString(),
-		ThemeSelected:                statusPage.ThemeSelected.ValueString(),
-		ThemeConfigs: statuspal.StatusPageThemeConfigs{
-			LinkColor:              themeConfigs.LinkColor.ValueString(),
-			HeaderBgColor1:         themeConfigs.HeaderBgColor1.ValueString(),
-			HeaderBgColor2:         themeConfigs.HeaderBgColor2.ValueString(),
-			HeaderFgColor:          themeConfigs.HeaderFgColor.ValueString(),
-			IncidentHeaderColor:    themeConfigs.IncidentHeaderColor.ValueString(),
-			StatusOkColor:          themeConfigs.StatusOkColor.ValueString(),
-			StatusMinorColor:       themeConfigs.StatusMinorColor.ValueString(),
-			StatusMajorColor:       themeConfigs.StatusMajorColor.ValueString(),
-			StatusMaintenanceColor: themeConfigs.StatusMaintenanceColor.ValueString(),
-		},
+		Name:                           statusPage.Name.ValueString(),
+		Url:                            statusPage.Url.ValueString(),
+		TimeZone:                       statusPage.TimeZone.ValueString(),
+		Subdomain:                      statusPage.Subdomain.ValueString(),
+		SupportEmail:                   statusPage.SupportEmail.ValueString(),
+		TwitterPublicScreenName:        statusPage.TwitterPublicScreenName.ValueString(),
+		About:                          statusPage.About.ValueString(),
+		DisplayAbout:                   statusPage.DisplayAbout.ValueBool(),
+		CustomDomainEnabled:            statusPage.CustomDomainEnabled.ValueBool(),
+		Domain:                         statusPage.Domain.ValueString(),
+		RestrictedIps:                  statusPage.RestrictedIps.ValueString(),
+		MemberRestricted:               statusPage.MemberRestricted.ValueBool(),
+		ScheduledMaintenanceDays:       statusPage.ScheduledMaintenanceDays.ValueInt64(),
+		CustomJs:                       statusPage.CustomJs.ValueString(),
+		HeadCode:                       statusPage.HeadCode.ValueString(),
+		DateFormat:                     statusPage.DateFormat.ValueString(),
+		TimeFormat:                     statusPage.TimeFormat.ValueString(),
+		DateFormatEnforceEverywhere:    statusPage.DateFormatEnforceEverywhere.ValueBool(),
+		DisplayCalendar:                statusPage.DisplayCalendar.ValueBool(),
+		HideWatermark:                  statusPage.HideWatermark.ValueBool(),
+		MinorNotificationHours:         statusPage.MinorNotificationHours.ValueInt64(),
+		MajorNotificationHours:         statusPage.MajorNotificationHours.ValueInt64(),
+		MaintenanceNotificationHours:   statusPage.MaintenanceNotificationHours.ValueInt64(),
+		HistoryLimitDays:               statusPage.HistoryLimitDays.ValueInt64(),
+		CustomIncidentTypesEnabled:     statusPage.CustomIncidentTypesEnabled.ValueBool(),
+		InfoNoticesEnabled:             statusPage.InfoNoticesEnabled.ValueBool(),
+		LockedWhenMaintenance:          statusPage.LockedWhenMaintenance.ValueBool(),
+		Noindex:                        statusPage.Noindex.ValueBool(),
+		EnableAutoTranslations:         statusPage.EnableAutoTranslations.ValueBool(),
+		CaptchaEnabled:                 statusPage.CaptchaEnabled.ValueBool(),
+		Translations:                   translationData,
+		HeaderLogoText:                 statusPage.HeaderLogoText.ValueString(),
+		PublicCompanyName:              statusPage.PublicCompanyName.ValueString(),
+		DisplayUptimeGraph:             statusPage.DisplayUptimeGraph.ValueBool(),
+		UptimeGraphDays:                statusPage.UptimeGraphDays.ValueInt64(),
+		CurrentIncidentsPosition:       statusPage.CurrentIncidentsPosition.ValueString(),
+		ThemeSelected:                  statusPage.ThemeSelected.ValueString(),
 		LinkColor:                      statusPage.LinkColor.ValueString(),
 		HeaderBgColor1:                 statusPage.HeaderBgColor1.ValueString(),
 		HeaderBgColor2:                 statusPage.HeaderBgColor2.ValueString(),
@@ -970,94 +941,78 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		"public_company_name": types.StringType,
 		"header_logo_text":    types.StringType,
 	}
-	// Create the translationData object dynamically
-	translationData := make(map[string]attr.Value)
-	for lang, data := range statusPage.Translations {
-		translationObject, diags := types.ObjectValue(
-			translationSchema,
-			map[string]attr.Value{
-				"public_company_name": types.StringValue(data.PublicCompanyName),
-				"header_logo_text":    types.StringValue(data.HeaderLogoText),
-			},
+	translations := types.MapNull(types.ObjectType{AttrTypes: translationSchema})
+	if len(statusPage.Translations) > 0 {
+		// Create the translationData object dynamically
+		translationData := make(map[string]attr.Value)
+		for lang, data := range statusPage.Translations {
+			translationObject, diags := types.ObjectValue(
+				translationSchema,
+				map[string]attr.Value{
+					"public_company_name": types.StringValue(data.PublicCompanyName),
+					"header_logo_text":    types.StringValue(data.HeaderLogoText),
+				},
+			)
+			translationData[lang] = translationObject
+			diagnostics.Append(diags...)
+			if diagnostics.HasError() {
+				return nil
+			}
+		}
+		// Create the translations map
+		convertedTranslations, diags := types.MapValue(
+			types.ObjectType{AttrTypes: translationSchema},
+			translationData,
 		)
-		translationData[lang] = translationObject
 		diagnostics.Append(diags...)
 		if diagnostics.HasError() {
 			return nil
 		}
-	}
-	// Create the translations map
-	translations, diags := types.MapValue(
-		types.ObjectType{AttrTypes: translationSchema},
-		translationData,
-	)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil
+
+		translations = convertedTranslations
 	}
 
 	return &statusPageModel{
-		Name:                         types.StringValue(statusPage.Name),
-		Url:                          types.StringValue(statusPage.Url),
-		TimeZone:                     types.StringValue(statusPage.TimeZone),
-		Subdomain:                    types.StringValue(statusPage.Subdomain),
-		SupportEmail:                 types.StringValue(statusPage.SupportEmail),
-		TwitterPublicScreenName:      types.StringValue(statusPage.TwitterPublicScreenName),
-		About:                        types.StringValue(statusPage.About),
-		DisplayAbout:                 types.BoolValue(statusPage.DisplayAbout),
-		CustomDomainEnabled:          types.BoolValue(statusPage.CustomDomainEnabled),
-		Domain:                       types.StringValue(statusPage.Domain),
-		RestrictedIps:                types.StringValue(statusPage.RestrictedIps),
-		MemberRestricted:             types.BoolValue(statusPage.MemberRestricted),
-		ScheduledMaintenanceDays:     types.Int64Value(statusPage.ScheduledMaintenanceDays),
-		CustomJs:                     types.StringValue(statusPage.CustomJs),
-		HeadCode:                     types.StringValue(statusPage.HeadCode),
-		DateFormat:                   types.StringValue(statusPage.DateFormat),
-		TimeFormat:                   types.StringValue(statusPage.TimeFormat),
-		DateFormatEnforceEverywhere:  types.BoolValue(statusPage.DateFormatEnforceEverywhere),
-		DisplayCalendar:              types.BoolValue(statusPage.DisplayCalendar),
-		HideWatermark:                types.BoolValue(statusPage.HideWatermark),
-		MinorNotificationHours:       types.Int64Value(statusPage.MinorNotificationHours),
-		MajorNotificationHours:       types.Int64Value(statusPage.MajorNotificationHours),
-		MaintenanceNotificationHours: types.Int64Value(statusPage.MaintenanceNotificationHours),
-		HistoryLimitDays:             types.Int64Value(statusPage.HistoryLimitDays),
-		CustomIncidentTypesEnabled:   types.BoolValue(statusPage.CustomIncidentTypesEnabled),
-		InfoNoticesEnabled:           types.BoolValue(statusPage.InfoNoticesEnabled),
-		LockedWhenMaintenance:        types.BoolValue(statusPage.LockedWhenMaintenance),
-		Noindex:                      types.BoolValue(statusPage.Noindex),
-		EnableAutoTranslations:       types.BoolValue(statusPage.EnableAutoTranslations),
-		CaptchaEnabled:               types.BoolValue(statusPage.CaptchaEnabled),
-		Translations:                 translations,
-		HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
-		PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
-		BgImage:                      types.StringValue(statusPage.BgImage),
-		Logo:                         types.StringValue(statusPage.Logo),
-		Favicon:                      types.StringValue(statusPage.Favicon),
-		DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
-		UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
-		CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),
-		ThemeSelected:                types.StringValue(statusPage.ThemeSelected),
-		ThemeConfigs: types.ObjectValueMust(map[string]attr.Type{
-			"link_color":               types.StringType,
-			"header_bg_color1":         types.StringType,
-			"header_bg_color2":         types.StringType,
-			"header_fg_color":          types.StringType,
-			"incident_header_color":    types.StringType,
-			"status_ok_color":          types.StringType,
-			"status_minor_color":       types.StringType,
-			"status_major_color":       types.StringType,
-			"status_maintenance_color": types.StringType,
-		}, map[string]attr.Value{
-			"link_color":               types.StringValue(statusPage.ThemeConfigs.LinkColor),
-			"header_bg_color1":         types.StringValue(statusPage.ThemeConfigs.HeaderBgColor1),
-			"header_bg_color2":         types.StringValue(statusPage.ThemeConfigs.HeaderBgColor2),
-			"header_fg_color":          types.StringValue(statusPage.ThemeConfigs.HeaderFgColor),
-			"incident_header_color":    types.StringValue(statusPage.ThemeConfigs.IncidentHeaderColor),
-			"status_ok_color":          types.StringValue(statusPage.ThemeConfigs.StatusOkColor),
-			"status_minor_color":       types.StringValue(statusPage.ThemeConfigs.StatusMinorColor),
-			"status_major_color":       types.StringValue(statusPage.ThemeConfigs.StatusMajorColor),
-			"status_maintenance_color": types.StringValue(statusPage.ThemeConfigs.StatusMaintenanceColor),
-		}),
+		Name:                           types.StringValue(statusPage.Name),
+		Url:                            types.StringValue(statusPage.Url),
+		TimeZone:                       types.StringValue(statusPage.TimeZone),
+		Subdomain:                      types.StringValue(statusPage.Subdomain),
+		SupportEmail:                   types.StringValue(statusPage.SupportEmail),
+		TwitterPublicScreenName:        types.StringValue(statusPage.TwitterPublicScreenName),
+		About:                          types.StringValue(statusPage.About),
+		DisplayAbout:                   types.BoolValue(statusPage.DisplayAbout),
+		CustomDomainEnabled:            types.BoolValue(statusPage.CustomDomainEnabled),
+		Domain:                         types.StringValue(statusPage.Domain),
+		RestrictedIps:                  types.StringValue(statusPage.RestrictedIps),
+		MemberRestricted:               types.BoolValue(statusPage.MemberRestricted),
+		ScheduledMaintenanceDays:       types.Int64Value(statusPage.ScheduledMaintenanceDays),
+		CustomJs:                       types.StringValue(statusPage.CustomJs),
+		HeadCode:                       types.StringValue(statusPage.HeadCode),
+		DateFormat:                     types.StringValue(statusPage.DateFormat),
+		TimeFormat:                     types.StringValue(statusPage.TimeFormat),
+		DateFormatEnforceEverywhere:    types.BoolValue(statusPage.DateFormatEnforceEverywhere),
+		DisplayCalendar:                types.BoolValue(statusPage.DisplayCalendar),
+		HideWatermark:                  types.BoolValue(statusPage.HideWatermark),
+		MinorNotificationHours:         types.Int64Value(statusPage.MinorNotificationHours),
+		MajorNotificationHours:         types.Int64Value(statusPage.MajorNotificationHours),
+		MaintenanceNotificationHours:   types.Int64Value(statusPage.MaintenanceNotificationHours),
+		HistoryLimitDays:               types.Int64Value(statusPage.HistoryLimitDays),
+		CustomIncidentTypesEnabled:     types.BoolValue(statusPage.CustomIncidentTypesEnabled),
+		InfoNoticesEnabled:             types.BoolValue(statusPage.InfoNoticesEnabled),
+		LockedWhenMaintenance:          types.BoolValue(statusPage.LockedWhenMaintenance),
+		Noindex:                        types.BoolValue(statusPage.Noindex),
+		EnableAutoTranslations:         types.BoolValue(statusPage.EnableAutoTranslations),
+		CaptchaEnabled:                 types.BoolValue(statusPage.CaptchaEnabled),
+		Translations:                   translations,
+		HeaderLogoText:                 types.StringValue(statusPage.HeaderLogoText),
+		PublicCompanyName:              types.StringValue(statusPage.PublicCompanyName),
+		BgImage:                        types.StringValue(statusPage.BgImage),
+		Logo:                           types.StringValue(statusPage.Logo),
+		Favicon:                        types.StringValue(statusPage.Favicon),
+		DisplayUptimeGraph:             types.BoolValue(statusPage.DisplayUptimeGraph),
+		UptimeGraphDays:                types.Int64Value(statusPage.UptimeGraphDays),
+		CurrentIncidentsPosition:       types.StringValue(statusPage.CurrentIncidentsPosition),
+		ThemeSelected:                  types.StringValue(statusPage.ThemeSelected),
 		LinkColor:                      types.StringValue(statusPage.LinkColor),
 		HeaderBgColor1:                 types.StringValue(statusPage.HeaderBgColor1),
 		HeaderBgColor2:                 types.StringValue(statusPage.HeaderBgColor2),
