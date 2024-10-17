@@ -12,7 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -138,16 +142,19 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Description: "The description of the service.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"private_description": schema.StringAttribute{
 						Description: "The private description of the service.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"parent_id": schema.StringAttribute{
 						Description: "The service parent ID.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"current_incident_type": schema.StringAttribute{
 						MarkdownDescription: "Enum: `\"minor\"` `\"major\"` `\"scheduled\"`\n  The service's current incident type.\n  The type of the (current) incident:\n" +
@@ -160,13 +167,14 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						},
 					},
 					"monitoring": schema.StringAttribute{
-						MarkdownDescription: "Enum: `null` `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
-							"  - `null` or `\"\"` - No monitoring.\n" +
+						MarkdownDescription: "Enum: `\"\"` `\"internal\"` `\"3rd_party\"` `\"webhook\"`\n  Monitoring types:\n" +
+							"  - `\"\"` - No monitoring.\n" +
 							"  - `internal` - StatusPal monitoring.\n" +
 							"  - `3rd_party` - 3rd Party monitoring.\n" +
 							"  - `webhook` - Incoming webhook monitoring.",
 						Optional: true,
 						Computed: true,
+						Default:  stringdefault.StaticString(""),
 						Validators: []validator.String{
 							stringvalidator.OneOf("", "internal", "3rd_party", "webhook"),
 						},
@@ -180,6 +188,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 							"  - `3rd_party` - Custom JSONPath.",
 						Optional: true,
 						Computed: true,
+						Default:  stringdefault.StaticString(""),
 						Validators: []validator.String{
 							stringvalidator.OneOf("status-cake", "uptime-robot", "custom-jsonpath"),
 						},
@@ -189,6 +198,10 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 							"  **Configure this field only if the `webhook_monitoring_service` is set to `custom-jsonpath`.**\n→ ",
 						Optional: true,
 						Computed: true,
+						Default: objectdefault.StaticValue(types.ObjectNull(map[string]attr.Type{
+							"jsonpath":        types.StringType,
+							"expected_result": types.StringType,
+						})),
 						Attributes: map[string]schema.Attribute{
 							"jsonpath": schema.StringAttribute{
 								MarkdownDescription: "The path in the JSON, e.g. `$.status`",
@@ -204,14 +217,24 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						MarkdownDescription: "Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party.",
 						Optional:            true,
 						Computed:            true,
+						Default: objectdefault.StaticValue(types.ObjectNull(map[string]attr.Type{
+							"method":       types.StringType,
+							"headers":      types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}}},
+							"keyword_up":   types.StringType,
+							"keyword_down": types.StringType,
+						})),
 						Attributes: map[string]schema.Attribute{
 							"method": schema.StringAttribute{
 								MarkdownDescription: "The HTTP method used for monitoring requests. Example: `HEAD`.",
 								Optional:            true,
+								Computed:            true,
+								Default:             stringdefault.StaticString("HEAD"),
 							},
 							"headers": schema.ListNestedAttribute{
 								MarkdownDescription: "A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`.",
 								Optional:            true,
+								Computed:            true,
+								Default:             listdefault.StaticValue(types.ListNull(types.ObjectType{AttrTypes: map[string]attr.Type{"key": types.StringType, "value": types.StringType}})),
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
@@ -228,10 +251,14 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 							"keyword_up": schema.StringAttribute{
 								MarkdownDescription: "A custom keyword that indicates a 'up' status when monitoring a third-party service.This keyword is used to parse and understand service",
 								Optional:            true,
+								Computed:            true,
+								Default:             stringdefault.StaticString(""),
 							},
 							"keyword_down": schema.StringAttribute{
 								MarkdownDescription: "A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.",
 								Optional:            true,
+								Computed:            true,
+								Default:             stringdefault.StaticString(""),
 							},
 						},
 					},
@@ -247,6 +274,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 						Description: "We will send HTTP requests to this URL for monitoring every minute.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"incident_type": schema.StringAttribute{
 						MarkdownDescription: "Enum: `\"minor\"` `\"major\"`\n  Sets the incident type to this value when an incident is created via monitoring.\n  The type of the (current) incident:\n" +
@@ -309,6 +337,7 @@ func (r *serviceResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 ` + "  ```\n→ ",
 						Optional: true,
 						Computed: true,
+						Default:  mapdefault.StaticValue(types.MapNull(types.ObjectType{AttrTypes: map[string]attr.Type{"name": types.StringType, "description": types.StringType}})),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -633,15 +662,17 @@ func mapServiceModelToRequestBody(
 	}
 
 	parentID := service.ParentID.ValueString()
-	if parentID == "" {
-		parentID = "0"
-	}
+	var convertedParentID *int64
 
-	convertedParentID, err := strconv.ParseInt(parentID, 10, 64)
-	if err != nil {
-		diagnostics.AddError("Not valid service parent ID", err.Error())
+	if !service.ParentID.IsNull() && !service.ParentID.IsUnknown() && parentID != "" {
+		parsedParentID, err := strconv.ParseInt(parentID, 10, 64)
+		if err != nil {
+			diagnostics.AddError("Not valid service parent ID", err.Error())
 
-		return nil
+			return nil
+		}
+
+		convertedParentID = &parsedParentID
 	}
 
 	return &statuspal.Service{
@@ -670,50 +701,59 @@ func mapResponseToServiceModel(
 	service *statuspal.Service,
 	diagnostics *diag.Diagnostics,
 ) *serviceModel {
-	webhookCustomJsonpathSettingsSchema := map[string]attr.Type{
-		"jsonpath":        types.StringType,
-		"expected_result": types.StringType,
-	}
-	webhookCustomJsonpathSettings := types.ObjectNull(webhookCustomJsonpathSettingsSchema)
-
 	// Define the translation object schema
 	translationSchema := map[string]attr.Type{
 		"name":        types.StringType,
 		"description": types.StringType,
 	}
-	// Create the translationData object dynamically
-	translationData := make(map[string]attr.Value)
-	for lang, data := range service.Translations {
-		translationObject, diags := types.ObjectValue(
-			translationSchema,
-			map[string]attr.Value{
-				"name":        types.StringValue(data.Name),
-				"description": types.StringValue(data.Description),
-			},
+	translations := types.MapNull(types.ObjectType{AttrTypes: translationSchema})
+	if len(service.Translations) > 0 {
+		// Create the translationData object dynamically
+		translationData := make(map[string]attr.Value)
+		for lang, data := range service.Translations {
+			translationObject, diags := types.ObjectValue(
+				translationSchema,
+				map[string]attr.Value{
+					"name":        types.StringValue(data.Name),
+					"description": types.StringValue(data.Description),
+				},
+			)
+			translationData[lang] = translationObject
+			diagnostics.Append(diags...)
+			if diagnostics.HasError() {
+				return nil
+			}
+		}
+		// Create the translations map
+		convertedTranslations, diags := types.MapValue(
+			types.ObjectType{AttrTypes: translationSchema},
+			translationData,
 		)
-		translationData[lang] = translationObject
 		diagnostics.Append(diags...)
 		if diagnostics.HasError() {
 			return nil
 		}
+
+		translations = convertedTranslations
 	}
-	// Create the translations map
-	translations, diags := types.MapValue(
-		types.ObjectType{AttrTypes: translationSchema},
-		translationData,
-	)
+
+	// Create the childrenIDs list from service.ChildrenIDs
+	childrenIDs, diags := types.ListValueFrom(*ctx, types.Int64Type, service.ChildrenIDs)
 	diagnostics.Append(diags...)
 	if diagnostics.HasError() {
 		return nil
 	}
 
-	// Create the childrenIDsData list from service.ChildrenIDs
-	childrenIDsData, diags := types.ListValueFrom(*ctx, types.Int64Type, service.ChildrenIDs)
-	diagnostics.Append(diags...)
-	if diagnostics.HasError() {
-		return nil
+	parentID := ""
+	if service.ParentID != nil {
+		parentID = strconv.FormatInt(*service.ParentID, 10)
 	}
 
+	webhookCustomJsonpathSettingsSchema := map[string]attr.Type{
+		"jsonpath":        types.StringType,
+		"expected_result": types.StringType,
+	}
+	webhookCustomJsonpathSettings := types.ObjectNull(webhookCustomJsonpathSettingsSchema)
 	if service.Monitoring == "webhook" && service.WebhookMonitoringService == "custom-jsonpath" &&
 		service.WebhookCustomJsonpathSettings != nil {
 		webhookCustomJsonpathSettings = types.ObjectValueMust(
@@ -736,9 +776,7 @@ func mapResponseToServiceModel(
 			},
 		},
 	}
-
-	monitoringOptionsData := types.ObjectNull(monitoringOptionsSchema)
-
+	monitoringOptions := types.ObjectNull(monitoringOptionsSchema)
 	// If monitoring options exist, populate them
 	if service.MonitoringOptions != nil {
 		// Create headers data
@@ -757,7 +795,7 @@ func mapResponseToServiceModel(
 		}
 
 		// Set monitoring options object
-		monitoringOptionsData = types.ObjectValueMust(
+		monitoringOptions = types.ObjectValueMust(
 			monitoringOptionsSchema,
 			map[string]attr.Value{
 				"method":       types.StringValue(service.MonitoringOptions.Method),
@@ -778,12 +816,12 @@ func mapResponseToServiceModel(
 		Name:                              types.StringValue(service.Name),
 		Description:                       types.StringValue(service.Description),
 		PrivateDescription:                types.StringValue(service.PrivateDescription),
-		ParentID:                          types.StringValue(strconv.FormatInt(service.ParentID, 10)),
+		ParentID:                          types.StringValue(parentID),
 		CurrentIncidentType:               types.StringValue(service.CurrentIncidentType),
 		Monitoring:                        types.StringValue(service.Monitoring),
 		WebhookMonitoringService:          types.StringValue(service.WebhookMonitoringService),
 		WebhookCustomJsonpathSettings:     webhookCustomJsonpathSettings,
-		MonitoringOptions:                 monitoringOptionsData,
+		MonitoringOptions:                 monitoringOptions,
 		InboundEmailAddress:               types.StringValue(service.InboundEmailAddress),
 		IncomingWebhookUrl:                types.StringValue(service.IncomingWebhookUrl),
 		PingUrl:                           types.StringValue(service.PingUrl),
@@ -794,7 +832,7 @@ func mapResponseToServiceModel(
 		InboundEmailID:                    types.StringValue(service.InboundEmailID),
 		AutoIncident:                      types.BoolValue(service.AutoIncident),
 		AutoNotify:                        types.BoolValue(service.AutoNotify),
-		ChildrenIDs:                       childrenIDsData,
+		ChildrenIDs:                       childrenIDs,
 		Translations:                      translations,
 		Private:                           types.BoolValue(service.Private),
 		DisplayUptimeGraph:                types.BoolValue(service.DisplayUptimeGraph),

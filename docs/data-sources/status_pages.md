@@ -37,7 +37,7 @@ data "statuspal_status_pages" "all" {
 Read-Only:
 
 - `about` (String) Customize the about information displayed in your status page.
-- `allowed_email_domains` (String) Allowed email domains. Each domain should be separated by \n (e.g., 'acme.corp\nnapster.com')
+- `allowed_email_domains` (String) Users with these domains in their email address will be able to sign up via status page invite link. Each domain should be separated by `\n` (e.g., `acme.corp\nnapster.com`).
 - `bg_image` (String) Background image url of the status page.
 - `calendar_enabled` (Boolean) Allow your customers to receive updates via iCalendar feed.
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
@@ -101,7 +101,6 @@ Read-Only:
 - `subscribers_enabled` (Boolean) Allow email customers to receive email notifications.
 - `support_email` (String) Your company's support email.
 - `teams_notifications_enabled` (Boolean) Allow your customers to receive notifications on Microsoft Teams.
-- `theme_configs` (Object) Theme configuration for the status page. (see [below for nested schema](#nestedatt--status_pages--theme_configs))
 - `theme_selected` (String) The selected theme for state page, it can be "default" and "big-logo".
 - `time_format` (String) Display timestamps of incidents and updates in this format.
 - `time_zone` (String) The primary timezone the status page uses to display incidents (e.g. "Europe/Berlin").
@@ -126,22 +125,6 @@ Read-Only:
 - `uptime_graph_days` (Number) Uptime graph period.
 - `url` (String) The website to your company, project or service.
 - `zoom_notifications_enabled` (Boolean) Allow your customers to receive notifications on Zoom.
-
-<a id="nestedatt--status_pages--theme_configs"></a>
-### Nested Schema for `status_pages.theme_configs`
-
-Read-Only:
-
-- `header_bg_color1` (String)
-- `header_bg_color2` (String)
-- `header_fg_color` (String)
-- `incident_header_color` (String)
-- `link_color` (String)
-- `status_maintenance_color` (String)
-- `status_major_color` (String)
-- `status_minor_color` (String)
-- `status_ok_color` (String)
-
 
 <a id="nestedatt--status_pages--translations"></a>
 ### Nested Schema for `status_pages.translations`

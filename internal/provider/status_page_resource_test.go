@@ -34,7 +34,7 @@ func TestAccStatusPageResource(t *testing.T) {
 			"maintenance_notification_hours": 6,
 			"subdomain": "terraform-test",
 			"twitter_public_screen_name": null,
-			"header_logo_text": "Test Status Page from Terraform",
+			"header_logo_text": "Test Status Page from Terraform EN",
 			"member_restricted": false,
 			"url": "terraform.test",
 			"status_ok_color": "48CBA5",
@@ -43,11 +43,11 @@ func TestAccStatusPageResource(t *testing.T) {
 			"display_about": false,
 			"translations": {
 				"en": {
-					"header_logo_text": "",
+					"header_logo_text": "Test Status Page from Terraform EN",
 					"public_company_name": "Public company name EN"
 				},
 				"fr": {
-					"header_logo_text": "",
+					"header_logo_text": "Test Status Page from Terraform FR",
 					"public_company_name": "Public company name FR"
 				}
 			},
@@ -77,20 +77,10 @@ func TestAccStatusPageResource(t *testing.T) {
 			"about": null,
 			"google_chat_notifications_enabled": false,
 			"discord_notifications_enabled": false,
-			"theme_configs": {
-				"header_bg_color1": "",
-				"header_bg_color2": "",
-				"header_fg_color": "",
-				"incident_header_color": "",
-				"link_color": "",
-				"status_maintenance_color": "",
-				"status_major_color": "",
-				"status_minor_color": "",
-				"status_ok_color": ""
-			},
 			"status_minor_color": "FFA500",
 			"tweeting_enabled": true,
 			"sms_notifications_enabled": false,
+			"zoom_notifications_enabled": false,
 			"notify_by_default": false,
 			"hide_watermark": false,
 			"custom_domain_enabled": false,
@@ -110,7 +100,6 @@ func TestAccStatusPageResource(t *testing.T) {
 			"incident_header_color": "009688",
 			"reply_to_email": null,
 			"noindex": false,
-			"zoom_notifications_enabled": false,
 			"allowed_email_domains": "acme.corp\nbbc.com"
 		}
 	}`
@@ -190,20 +179,22 @@ func TestAccStatusPageResource(t *testing.T) {
 						time_zone = "Europe/Budapest"
 						translations = {
 							en = {
-								header_logo_text = ""
+								header_logo_text = "Test Status Page from Terraform EN"
 								public_company_name = "Public company name EN"
 							}
 							fr = {
-								header_logo_text = ""
+								header_logo_text = "Test Status Page from Terraform FR"
 								public_company_name = "Public company name FR"
 							}
 						}
+						allowed_email_domains = "acme.corp\nbbc.com"
+						public_company_name = "Public company name EN"
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -221,7 +212,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.maintenance_notification_hours", "6"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.subdomain", "terraform-test"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.twitter_public_screen_name", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_logo_text", "Test Status Page from Terraform"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_logo_text", "Test Status Page from Terraform EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.member_restricted", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.url", "terraform.test"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.status_ok_color", "48CBA5"),
@@ -230,10 +221,10 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_about", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.%", "2"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.%", "2"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.header_logo_text", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.header_logo_text", "Test Status Page from Terraform EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.public_company_name", "Public company name EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.%", "2"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.header_logo_text", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.header_logo_text", "Test Status Page from Terraform FR"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.public_company_name", "Public company name FR"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.tweet_by_default", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_calendar", "true"),
@@ -261,16 +252,6 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.about", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.google_chat_notifications_enabled", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.discord_notifications_enabled", "false"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.%", "9"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.link_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_bg_color1", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_bg_color2", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_fg_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.incident_header_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_ok_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_minor_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_major_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_maintenance_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.status_minor_color", "FFA500"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.tweeting_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.sms_notifications_enabled", "false"),
@@ -320,29 +301,30 @@ func TestAccStatusPageResource(t *testing.T) {
 			// Update and Read testing
 			{
 				Config: *providerConfig + `resource "statuspal_status_page" "test" {
-						organization_id = "1"
-						status_page = {
-							name = "Edited Test Status Page from Terraform"
-							url = "terraform.test"
-							time_zone = "Europe/Budapest"
-							subdomain = "terraform-test-updated"
-							translations = {
-								en = {
-									header_logo_text = ""
-									public_company_name = "Public company name EN"
-								}
-								fr = {
-									header_logo_text = ""
-									public_company_name = "Public company name FR"
-								}
+					organization_id = "1"
+					status_page = {
+						name = "Edited Test Status Page from Terraform"
+						url = "terraform.test"
+						time_zone = "Europe/Budapest"
+						subdomain = "terraform-test-updated"
+						translations = {
+							en = {
+								header_logo_text = "Test Status Page from Terraform EN"
+								public_company_name = "Public company name EN"
+							}
+							fr = {
+								header_logo_text = "Test Status Page from Terraform FR"
+								public_company_name = "Public company name FR"
 							}
 						}
+						allowed_email_domains = "acme.corp\nbbc.com"
+						public_company_name = "Public company name EN"
 					}
-				`,
+				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -360,7 +342,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.maintenance_notification_hours", "6"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.subdomain", "terraform-test-updated"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.twitter_public_screen_name", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_logo_text", "Test Status Page from Terraform"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.header_logo_text", "Test Status Page from Terraform EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.member_restricted", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.url", "terraform.test"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.status_ok_color", "48CBA5"),
@@ -368,9 +350,11 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.subscribers_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_about", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.%", "2"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.header_logo_text", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.header_logo_text", "Test Status Page from Terraform EN"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.en.public_company_name", "Public company name EN"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.header_logo_text", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.header_logo_text", "Test Status Page from Terraform FR"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.translations.fr.public_company_name", "Public company name FR"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.tweet_by_default", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_calendar", "true"),
@@ -398,16 +382,6 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.about", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.google_chat_notifications_enabled", "false"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.discord_notifications_enabled", "false"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.%", "9"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.link_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_bg_color1", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_bg_color2", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.header_fg_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.incident_header_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_ok_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_minor_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_major_color", ""),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_configs.status_maintenance_color", ""),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.status_minor_color", "FFA500"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.tweeting_enabled", "true"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.sms_notifications_enabled", "false"),

@@ -5,6 +5,21 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.12] - 2024-10-17
+
+### Fixed
+
+- Error when trying to change an attribute from "something" to `null` or empty string.
+
+### Removed
+
+- `theme_configs` attribute from status page resource and data source, as it was deprecated.
+
+### Added
+
+- `zoom_notifications_enabled` and `allowed_email_domains` attributes to status page resource and data source.
+- `monitoring_options` attribute to service resource and data source.
+
 ## [0.2.11] - 2024-10-07
 
 ### Fixed

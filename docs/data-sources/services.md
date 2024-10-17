@@ -34,10 +34,6 @@ data "statuspal_services" "all" {
 <a id="nestedatt--services"></a>
 ### Nested Schema for `services`
 
-Optional:
-
-- `monitoring_options` (Attributes) Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party. (see [below for nested schema](#nestedatt--services--monitoring_options))
-
 Read-Only:
 
 - `auto_incident` (Boolean) Create an incident automatically when this service is down and close it if/when it comes back up.
@@ -63,12 +59,13 @@ Read-Only:
 - `incoming_webhook_url` (String) This is field is populated from `inbound_email_id`, if the `monitoring` is set to `webhook` and the `webhook_monitoring_service` is set.
 - `inserted_at` (String) Datetime at which the service was inserted.
 - `is_up` (Boolean) Is the monitored service up?
-- `monitoring` (String) Enum: `null` `""` `"internal"` `"3rd_party"` `"webhook"`
+- `monitoring` (String) Enum: `""` `"internal"` `"3rd_party"` `"webhook"`
   Monitoring types:
-  - `null` or `""` - No monitoring.
+  - `""` - No monitoring.
   - `internal` - StatusPal monitoring.
   - `3rd_party` - 3rd Party monitoring.
   - `webhook` - Incoming webhook monitoring.
+- `monitoring_options` (Attributes) Configuration options for monitoring the service. These options vary depending on whether the monitoring type is internal or third-party. (see [below for nested schema](#nestedatt--services--monitoring_options))
 - `name` (String) The name of the service.
 - `order` (Number) Service's position in the service list.
 - `parent_id` (String) The service parent ID.
@@ -109,7 +106,7 @@ Read-Only:
 <a id="nestedatt--services--monitoring_options"></a>
 ### Nested Schema for `services.monitoring_options`
 
-Optional:
+Read-Only:
 
 - `headers` (Attributes List) A list of header objects to be sent with the monitoring request. Each header should include a `key` and `value`. (see [below for nested schema](#nestedatt--services--monitoring_options--headers))
 - `keyword_down` (String) A custom keyword that indicates a 'down' status when monitoring a third-party service. This keyword is used to parse and understand service.
@@ -119,7 +116,7 @@ Optional:
 <a id="nestedatt--services--monitoring_options--headers"></a>
 ### Nested Schema for `services.monitoring_options.headers`
 
-Optional:
+Read-Only:
 
 - `key` (String) The key of the header. Example: `Authorization`.
 - `value` (String) The value of the header. Example: `Bearer token`.

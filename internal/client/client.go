@@ -26,13 +26,10 @@ func NewClient(api_key *string, region *string, test_url *string) (*Client, erro
 	}
 
 	if *region == "EU" || *region == "US" {
-		var topLevelDomain string
-		switch *region {
-		case "EU":
-			topLevelDomain = "eu"
-		case "US":
-			topLevelDomain = "io"
-		}
+		topLevelDomain := map[string]string{
+			"EU": "eu",
+			"US": "io",
+		}[*region]
 
 		c.HostURL = fmt.Sprintf("https://statuspal.%s/api/v2", topLevelDomain)
 	} else if env == "TEST" {

@@ -37,102 +37,82 @@ type statusPagesDataSourceModel struct {
 
 // statusPagesModel maps status_pages schema data.
 type statusPagesModel struct {
-	Name                           types.String                 `tfsdk:"name"`
-	Url                            types.String                 `tfsdk:"url"`
-	TimeZone                       types.String                 `tfsdk:"time_zone"`
-	Subdomain                      types.String                 `tfsdk:"subdomain"`
-	SupportEmail                   types.String                 `tfsdk:"support_email"`
-	TwitterPublicScreenName        types.String                 `tfsdk:"twitter_public_screen_name"`
-	About                          types.String                 `tfsdk:"about"`
-	DisplayAbout                   types.Bool                   `tfsdk:"display_about"`
-	CustomDomainEnabled            types.Bool                   `tfsdk:"custom_domain_enabled"`
-	Domain                         types.String                 `tfsdk:"domain"`
-	RestrictedIps                  types.String                 `tfsdk:"restricted_ips"`
-	MemberRestricted               types.Bool                   `tfsdk:"member_restricted"`
-	ScheduledMaintenanceDays       types.Int64                  `tfsdk:"scheduled_maintenance_days"`
-	CustomJs                       types.String                 `tfsdk:"custom_js"`
-	HeadCode                       types.String                 `tfsdk:"head_code"`
-	DateFormat                     types.String                 `tfsdk:"date_format"`
-	TimeFormat                     types.String                 `tfsdk:"time_format"`
-	DateFormatEnforceEverywhere    types.Bool                   `tfsdk:"date_format_enforce_everywhere"`
-	DisplayCalendar                types.Bool                   `tfsdk:"display_calendar"`
-	HideWatermark                  types.Bool                   `tfsdk:"hide_watermark"`
-	MinorNotificationHours         types.Int64                  `tfsdk:"minor_notification_hours"`
-	MajorNotificationHours         types.Int64                  `tfsdk:"major_notification_hours"`
-	MaintenanceNotificationHours   types.Int64                  `tfsdk:"maintenance_notification_hours"`
-	HistoryLimitDays               types.Int64                  `tfsdk:"history_limit_days"`
-	CustomIncidentTypesEnabled     types.Bool                   `tfsdk:"custom_incident_types_enabled"`
-	InfoNoticesEnabled             types.Bool                   `tfsdk:"info_notices_enabled"`
-	LockedWhenMaintenance          types.Bool                   `tfsdk:"locked_when_maintenance"`
-	Noindex                        types.Bool                   `tfsdk:"noindex"`
-	EnableAutoTranslations         types.Bool                   `tfsdk:"enable_auto_translations"`
-	CaptchaEnabled                 types.Bool                   `tfsdk:"captcha_enabled"`
-	Translations                   statusPagesTranslationsModel `tfsdk:"translations"`
-	HeaderLogoText                 types.String                 `tfsdk:"header_logo_text"`
-	PublicCompanyName              types.String                 `tfsdk:"public_company_name"`
-	BgImage                        types.String                 `tfsdk:"bg_image"`
-	Logo                           types.String                 `tfsdk:"logo"`
-	Favicon                        types.String                 `tfsdk:"favicon"`
-	DisplayUptimeGraph             types.Bool                   `tfsdk:"display_uptime_graph"`
-	UptimeGraphDays                types.Int64                  `tfsdk:"uptime_graph_days"`
-	CurrentIncidentsPosition       types.String                 `tfsdk:"current_incidents_position"`
-	ThemeSelected                  types.String                 `tfsdk:"theme_selected"`
-	ThemeConfigs                   statusPagesThemeConfigsModel `tfsdk:"theme_configs"`
-	LinkColor                      types.String                 `tfsdk:"link_color"`
-	HeaderBgColor1                 types.String                 `tfsdk:"header_bg_color1"`
-	HeaderBgColor2                 types.String                 `tfsdk:"header_bg_color2"`
-	HeaderFgColor                  types.String                 `tfsdk:"header_fg_color"`
-	IncidentHeaderColor            types.String                 `tfsdk:"incident_header_color"`
-	IncidentLinkColor              types.String                 `tfsdk:"incident_link_color"`
-	StatusOkColor                  types.String                 `tfsdk:"status_ok_color"`
-	StatusMinorColor               types.String                 `tfsdk:"status_minor_color"`
-	StatusMajorColor               types.String                 `tfsdk:"status_major_color"`
-	StatusMaintenanceColor         types.String                 `tfsdk:"status_maintenance_color"`
-	CustomCss                      types.String                 `tfsdk:"custom_css"`
-	CustomHeader                   types.String                 `tfsdk:"custom_header"`
-	CustomFooter                   types.String                 `tfsdk:"custom_footer"`
-	NotifyByDefault                types.Bool                   `tfsdk:"notify_by_default"`
-	TweetByDefault                 types.Bool                   `tfsdk:"tweet_by_default"`
-	SlackSubscriptionsEnabled      types.Bool                   `tfsdk:"slack_subscriptions_enabled"`
-	DiscordNotificationsEnabled    types.Bool                   `tfsdk:"discord_notifications_enabled"`
-	TeamsNotificationsEnabled      types.Bool                   `tfsdk:"teams_notifications_enabled"`
-	GoogleChatNotificationsEnabled types.Bool                   `tfsdk:"google_chat_notifications_enabled"`
-	MattermostNotificationsEnabled types.Bool                   `tfsdk:"mattermost_notifications_enabled"`
-	SmsNotificationsEnabled        types.Bool                   `tfsdk:"sms_notifications_enabled"`
-	FeedEnabled                    types.Bool                   `tfsdk:"feed_enabled"`
-	CalendarEnabled                types.Bool                   `tfsdk:"calendar_enabled"`
-	GoogleCalendarEnabled          types.Bool                   `tfsdk:"google_calendar_enabled"`
-	SubscribersEnabled             types.Bool                   `tfsdk:"subscribers_enabled"`
-	NotificationEmail              types.String                 `tfsdk:"notification_email"`
-	ReplyToEmail                   types.String                 `tfsdk:"reply_to_email"`
-	TweetingEnabled                types.Bool                   `tfsdk:"tweeting_enabled"`
-	EmailLayoutTemplate            types.String                 `tfsdk:"email_layout_template"`
-	EmailConfirmationTemplate      types.String                 `tfsdk:"email_confirmation_template"`
-	EmailNotificationTemplate      types.String                 `tfsdk:"email_notification_template"`
-	EmailTemplatesEnabled          types.Bool                   `tfsdk:"email_templates_enabled"`
-	ZoomNotificationsEnabled       types.Bool                   `tfsdk:"zoom_notifications_enabled"`
-	AllowedEmailDomains            types.String                 `tfsdk:"allowed_email_domains"`
-	InsertedAt                     types.String                 `tfsdk:"inserted_at"`
-	UpdatedAt                      types.String                 `tfsdk:"updated_at"`
-}
-
-type statusPagesThemeConfigsModel struct {
-	LinkColor              types.String `tfsdk:"link_color"`
-	HeaderBgColor1         types.String `tfsdk:"header_bg_color1"`
-	HeaderBgColor2         types.String `tfsdk:"header_bg_color2"`
-	HeaderFgColor          types.String `tfsdk:"header_fg_color"`
-	IncidentHeaderColor    types.String `tfsdk:"incident_header_color"`
-	StatusOkColor          types.String `tfsdk:"status_ok_color"`
-	StatusMinorColor       types.String `tfsdk:"status_minor_color"`
-	StatusMajorColor       types.String `tfsdk:"status_major_color"`
-	StatusMaintenanceColor types.String `tfsdk:"status_maintenance_color"`
-}
-
-type statusPagesTranslationsModel map[string]statusPagesTranslationModel
-
-type statusPagesTranslationModel struct {
-	PublicCompanyName types.String `tfsdk:"public_company_name"`
-	HeaderLogoText    types.String `tfsdk:"header_logo_text"`
+	Name                           types.String `tfsdk:"name"`
+	Url                            types.String `tfsdk:"url"`
+	TimeZone                       types.String `tfsdk:"time_zone"`
+	Subdomain                      types.String `tfsdk:"subdomain"`
+	SupportEmail                   types.String `tfsdk:"support_email"`
+	TwitterPublicScreenName        types.String `tfsdk:"twitter_public_screen_name"`
+	About                          types.String `tfsdk:"about"`
+	DisplayAbout                   types.Bool   `tfsdk:"display_about"`
+	CustomDomainEnabled            types.Bool   `tfsdk:"custom_domain_enabled"`
+	Domain                         types.String `tfsdk:"domain"`
+	RestrictedIps                  types.String `tfsdk:"restricted_ips"`
+	MemberRestricted               types.Bool   `tfsdk:"member_restricted"`
+	ScheduledMaintenanceDays       types.Int64  `tfsdk:"scheduled_maintenance_days"`
+	CustomJs                       types.String `tfsdk:"custom_js"`
+	HeadCode                       types.String `tfsdk:"head_code"`
+	DateFormat                     types.String `tfsdk:"date_format"`
+	TimeFormat                     types.String `tfsdk:"time_format"`
+	DateFormatEnforceEverywhere    types.Bool   `tfsdk:"date_format_enforce_everywhere"`
+	DisplayCalendar                types.Bool   `tfsdk:"display_calendar"`
+	HideWatermark                  types.Bool   `tfsdk:"hide_watermark"`
+	MinorNotificationHours         types.Int64  `tfsdk:"minor_notification_hours"`
+	MajorNotificationHours         types.Int64  `tfsdk:"major_notification_hours"`
+	MaintenanceNotificationHours   types.Int64  `tfsdk:"maintenance_notification_hours"`
+	HistoryLimitDays               types.Int64  `tfsdk:"history_limit_days"`
+	CustomIncidentTypesEnabled     types.Bool   `tfsdk:"custom_incident_types_enabled"`
+	InfoNoticesEnabled             types.Bool   `tfsdk:"info_notices_enabled"`
+	LockedWhenMaintenance          types.Bool   `tfsdk:"locked_when_maintenance"`
+	Noindex                        types.Bool   `tfsdk:"noindex"`
+	EnableAutoTranslations         types.Bool   `tfsdk:"enable_auto_translations"`
+	CaptchaEnabled                 types.Bool   `tfsdk:"captcha_enabled"`
+	Translations                   types.Map    `tfsdk:"translations"`
+	HeaderLogoText                 types.String `tfsdk:"header_logo_text"`
+	PublicCompanyName              types.String `tfsdk:"public_company_name"`
+	BgImage                        types.String `tfsdk:"bg_image"`
+	Logo                           types.String `tfsdk:"logo"`
+	Favicon                        types.String `tfsdk:"favicon"`
+	DisplayUptimeGraph             types.Bool   `tfsdk:"display_uptime_graph"`
+	UptimeGraphDays                types.Int64  `tfsdk:"uptime_graph_days"`
+	CurrentIncidentsPosition       types.String `tfsdk:"current_incidents_position"`
+	ThemeSelected                  types.String `tfsdk:"theme_selected"`
+	LinkColor                      types.String `tfsdk:"link_color"`
+	HeaderBgColor1                 types.String `tfsdk:"header_bg_color1"`
+	HeaderBgColor2                 types.String `tfsdk:"header_bg_color2"`
+	HeaderFgColor                  types.String `tfsdk:"header_fg_color"`
+	IncidentHeaderColor            types.String `tfsdk:"incident_header_color"`
+	IncidentLinkColor              types.String `tfsdk:"incident_link_color"`
+	StatusOkColor                  types.String `tfsdk:"status_ok_color"`
+	StatusMinorColor               types.String `tfsdk:"status_minor_color"`
+	StatusMajorColor               types.String `tfsdk:"status_major_color"`
+	StatusMaintenanceColor         types.String `tfsdk:"status_maintenance_color"`
+	CustomCss                      types.String `tfsdk:"custom_css"`
+	CustomHeader                   types.String `tfsdk:"custom_header"`
+	CustomFooter                   types.String `tfsdk:"custom_footer"`
+	NotifyByDefault                types.Bool   `tfsdk:"notify_by_default"`
+	TweetByDefault                 types.Bool   `tfsdk:"tweet_by_default"`
+	SlackSubscriptionsEnabled      types.Bool   `tfsdk:"slack_subscriptions_enabled"`
+	DiscordNotificationsEnabled    types.Bool   `tfsdk:"discord_notifications_enabled"`
+	TeamsNotificationsEnabled      types.Bool   `tfsdk:"teams_notifications_enabled"`
+	GoogleChatNotificationsEnabled types.Bool   `tfsdk:"google_chat_notifications_enabled"`
+	MattermostNotificationsEnabled types.Bool   `tfsdk:"mattermost_notifications_enabled"`
+	SmsNotificationsEnabled        types.Bool   `tfsdk:"sms_notifications_enabled"`
+	ZoomNotificationsEnabled       types.Bool   `tfsdk:"zoom_notifications_enabled"`
+	FeedEnabled                    types.Bool   `tfsdk:"feed_enabled"`
+	CalendarEnabled                types.Bool   `tfsdk:"calendar_enabled"`
+	GoogleCalendarEnabled          types.Bool   `tfsdk:"google_calendar_enabled"`
+	SubscribersEnabled             types.Bool   `tfsdk:"subscribers_enabled"`
+	NotificationEmail              types.String `tfsdk:"notification_email"`
+	ReplyToEmail                   types.String `tfsdk:"reply_to_email"`
+	TweetingEnabled                types.Bool   `tfsdk:"tweeting_enabled"`
+	EmailLayoutTemplate            types.String `tfsdk:"email_layout_template"`
+	EmailConfirmationTemplate      types.String `tfsdk:"email_confirmation_template"`
+	EmailNotificationTemplate      types.String `tfsdk:"email_notification_template"`
+	EmailTemplatesEnabled          types.Bool   `tfsdk:"email_templates_enabled"`
+	AllowedEmailDomains            types.String `tfsdk:"allowed_email_domains"`
+	InsertedAt                     types.String `tfsdk:"inserted_at"`
+	UpdatedAt                      types.String `tfsdk:"updated_at"`
 }
 
 // Metadata returns the data source type name.
@@ -345,21 +325,6 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: `The selected theme for state page, it can be "default" and "big-logo".`,
 							Computed:    true,
 						},
-						"theme_configs": schema.ObjectAttribute{
-							Description: "Theme configuration for the status page.",
-							Computed:    true,
-							AttributeTypes: map[string]attr.Type{
-								"link_color":               types.StringType,
-								"header_bg_color1":         types.StringType,
-								"header_bg_color2":         types.StringType,
-								"header_fg_color":          types.StringType,
-								"incident_header_color":    types.StringType,
-								"status_ok_color":          types.StringType,
-								"status_minor_color":       types.StringType,
-								"status_major_color":       types.StringType,
-								"status_maintenance_color": types.StringType,
-							},
-						},
 						"link_color": schema.StringAttribute{
 							Description: "The links color in the status page.",
 							Computed:    true,
@@ -444,6 +409,10 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "Allow your customers to receive SMS notifications on your status page's status (to enable this you need to have a Twilio or Esendex integration).",
 							Computed:    true,
 						},
+						"zoom_notifications_enabled": schema.BoolAttribute{
+							Description: "Allow your customers to receive notifications on Zoom.",
+							Computed:    true,
+						},
 						"feed_enabled": schema.BoolAttribute{
 							Description: "Allow your customers to receive updates as RSS and Atom feeds.",
 							Computed:    true,
@@ -488,12 +457,8 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Description: "The templates won't be used until this is enabled, but you can send test emails.",
 							Computed:    true,
 						},
-						"zoom_notifications_enabled": schema.BoolAttribute{
-							Description: "Allow your customers to receive notifications on Zoom.",
-							Computed:    true,
-						},
 						"allowed_email_domains": schema.StringAttribute{
-							Description: "Allowed email domains. Each domain should be separated by \\n (e.g., 'acme.corp\\nnapster.com')",
+							Description: "Users with these domains in their email address will be able to sign up via status page invite link. Each domain should be separated by `\\n` (e.g., `acme.corp\\nnapster.com`).",
 							Computed:    true,
 						},
 						"inserted_at": schema.StringAttribute{
@@ -515,8 +480,8 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	// Retrieve values from config
 	var state statusPagesDataSourceModel
-	diags := req.Config.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	diagnostics := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diagnostics...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -533,67 +498,83 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	// Map response body to model
 	for _, statusPage := range *statusPages {
-		// Create the translationData object dynamically
-		translationData := make(statusPagesTranslationsModel)
-		for lang, data := range statusPage.Translations {
-			translationData[lang] = statusPagesTranslationModel{
-				PublicCompanyName: types.StringValue(data.PublicCompanyName),
-				HeaderLogoText:    types.StringValue(data.HeaderLogoText),
+		// Define the translation object schema
+		translationSchema := map[string]attr.Type{
+			"public_company_name": types.StringType,
+			"header_logo_text":    types.StringType,
+		}
+		translations := types.MapNull(types.ObjectType{AttrTypes: translationSchema})
+		if len(statusPage.Translations) > 0 {
+			// Create the translationData object dynamically
+			translationData := make(map[string]attr.Value)
+			for lang, data := range statusPage.Translations {
+				translationObject, diags := types.ObjectValue(
+					translationSchema,
+					map[string]attr.Value{
+						"public_company_name": types.StringValue(data.PublicCompanyName),
+						"header_logo_text":    types.StringValue(data.HeaderLogoText),
+					},
+				)
+				translationData[lang] = translationObject
+				diagnostics.Append(diags...)
+				if diagnostics.HasError() {
+					return
+				}
 			}
+			// Create the translations map
+			convertedTranslations, diags := types.MapValue(
+				types.ObjectType{AttrTypes: translationSchema},
+				translationData,
+			)
+			diagnostics.Append(diags...)
+			if diagnostics.HasError() {
+				return
+			}
+
+			translations = convertedTranslations
 		}
 
 		statusPageState := statusPagesModel{
-			Name:                         types.StringValue(statusPage.Name),
-			Url:                          types.StringValue(statusPage.Url),
-			TimeZone:                     types.StringValue(statusPage.TimeZone),
-			Subdomain:                    types.StringValue(statusPage.Subdomain),
-			SupportEmail:                 types.StringValue(statusPage.SupportEmail),
-			TwitterPublicScreenName:      types.StringValue(statusPage.TwitterPublicScreenName),
-			About:                        types.StringValue(statusPage.About),
-			DisplayAbout:                 types.BoolValue(statusPage.DisplayAbout),
-			CustomDomainEnabled:          types.BoolValue(statusPage.CustomDomainEnabled),
-			Domain:                       types.StringValue(statusPage.Domain),
-			RestrictedIps:                types.StringValue(statusPage.RestrictedIps),
-			MemberRestricted:             types.BoolValue(statusPage.MemberRestricted),
-			ScheduledMaintenanceDays:     types.Int64Value(statusPage.ScheduledMaintenanceDays),
-			CustomJs:                     types.StringValue(statusPage.CustomJs),
-			HeadCode:                     types.StringValue(statusPage.HeadCode),
-			DateFormat:                   types.StringValue(statusPage.DateFormat),
-			TimeFormat:                   types.StringValue(statusPage.TimeFormat),
-			DateFormatEnforceEverywhere:  types.BoolValue(statusPage.DateFormatEnforceEverywhere),
-			DisplayCalendar:              types.BoolValue(statusPage.DisplayCalendar),
-			HideWatermark:                types.BoolValue(statusPage.HideWatermark),
-			MinorNotificationHours:       types.Int64Value(statusPage.MinorNotificationHours),
-			MajorNotificationHours:       types.Int64Value(statusPage.MajorNotificationHours),
-			MaintenanceNotificationHours: types.Int64Value(statusPage.MaintenanceNotificationHours),
-			HistoryLimitDays:             types.Int64Value(statusPage.HistoryLimitDays),
-			CustomIncidentTypesEnabled:   types.BoolValue(statusPage.CustomIncidentTypesEnabled),
-			InfoNoticesEnabled:           types.BoolValue(statusPage.InfoNoticesEnabled),
-			LockedWhenMaintenance:        types.BoolValue(statusPage.LockedWhenMaintenance),
-			Noindex:                      types.BoolValue(statusPage.Noindex),
-			EnableAutoTranslations:       types.BoolValue(statusPage.EnableAutoTranslations),
-			CaptchaEnabled:               types.BoolValue(statusPage.CaptchaEnabled),
-			Translations:                 translationData,
-			HeaderLogoText:               types.StringValue(statusPage.HeaderLogoText),
-			PublicCompanyName:            types.StringValue(statusPage.PublicCompanyName),
-			BgImage:                      types.StringValue(statusPage.BgImage),
-			Logo:                         types.StringValue(statusPage.Logo),
-			Favicon:                      types.StringValue(statusPage.Favicon),
-			DisplayUptimeGraph:           types.BoolValue(statusPage.DisplayUptimeGraph),
-			UptimeGraphDays:              types.Int64Value(statusPage.UptimeGraphDays),
-			CurrentIncidentsPosition:     types.StringValue(statusPage.CurrentIncidentsPosition),
-			ThemeSelected:                types.StringValue(statusPage.ThemeSelected),
-			ThemeConfigs: statusPagesThemeConfigsModel{
-				LinkColor:              types.StringValue(statusPage.ThemeConfigs.LinkColor),
-				HeaderBgColor1:         types.StringValue(statusPage.ThemeConfigs.HeaderBgColor1),
-				HeaderBgColor2:         types.StringValue(statusPage.ThemeConfigs.HeaderBgColor2),
-				HeaderFgColor:          types.StringValue(statusPage.ThemeConfigs.HeaderFgColor),
-				IncidentHeaderColor:    types.StringValue(statusPage.ThemeConfigs.IncidentHeaderColor),
-				StatusOkColor:          types.StringValue(statusPage.ThemeConfigs.StatusOkColor),
-				StatusMinorColor:       types.StringValue(statusPage.ThemeConfigs.StatusMinorColor),
-				StatusMajorColor:       types.StringValue(statusPage.ThemeConfigs.StatusMajorColor),
-				StatusMaintenanceColor: types.StringValue(statusPage.ThemeConfigs.StatusMaintenanceColor),
-			},
+			Name:                           types.StringValue(statusPage.Name),
+			Url:                            types.StringValue(statusPage.Url),
+			TimeZone:                       types.StringValue(statusPage.TimeZone),
+			Subdomain:                      types.StringValue(statusPage.Subdomain),
+			SupportEmail:                   types.StringValue(statusPage.SupportEmail),
+			TwitterPublicScreenName:        types.StringValue(statusPage.TwitterPublicScreenName),
+			About:                          types.StringValue(statusPage.About),
+			DisplayAbout:                   types.BoolValue(statusPage.DisplayAbout),
+			CustomDomainEnabled:            types.BoolValue(statusPage.CustomDomainEnabled),
+			Domain:                         types.StringValue(statusPage.Domain),
+			RestrictedIps:                  types.StringValue(statusPage.RestrictedIps),
+			MemberRestricted:               types.BoolValue(statusPage.MemberRestricted),
+			ScheduledMaintenanceDays:       types.Int64Value(statusPage.ScheduledMaintenanceDays),
+			CustomJs:                       types.StringValue(statusPage.CustomJs),
+			HeadCode:                       types.StringValue(statusPage.HeadCode),
+			DateFormat:                     types.StringValue(statusPage.DateFormat),
+			TimeFormat:                     types.StringValue(statusPage.TimeFormat),
+			DateFormatEnforceEverywhere:    types.BoolValue(statusPage.DateFormatEnforceEverywhere),
+			DisplayCalendar:                types.BoolValue(statusPage.DisplayCalendar),
+			HideWatermark:                  types.BoolValue(statusPage.HideWatermark),
+			MinorNotificationHours:         types.Int64Value(statusPage.MinorNotificationHours),
+			MajorNotificationHours:         types.Int64Value(statusPage.MajorNotificationHours),
+			MaintenanceNotificationHours:   types.Int64Value(statusPage.MaintenanceNotificationHours),
+			HistoryLimitDays:               types.Int64Value(statusPage.HistoryLimitDays),
+			CustomIncidentTypesEnabled:     types.BoolValue(statusPage.CustomIncidentTypesEnabled),
+			InfoNoticesEnabled:             types.BoolValue(statusPage.InfoNoticesEnabled),
+			LockedWhenMaintenance:          types.BoolValue(statusPage.LockedWhenMaintenance),
+			Noindex:                        types.BoolValue(statusPage.Noindex),
+			EnableAutoTranslations:         types.BoolValue(statusPage.EnableAutoTranslations),
+			CaptchaEnabled:                 types.BoolValue(statusPage.CaptchaEnabled),
+			Translations:                   translations,
+			HeaderLogoText:                 types.StringValue(statusPage.HeaderLogoText),
+			PublicCompanyName:              types.StringValue(statusPage.PublicCompanyName),
+			BgImage:                        types.StringValue(statusPage.BgImage),
+			Logo:                           types.StringValue(statusPage.Logo),
+			Favicon:                        types.StringValue(statusPage.Favicon),
+			DisplayUptimeGraph:             types.BoolValue(statusPage.DisplayUptimeGraph),
+			UptimeGraphDays:                types.Int64Value(statusPage.UptimeGraphDays),
+			CurrentIncidentsPosition:       types.StringValue(statusPage.CurrentIncidentsPosition),
+			ThemeSelected:                  types.StringValue(statusPage.ThemeSelected),
 			LinkColor:                      types.StringValue(statusPage.LinkColor),
 			HeaderBgColor1:                 types.StringValue(statusPage.HeaderBgColor1),
 			HeaderBgColor2:                 types.StringValue(statusPage.HeaderBgColor2),
@@ -637,8 +618,8 @@ func (d *statusPagesDataSource) Read(ctx context.Context, req datasource.ReadReq
 	state.ID = types.StringValue("placeholder") // only for test case
 
 	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	diagnostics = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diagnostics...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
