@@ -274,6 +274,7 @@ func (p *statuspalProvider) Resources(_ context.Context) []func() resource.Resou
 	return []func() resource.Resource{
 		NewStatusPageResource,
 		NewServiceResource,
+		NewMetricResource,
 	}
 }
 
