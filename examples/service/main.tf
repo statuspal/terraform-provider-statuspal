@@ -10,6 +10,7 @@ terraform {
 
 provider "statuspal" {
   api_key = "uk_aERPQU1kUzUrRmplaXJRMlc2TDEwZz09"
+  region  = "US" // "US" or "EU"
 }
 
 resource "statuspal_service" "edu" {
