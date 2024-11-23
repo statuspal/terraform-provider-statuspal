@@ -30,3 +30,11 @@ resource "statuspal_metric" "example" {
     type  = "rt"
   }
 }
+
+data "statuspal_metrics" "example" {
+  status_page_subdomain = statuspal_status_page.example.status_page.subdomain
+}
+
+output "example_statuspal_metrics" {
+  value = data.statuspal_metrics.example.metrics[0].title
+}

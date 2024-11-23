@@ -266,6 +266,7 @@ func (p *statuspalProvider) DataSources(_ context.Context) []func() datasource.D
 	return []func() datasource.DataSource{
 		NewStatusPagesDataSource,
 		NewServicesDataSource,
+		NewMetricsDataSource,
 	}
 }
 
