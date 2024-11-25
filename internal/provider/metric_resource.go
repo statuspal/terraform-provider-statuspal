@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
@@ -284,8 +285,24 @@ func (r *MetricResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-func (r *MetricResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+func (r *MetricResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	parts := strings.Split(req.ID, " ")
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError(
+			"Unexpected StatusPal Metric Import Identifier",
+			`Expected StatusPal metric import identifier with format: "<status_page_subdomain> <metric_id>"`,
+		)
+		return
+	}
+
+	req.ID = parts[0]
+	resource.ImportStatePassthroughID(ctx, path.Root("status_page_subdomain"), req, resp)
+	req.ID = parts[1]
+	resource.ImportStatePassthroughID(ctx, path.Root("metric").AtName("id"), req, resp)
 }
 
 func mapMetricToResourceModel(metric *statuspal.Metric, data *MetricResourceModel) {
