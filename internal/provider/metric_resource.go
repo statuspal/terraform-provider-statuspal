@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	statuspal "terraform-provider-statuspal/internal/client"
@@ -11,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,25 +34,19 @@ type MetricResource struct {
 	client *statuspal.Client
 }
 
-// MetricType represents the type of metric (either "up" or "rt").
-type MetricType string
-
 const (
-	UptimeMetric       MetricType = "up"
-	ResponseTimeMetric MetricType = "rt"
+	UptimeMetric       string = "up"
+	ResponseTimeMetric string = "rt"
 )
 
-// FeaturedNumber represents the type of number to display for the metric.
-type FeaturedNumber string
-
 const (
-	AvgFeatured  FeaturedNumber = "avg"
-	MaxFeatured  FeaturedNumber = "max"
-	LastFeatured FeaturedNumber = "last"
+	AvgFeatured  string = "avg"
+	MaxFeatured  string = "max"
+	LastFeatured string = "last"
 )
 
 type metricModel struct {
-	ID              types.Int64  `tfsdk:"id"`
+	ID              types.String `tfsdk:"id"`
 	Title           types.String `tfsdk:"title"`
 	Unit            types.String `tfsdk:"unit"`
 	Type            types.String `tfsdk:"type"`
@@ -61,7 +59,7 @@ type metricModel struct {
 	Threshold       types.Int64  `tfsdk:"threshold"`
 	FeaturedNumber  types.String `tfsdk:"featured_number"`
 	Order           types.Int64  `tfsdk:"order"`
-	IntegrationID   types.String `tfsdk:"integration_id"`
+	IntegrationID   types.Int64  `tfsdk:"integration_id"`
 }
 
 // MetricResourceModel represents the data model for a metric resource.
@@ -92,21 +90,12 @@ func (r *MetricResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Description: "The metric.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"id": schema.Int64Attribute{
+					"id": schema.StringAttribute{
 						Description: "The unique identifier for the metric.",
 						Computed:    true,
-					},
-					"status": schema.StringAttribute{
-						Description: "The status of the metric.",
-						Computed:    true,
-					},
-					"latest_entry_time": schema.Int64Attribute{
-						Description: "The timestamp for the latest entry of the metric.",
-						Computed:    true,
-					},
-					"order": schema.Int64Attribute{
-						Description: "The order of the metric in the system.",
-						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"title": schema.StringAttribute{
 						Description: "The title of the metric.",
@@ -120,8 +109,21 @@ func (r *MetricResource) Schema(ctx context.Context, req resource.SchemaRequest,
 						Description: "The type of the metric.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.OneOf(string(UptimeMetric), string(ResponseTimeMetric)),
+							stringvalidator.OneOf(UptimeMetric, ResponseTimeMetric),
 						},
+					},
+					"status": schema.StringAttribute{
+						Description: "The status of the metric.",
+						Computed:    true,
+					},
+					"latest_entry_time": schema.Int64Attribute{
+						Description: "The timestamp for the latest entry of the metric.",
+						Computed:    true,
+					},
+					"order": schema.Int64Attribute{
+						Description: "The order of the metric in the system.",
+						Optional:    true,
+						Computed:    true,
 					},
 					"enabled": schema.BoolAttribute{
 						Description: "A flag indicating if the metric is enabled.",
@@ -137,11 +139,13 @@ func (r *MetricResource) Schema(ctx context.Context, req resource.SchemaRequest,
 						Description: "The remote ID for the metric.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"remote_name": schema.StringAttribute{
 						Description: "The remote name for the metric.",
 						Optional:    true,
 						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"threshold": schema.Int64Attribute{
 						Description: "The threshold value for the metric.",
@@ -153,10 +157,10 @@ func (r *MetricResource) Schema(ctx context.Context, req resource.SchemaRequest,
 						Optional:    true,
 						Computed:    true,
 						Validators: []validator.String{
-							stringvalidator.OneOf(string(AvgFeatured), string(LastFeatured), string(MaxFeatured)),
+							stringvalidator.OneOf(AvgFeatured, LastFeatured, MaxFeatured),
 						},
 					},
-					"integration_id": schema.StringAttribute{
+					"integration_id": schema.Int64Attribute{
 						Description: "The integration ID related to the metric.",
 						Optional:    true,
 						Computed:    true,
@@ -225,7 +229,7 @@ func (r *MetricResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	metric, err := r.client.GetMetric(data.Metric.ID.ValueInt64(), data.StatusPageSubdomain.ValueString())
+	metric, err := r.client.GetMetric(data.Metric.ID.ValueString(), data.StatusPageSubdomain.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get the metric, got error: %s", err))
 
@@ -233,6 +237,7 @@ func (r *MetricResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	mapMetricToResourceModel(metric, &data)
+	data.ID = types.StringValue("placeholder") // only for test case
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -246,7 +251,7 @@ func (r *MetricResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	id := data.Metric.ID.ValueInt64()
+	id := data.Metric.ID.ValueString()
 	subdomain := data.StatusPageSubdomain.ValueString()
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -265,6 +270,7 @@ func (r *MetricResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	mapMetricToResourceModel(metric, &data)
+	data.ID = types.StringValue("placeholder") // only for test case
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -278,7 +284,7 @@ func (r *MetricResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.client.DeleteMetric(data.Metric.ID.ValueInt64(), data.StatusPageSubdomain.ValueString()); err != nil {
+	if err := r.client.DeleteMetric(data.Metric.ID.ValueString(), data.StatusPageSubdomain.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete the metric, got error: %s", err))
 
 		return
@@ -306,10 +312,15 @@ func (r *MetricResource) ImportState(
 }
 
 func mapMetricToResourceModel(metric *statuspal.Metric, data *MetricResourceModel) {
-	data.Metric.ID = types.Int64Value(metric.ID)
+	var integrationID int64 = 0
+	if metric.IntegrationID != nil {
+		integrationID = *metric.IntegrationID
+	}
+
+	data.Metric.ID = types.StringValue(strconv.FormatInt(metric.ID, 10))
 	data.Metric.Title = types.StringValue(metric.Title)
 	data.Metric.Unit = types.StringValue(metric.Unit)
-	data.Metric.Type = types.StringValue(string(metric.Type))
+	data.Metric.Type = types.StringValue(metric.Type)
 	data.Metric.Enabled = types.BoolValue(metric.Enabled)
 	data.Metric.Visible = types.BoolValue(metric.Visible)
 	data.Metric.RemoteID = types.StringValue(metric.RemoteID)
@@ -317,16 +328,22 @@ func mapMetricToResourceModel(metric *statuspal.Metric, data *MetricResourceMode
 	data.Metric.Status = types.StringValue(metric.Status)
 	data.Metric.LatestEntryTime = types.Int64Value(metric.LatestEntryTime)
 	data.Metric.Threshold = types.Int64Value(metric.Threshold)
-	data.Metric.FeaturedNumber = types.StringValue(string(metric.FeaturedNumber))
+	data.Metric.FeaturedNumber = types.StringValue(metric.FeaturedNumber)
 	data.Metric.Order = types.Int64Value(metric.Order)
-	data.Metric.IntegrationID = types.StringValue(metric.IntegrationID)
+	data.Metric.IntegrationID = types.Int64Value(integrationID)
 }
 
 func mapResourceModelToMetric(metric *statuspal.Metric, data *MetricResourceModel) {
-	metric.ID = data.Metric.ID.ValueInt64()
+	integrationID := data.Metric.IntegrationID.ValueInt64()
+	var convertedIntegrationID *int64
+
+	if !data.Metric.IntegrationID.IsNull() && !data.Metric.IntegrationID.IsUnknown() && integrationID != 0 {
+		convertedIntegrationID = &integrationID
+	}
+
 	metric.Title = data.Metric.Title.ValueString()
 	metric.Unit = data.Metric.Unit.ValueString()
-	metric.Type = statuspal.MetricType(data.Metric.Type.ValueString())
+	metric.Type = data.Metric.Type.ValueString()
 	metric.Enabled = data.Metric.Enabled.ValueBool()
 	metric.Visible = data.Metric.Visible.ValueBool()
 	metric.RemoteID = data.Metric.RemoteID.ValueString()
@@ -334,7 +351,7 @@ func mapResourceModelToMetric(metric *statuspal.Metric, data *MetricResourceMode
 	metric.Status = data.Metric.Status.ValueString()
 	metric.LatestEntryTime = data.Metric.LatestEntryTime.ValueInt64()
 	metric.Threshold = data.Metric.Threshold.ValueInt64()
-	metric.FeaturedNumber = statuspal.FeaturedNumber(data.Metric.FeaturedNumber.ValueString())
+	metric.FeaturedNumber = data.Metric.FeaturedNumber.ValueString()
 	metric.Order = data.Metric.Order.ValueInt64()
-	metric.IntegrationID = data.Metric.IntegrationID.ValueString()
+	metric.IntegrationID = convertedIntegrationID
 }

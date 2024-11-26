@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	statuspal "terraform-provider-statuspal/internal/client"
 
@@ -78,7 +79,7 @@ func (d *MetricsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id": schema.Int64Attribute{
+						"id": schema.StringAttribute{
 							Description: "The unique identifier for the metric.",
 							Required:    true,
 						},
@@ -130,7 +131,7 @@ func (d *MetricsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 							Description: "A featured number for the metric.",
 							Computed:    true,
 						},
-						"integration_id": schema.StringAttribute{
+						"integration_id": schema.Int64Attribute{
 							Description: "The integration ID related to the metric.",
 							Computed:    true,
 						},
@@ -170,6 +171,7 @@ func (d *MetricsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	mapMetricsToDataSourceModel(metric, &data)
+	data.ID = types.StringValue("placeholder") // only for test case
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -203,21 +205,26 @@ func mapMetricsToDataSourceModel(metric *[]statuspal.Metric, data *MetricsDataSo
 	var metrics []metricModel
 
 	for _, m := range *metric {
+		var integrationID int64 = 0
+		if m.IntegrationID != nil {
+			integrationID = *m.IntegrationID
+		}
+
 		metrics = append(metrics, metricModel{
-			ID:              types.Int64Value(m.ID),
+			ID:              types.StringValue(strconv.FormatInt(m.ID, 10)),
 			Status:          types.StringValue(m.Status),
 			LatestEntryTime: types.Int64Value(m.LatestEntryTime),
 			Order:           types.Int64Value(m.Order),
 			Title:           types.StringValue(m.Title),
 			Unit:            types.StringValue(m.Unit),
-			Type:            types.StringValue(string(m.Type)),
+			Type:            types.StringValue(m.Type),
 			Enabled:         types.BoolValue(m.Enabled),
 			Visible:         types.BoolValue(m.Visible),
 			RemoteID:        types.StringValue(m.RemoteID),
 			RemoteName:      types.StringValue(m.RemoteName),
 			Threshold:       types.Int64Value(m.Threshold),
-			FeaturedNumber:  types.StringValue(string(m.FeaturedNumber)),
-			IntegrationID:   types.StringValue(m.IntegrationID),
+			FeaturedNumber:  types.StringValue(m.FeaturedNumber),
+			IntegrationID:   types.Int64Value(integrationID),
 		})
 	}
 

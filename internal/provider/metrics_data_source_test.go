@@ -12,6 +12,8 @@ import (
 )
 
 func TestAccMetricsDataSource(t *testing.T) {
+	integrationID := int64(1)
+
 	listSingleMetric := func(w http.ResponseWriter, r *http.Request) {
 		metric := statuspal.Metric{
 			ID:              1,
@@ -21,7 +23,7 @@ func TestAccMetricsDataSource(t *testing.T) {
 			Type:            "rt",
 			Threshold:       100,
 			FeaturedNumber:  "avg",
-			IntegrationID:   "custom",
+			IntegrationID:   &integrationID,
 			LatestEntryTime: 1633000000,
 			Order:           1,
 		}
@@ -41,7 +43,7 @@ func TestAccMetricsDataSource(t *testing.T) {
 				Type:            "rt",
 				Threshold:       100,
 				FeaturedNumber:  "avg",
-				IntegrationID:   "custom",
+				IntegrationID:   &integrationID,
 				LatestEntryTime: 1633000000,
 				Order:           1,
 			},
@@ -53,7 +55,7 @@ func TestAccMetricsDataSource(t *testing.T) {
 				Type:            "gauge",
 				Threshold:       90,
 				FeaturedNumber:  "max",
-				IntegrationID:   "aws",
+				IntegrationID:   nil,
 				LatestEntryTime: 1633000100,
 				Order:           2,
 			},
@@ -105,7 +107,7 @@ data "statuspal_metrics" "test" {
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test", "metrics.0.threshold", "100"),
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test", "metrics.0.featured_number", "avg"),
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test", "metrics.0.order", "1"),
-					resource.TestCheckResourceAttr("data.statuspal_metrics.test", "metrics.0.integration_id", "custom"),
+					resource.TestCheckResourceAttr("data.statuspal_metrics.test", "metrics.0.integration_id", "1"),
 				),
 			},
 			{
@@ -120,7 +122,7 @@ data "statuspal_metrics" "test_multiple" {
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test_multiple", "metrics.1.title", "CPU Usage"),
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test_multiple", "metrics.1.unit", "%"),
 					resource.TestCheckResourceAttr("data.statuspal_metrics.test_multiple", "metrics.1.type", "gauge"),
-					resource.TestCheckResourceAttr("data.statuspal_metrics.test_multiple", "metrics.1.integration_id", "aws"),
+					resource.TestCheckResourceAttr("data.statuspal_metrics.test_multiple", "metrics.1.integration_id", "0"),
 				),
 			},
 			{

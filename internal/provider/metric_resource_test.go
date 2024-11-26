@@ -7,11 +7,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	statuspal "terraform-provider-statuspal/internal/client"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccMetricResource(t *testing.T) {
+	var integrationID int64 = 1
+
 	create := func(w http.ResponseWriter, r *http.Request) {
 		var body statuspal.MetricBody
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -28,7 +31,7 @@ func TestAccMetricResource(t *testing.T) {
 		body.Metric.Order = 1
 		body.Metric.Threshold = 100
 		body.Metric.FeaturedNumber = "avg"
-		body.Metric.IntegrationID = "custom"
+		body.Metric.IntegrationID = &integrationID
 
 		if err := json.NewEncoder(w).Encode(body); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
@@ -45,7 +48,7 @@ func TestAccMetricResource(t *testing.T) {
 			Type:           "rt",
 			Threshold:      100,
 			FeaturedNumber: "avg",
-			IntegrationID:  "custom",
+			IntegrationID:  &integrationID,
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -74,7 +77,7 @@ func TestAccMetricResource(t *testing.T) {
 			RemoteName:     "StatusPal",
 			Threshold:      100,
 			FeaturedNumber: "avg",
-			IntegrationID:  "integration-xyz",
+			IntegrationID:  nil,
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -133,7 +136,7 @@ resource "statuspal_metric" "test" {
 					resource.TestCheckResourceAttr("statuspal_metric.test", "metric.threshold", "100"),
 					resource.TestCheckResourceAttr("statuspal_metric.test", "metric.featured_number", "avg"),
 					resource.TestCheckResourceAttr("statuspal_metric.test", "metric.order", "1"),
-					resource.TestCheckResourceAttr("statuspal_metric.test", "metric.integration_id", "custom"),
+					resource.TestCheckResourceAttr("statuspal_metric.test", "metric.integration_id", "1"),
 				),
 			},
 		},

@@ -150,3 +150,21 @@ type NotificationRecipient struct {
 	ID    int64  `json:"id"`
 	Email string `json:"email"` // Add more fields as needed
 }
+
+// Metric represents a metric on the status page.
+type Metric struct {
+	ID              int64  `json:"id"`
+	Status          string `json:"status"`
+	LatestEntryTime int64  `json:"latest_entry_time"`
+	Order           int64  `json:"order"`
+	Title           string `json:"title"`
+	Unit            string `json:"unit"`
+	Type            string `json:"type"`
+	Enabled         bool   `json:"enabled"`
+	Visible         bool   `json:"visible"`
+	RemoteID        string `json:"remote_id"`
+	RemoteName      string `json:"remote_name"`
+	Threshold       int64  `json:"threshold"`
+	FeaturedNumber  string `json:"featured_number"`
+	IntegrationID   *int64 `json:"integration_id"`
+}
