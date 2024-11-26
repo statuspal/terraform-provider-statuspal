@@ -10,18 +10,14 @@ terraform {
 
 provider "statuspal" {
   api_key = "uk_aERPQU1kUzUrRmplaXJRMlc2TDEwZz09"
-  region  = "US"
+  region  = "US" // "US" or "EU"
 }
 
-resource "statuspal_metric" "edu" {
+data "statuspal_metrics" "edu" {
   status_page_subdomain = "example-com"
-  metric = {
-    title = "example"
-    unit  = "ms"
-    type  = "rt"
-  }
 }
 
-output "example_statuspal_metric" {
-  value = statuspal_metric.edu
+
+output "edu_statuspal_metrics" {
+  value = data.statuspal_metrics.edu
 }
