@@ -3,12 +3,12 @@
 page_title: "statuspal_metrics Data Source - statuspal"
 subcategory: ""
 description: |-
-  
+  Fetches the list of metrics in the status page.
 ---
 
 # statuspal_metrics (Data Source)
 
-
+Fetches the list of metrics in the status page.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "statuspal_metric Resource - statuspal"
 subcategory: ""
 description: |-
-  
+  Manages a metric of the status page.
 ---
 
 # statuspal_metric (Resource)
 
-
+Manages a metric of the status page.
 
 ## Example Usage
 
@@ -67,6 +67,6 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# Service can be imported by specifying the status page subdomain and metric ID.
+# Metric can be imported by specifying the status page subdomain and metric ID.
 terraform import statuspal_metric.example "example-com 1"
 ```

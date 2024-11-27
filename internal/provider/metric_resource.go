@@ -77,6 +77,7 @@ func (r *MetricResource) Metadata(ctx context.Context, req resource.MetadataRequ
 
 func (r *MetricResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Manages a metric of the status page.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Placeholder identifier attribute. Ignore it, only used in testing.",

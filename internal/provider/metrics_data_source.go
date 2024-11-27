@@ -43,6 +43,7 @@ func NewMetricsDataSource() datasource.DataSource {
 
 func (d *MetricsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetches the list of metrics in the status page.",
 		Blocks: map[string]schema.Block{
 			"query": schema.SingleNestedBlock{
 				Attributes: map[string]schema.Attribute{
