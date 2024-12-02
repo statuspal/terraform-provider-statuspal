@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 // Client struct.
@@ -14,6 +16,15 @@ type Client struct {
 	HTTPClient *http.Client
 	ApiKey     string
 }
+
+// RateLimit defines a limit of requests per second.
+const RateLimit = 10
+
+// BurstLimit defines a value of request that can be bursted.
+const BurstLimit = 10
+
+// RateLimiter defines the rate limit with a burst for the requests.
+var RateLimiter = rate.NewLimiter(BurstLimit, BurstLimit)
 
 // NewClient function.
 func NewClient(api_key *string, region *string, test_url *string) (*Client, error) {
@@ -47,6 +58,12 @@ func NewClient(api_key *string, region *string, test_url *string) (*Client, erro
 }
 
 func (c *Client) doRequest(req *http.Request) (*[]byte, error) {
+	if !RateLimiter.Allow() {
+		if err := RateLimiter.Wait(req.Context()); err != nil {
+			return nil, fmt.Errorf("failed to wait the time required by rate limiter: %w", err)
+		}
+	}
+
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", c.ApiKey)
