@@ -142,3 +142,109 @@ resource "statuspal_metric" "test" {
 		},
 	})
 }
+
+func TestAccMetricResource_NotFound(t *testing.T) {
+	var integrationID int64 = 1
+
+	mux := http.NewServeMux()
+
+	create := func(w http.ResponseWriter, r *http.Request) {
+		var body statuspal.MetricBody
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to decode JSON: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		body.Metric.ID = 1
+		body.Metric.Status = "active"
+		body.Metric.LatestEntryTime = 1633000000
+		body.Metric.Order = 1
+		body.Metric.Threshold = 100
+		body.Metric.FeaturedNumber = "avg"
+		body.Metric.IntegrationID = &integrationID
+
+		if err := json.NewEncoder(w).Encode(body); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	read := func(w http.ResponseWriter, r *http.Request) {
+		metric := statuspal.Metric{
+			ID:             1,
+			Status:         "active",
+			Title:          "Website Response Time",
+			Unit:           "ms",
+			Type:           "rt",
+			Threshold:      100,
+			FeaturedNumber: "avg",
+			IntegrationID:  &integrationID,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		body := statuspal.MetricBody{
+			Metric: metric,
+		}
+
+		if err := json.NewEncoder(w).Encode(body); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	notFound := func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
+	}
+
+	mux.Handle("POST /status_pages/{subdomain}/metrics", http.HandlerFunc(create))
+	mux.Handle("GET /status_pages/{subdomain}/metrics/{id}", http.HandlerFunc(read))
+	mux.Handle("DELETE /status_pages/{subdomain}/metrics/{id}", http.HandlerFunc(notFound))
+
+	mock := httptest.NewServer(mux)
+	defer mock.Close()
+
+	providerConfig := *providerConfig(&mock.URL)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "statuspal_metric" "test" {
+  status_page_subdomain = "example-com-24"
+  metric = {
+    title = "Website Response Time"
+    unit  = "ms"
+    type  = "rt"
+  }
+}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspal_metric.test", "status_page_subdomain", "example-com-24"),
+				),
+			},
+			{
+				RefreshState: true,
+				ExpectError:  nil,
+			},
+			{
+				Destroy: true,
+				Config: providerConfig + `
+resource "statuspal_metric" "test" {
+  status_page_subdomain = "example-com-24"
+  metric = {
+    title = "Website Response Time"
+    unit  = "ms"
+    type  = "rt"
+  }
+}
+				`,
+				ExpectError: nil,
+			},
+		},
+	})
+}

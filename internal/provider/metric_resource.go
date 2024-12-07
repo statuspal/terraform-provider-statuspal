@@ -230,6 +230,12 @@ func (r *MetricResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	metric, err := r.client.GetMetric(data.Metric.ID.ValueString(), data.StatusPageSubdomain.ValueString())
+	if statuspal.ErrorNotFound(err) {
+		resp.State.RemoveResource(ctx)
+
+		return
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to get the metric, got error: %s", err))
 
@@ -284,7 +290,7 @@ func (r *MetricResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if err := r.client.DeleteMetric(data.Metric.ID.ValueString(), data.StatusPageSubdomain.ValueString()); err != nil {
+	if err := r.client.DeleteMetric(data.Metric.ID.ValueString(), data.StatusPageSubdomain.ValueString()); err != nil && !statuspal.ErrorNotFound(err) {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete the metric, got error: %s", err))
 
 		return
