@@ -1,0 +1,23 @@
+name: Check Examples
+
+on:
+  pull_request:
+    paths: ['examples/**']
+  push:
+    branches: [main]
+    paths: ['examples/**']
+
+jobs:
+  check-examples:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: hashicorp/setup-terraform@v3
+    
+    - name: Terraform Format
+      run: terraform fmt -check -recursive
