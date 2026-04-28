@@ -53,7 +53,7 @@ Optional:
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
-- `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
+- `custom_domain_enabled` (Boolean, Deprecated) Enable your custom domain with SSL.
 - `custom_footer` (String) A custom footer for the status page (e.g. "`<footer>...</footer>`").
 - `custom_header` (String) A custom header for the status page (e.g. "`<header>...</header>`").
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
@@ -64,7 +64,7 @@ Optional:
 - `display_about` (Boolean) Display about information.
 - `display_calendar` (Boolean) Display uptime calendar at status page.
 - `display_uptime_graph` (Boolean) Display the uptime graph in the status page.
-- `domain` (String) Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.
+- `domain` (String, Deprecated) Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.
 - `email_confirmation_template` (String) Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_layout_template` (String) Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
