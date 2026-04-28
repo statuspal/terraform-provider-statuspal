@@ -175,12 +175,12 @@ func (d *statusPagesDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Computed:    true,
 						},
 						"custom_domain_enabled": schema.BoolAttribute{
-							Description:       "Enable your custom domain with SSL.",
+							Description:        "Enable your custom domain with SSL.",
 							DeprecationMessage: "Legacy custom domains are no longer supported. Use the CloudFlare/Bunny provider to configure custom domains instead. This attribute will be removed in a future version.",
 							Computed:           true,
 						},
 						"domain": schema.StringAttribute{
-							Description:       "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
+							Description:        "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
 							DeprecationMessage: "Legacy custom domains are no longer supported. Use the CloudFlare/Bunny provider to configure custom domains instead. This attribute will be removed in a future version.",
 							Computed:           true,
 						},
