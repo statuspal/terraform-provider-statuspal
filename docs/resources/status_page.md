@@ -132,6 +132,7 @@ Optional:
 Read-Only:
 
 - `bg_image` (String) Background image url of the status page.
+- `domain_config` (Attributes) Read-only view of the status page's custom-domain configuration when backed by Cloudflare for SaaS or Bunny CDN. Populated by the API after a domain is registered upstream. Use the nested `validation_records` to drive a DNS-provider resource (e.g. `cloudflare_record`) so a custom domain can be provisioned end-to-end with one `terraform apply`. (see [below for nested schema](#nestedatt--status_page--domain_config))
 - `favicon` (String) Favicon url of the status page.
 - `inserted_at` (String) Datetime at which the status page was inserted.
 - `logo` (String) Logo url of the status page.
@@ -144,6 +145,23 @@ Required:
 
 - `header_logo_text` (String) Displayed at the header of the status page.
 - `public_company_name` (String) Displayed at the footer of the status page.
+
+
+<a id="nestedatt--status_page--domain_config"></a>
+### Nested Schema for `status_page.domain_config`
+
+Read-Only:
+
+- `domain` (String) The custom domain (e.g. `status.your-company.com`).
+- `error` (String) Error message when `status` is `failed_to_configure`. Empty otherwise.
+- `external_id` (String) Internal identifier used by the upstream provider (Cloudflare custom_hostname id or Bunny domain). Mostly useful for debugging.
+- `main_hostname` (String) The CNAME target the user must point their domain at. Returned by Cloudflare for SaaS / Bunny once the upstream hostname is registered.
+- `previous_domain` (String) The domain that was configured before the most recent change. Useful for tracking transitions.
+- `previous_pullzone_id` (Number) The pullzone id used before the most recent change. Empty for non-Bunny providers.
+- `provider` (String) Which custom-domain backend the status page uses. One of `cloudflare`, `bunny`, or `legacy_custom_domain`. Empty when no custom domain is configured.
+- `pullzone_id` (Number) Bunny pullzone id. Empty for non-Bunny providers.
+- `status` (String) Current verification state. One of `disabled`, `configuring`, `failed_to_configure`, `active`.
+- `validation_records` (Map of String) DNS records the user must create to validate ownership and route traffic. Common keys are `hostname_cname_name`, `hostname_cname_value`, and (for Cloudflare) `hostname_txt_name` / `hostname_txt_value`. Wire these into your DNS provider's resource (e.g. `cloudflare_record`).
 
 ## Import
 

@@ -12,6 +12,7 @@ type StatusPage struct {
 	DisplayAbout                   bool                   `json:"display_about"`
 	CustomDomainEnabled            bool                   `json:"custom_domain_enabled"`
 	Domain                         string                 `json:"domain"`
+	DomainConfig                   *DomainConfig          `json:"domain_config,omitempty"`
 	RestrictedIps                  string                 `json:"restricted_ips"`
 	MemberRestricted               bool                   `json:"member_restricted"`
 	ScheduledMaintenanceDays       int64                  `json:"scheduled_maintenance_days"`
@@ -78,6 +79,24 @@ type StatusPage struct {
 	EmailTemplatesEnabled          bool                   `json:"email_templates_enabled"`
 	InsertedAt                     string                 `json:"inserted_at"`
 	UpdatedAt                      string                 `json:"updated_at"`
+}
+
+// DomainConfig is the embedded custom-domain configuration on a StatusPage.
+// Replaces the deprecated `domain` / `custom_domain_enabled` fields. Backed by
+// Cloudflare for SaaS or Bunny CDN; the API populates the read-only fields
+// (main_hostname, validation_records, status, etc.) once the upstream provider
+// has registered the hostname.
+type DomainConfig struct {
+	Provider           string            `json:"provider,omitempty"`
+	Domain             string            `json:"domain,omitempty"`
+	PreviousDomain     string            `json:"previous_domain,omitempty"`
+	MainHostname       string            `json:"main_hostname,omitempty"`
+	PullzoneID         int64             `json:"pullzone_id,omitempty"`
+	PreviousPullzoneID int64             `json:"previous_pullzone_id,omitempty"`
+	Status             string            `json:"status,omitempty"`
+	ValidationRecords  map[string]string `json:"validation_records,omitempty"`
+	ExternalID         string            `json:"external_id,omitempty"`
+	Error              string            `json:"error,omitempty"`
 }
 
 type StatusPageTranslations map[string]StatusPageTranslation
