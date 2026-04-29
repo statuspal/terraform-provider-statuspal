@@ -194,7 +194,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -324,7 +324,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
