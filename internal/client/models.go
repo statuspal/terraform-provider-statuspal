@@ -81,11 +81,6 @@ type StatusPage struct {
 	UpdatedAt                      string                 `json:"updated_at"`
 }
 
-// DomainConfig is the embedded custom-domain configuration on a StatusPage.
-// Replaces the deprecated `domain` / `custom_domain_enabled` fields. Backed by
-// Cloudflare for SaaS or Bunny CDN; the API populates the read-only fields
-// (main_hostname, validation_records, status, etc.) once the upstream provider
-// has registered the hostname.
 type DomainConfig struct {
 	Provider           string            `json:"provider,omitempty"`
 	Domain             string            `json:"domain,omitempty"`

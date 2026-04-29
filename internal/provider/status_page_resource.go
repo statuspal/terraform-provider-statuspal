@@ -984,8 +984,6 @@ func mapStatusPageModelToRequestBody(
 	}
 }
 
-// domainConfigAttrTypes mirrors the schema for the `domain_config` nested
-// attribute. Must stay in sync with the schema declaration in Schema().
 var domainConfigAttrTypes = map[string]attr.Type{
 	"provider":             types.StringType,
 	"domain":               types.StringType,
