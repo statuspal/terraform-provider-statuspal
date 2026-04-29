@@ -209,19 +209,28 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
 						Optional:    true,
 						Computed:    true,
-						Default:     stringdefault.StaticString(""),
+						// No static default: the API view mirrors domain_config.domain
+						// onto this field, so a hard "" default produces a
+						// "Provider produced inconsistent result" error whenever a
+						// custom domain is configured via domain_config.
 					},
 					"domain_config": schema.SingleNestedAttribute{
-						MarkdownDescription: "Read-only view of the status page's custom-domain configuration when backed by Cloudflare for SaaS or Bunny CDN. Populated by the API after a domain is registered upstream. " +
+						MarkdownDescription: "Custom-domain configuration for the status page, backed by Cloudflare for SaaS or Bunny CDN. Set `provider` and `domain` to register a custom domain; the API populates the read-only fields (`main_hostname`, `validation_records`, `status`, …) once the upstream provider has registered the hostname. " +
 							"Use the nested `validation_records` to drive a DNS-provider resource (e.g. `cloudflare_record`) so a custom domain can be provisioned end-to-end with one `terraform apply`.",
+						Optional: true,
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
 							"provider": schema.StringAttribute{
-								MarkdownDescription: "Which custom-domain backend the status page uses. One of `cloudflare`, `bunny`, or `legacy_custom_domain`. Empty when no custom domain is configured.",
+								MarkdownDescription: "Which custom-domain backend to use. One of `cloudflare` or `bunny`. The legacy value `legacy_custom_domain` may appear in read state for status pages that pre-date the new flow but is not settable from Terraform.",
+								Optional:            true,
 								Computed:            true,
+								Validators: []validator.String{
+									stringvalidator.OneOf("cloudflare", "bunny"),
+								},
 							},
 							"domain": schema.StringAttribute{
-								Description: "The custom domain (e.g. `status.your-company.com`).",
+								Description: "The custom domain (e.g. `status.your-company.com`). Required when `provider` is set.",
+								Optional:    true,
 								Computed:    true,
 							},
 							"previous_domain": schema.StringAttribute{
@@ -909,6 +918,24 @@ func mapStatusPageModelToRequestBody(
 		}
 	}
 
+	// Build the domain_config payload only when the user has set the block in
+	// HCL. If absent (null/unknown), leave it nil so `omitempty` drops the field
+	// from the request and the backend leaves any existing domain_config alone.
+	// Note: explicit clearing through Terraform (removing the block from HCL on
+	// an existing resource) is not supported in this iteration — the
+	// `Optional + Computed` schema preserves state values when the block is
+	// absent. To clear, recreate the resource or use the StatusPal admin UI.
+	var domainConfigPayload *statuspal.DomainConfig
+	if !statusPage.DomainConfig.IsNull() && !statusPage.DomainConfig.IsUnknown() {
+		attrs := statusPage.DomainConfig.Attributes()
+		providerVal, _ := attrs["provider"].(types.String)
+		domainVal, _ := attrs["domain"].(types.String)
+		domainConfigPayload = &statuspal.DomainConfig{
+			Provider: providerVal.ValueString(),
+			Domain:   domainVal.ValueString(),
+		}
+	}
+
 	return &statuspal.StatusPage{
 		Name:                           statusPage.Name.ValueString(),
 		Url:                            statusPage.Url.ValueString(),
@@ -920,6 +947,7 @@ func mapStatusPageModelToRequestBody(
 		DisplayAbout:                   statusPage.DisplayAbout.ValueBool(),
 		CustomDomainEnabled:            statusPage.CustomDomainEnabled.ValueBool(),
 		Domain:                         statusPage.Domain.ValueString(),
+		DomainConfig:                   domainConfigPayload,
 		RestrictedIps:                  statusPage.RestrictedIps.ValueString(),
 		MemberRestricted:               statusPage.MemberRestricted.ValueBool(),
 		ScheduledMaintenanceDays:       statusPage.ScheduledMaintenanceDays.ValueInt64(),
