@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	sslRecordsPollInterval     = 10 * time.Second
-	sslRecordsDefaultTimeout   = 5 * time.Minute
+	sslRecordsPollInterval   = 10 * time.Second
+	sslRecordsDefaultTimeout = 5 * time.Minute
 )
 
 var (
@@ -32,12 +32,12 @@ type domainSslRecordsResource struct {
 }
 
 type domainSslRecordsResourceModel struct {
-	ID                   types.String `tfsdk:"id"`
-	OrganizationID       types.String `tfsdk:"organization_id"`
-	StatusPageSubdomain  types.String `tfsdk:"status_page_subdomain"`
-	TimeoutSeconds       types.Int64  `tfsdk:"timeout_seconds"`
-	CertificateTxtName   types.String `tfsdk:"certificate_txt_name"`
-	CertificateTxtValue  types.String `tfsdk:"certificate_txt_value"`
+	ID                  types.String `tfsdk:"id"`
+	OrganizationID      types.String `tfsdk:"organization_id"`
+	StatusPageSubdomain types.String `tfsdk:"status_page_subdomain"`
+	TimeoutSeconds      types.Int64  `tfsdk:"timeout_seconds"`
+	CertificateTxtName  types.String `tfsdk:"certificate_txt_name"`
+	CertificateTxtValue types.String `tfsdk:"certificate_txt_value"`
 }
 
 func (r *domainSslRecordsResource) Metadata(

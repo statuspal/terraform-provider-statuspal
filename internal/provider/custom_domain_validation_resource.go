@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	domainValidationPollInterval = 10 * time.Second
+	domainValidationPollInterval   = 10 * time.Second
 	domainValidationDefaultTimeout = 30 * time.Minute
 )
 
