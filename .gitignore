@@ -35,3 +35,6 @@ website/vendor
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
+
+# Local-only e2e test harness (not for the repo)
+e2e-test-update/
