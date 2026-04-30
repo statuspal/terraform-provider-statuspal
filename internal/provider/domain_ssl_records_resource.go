@@ -138,18 +138,20 @@ func (r *domainSslRecordsResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	name := state.CertificateTxtName.ValueString()
-	value := state.CertificateTxtValue.ValueString()
+	// The certificate_txt_* fields are only present in validation_records while
+	// the SSL challenge is pending. Once the cert is issued, the API stops
+	// returning them (or returns them empty). The TXT record they describe is
+	// still required at the DNS provider for cert renewal, so preserve the
+	// existing state values rather than clearing them — clearing would force a
+	// destructive replan of the downstream cloudflare_record.txt.
 	if vr := statusPage.DomainConfig.ValidationRecords; vr != nil {
-		if v, ok := vr["certificate_txt_name"]; ok {
-			name = v
+		if v, ok := vr["certificate_txt_name"]; ok && v != "" {
+			state.CertificateTxtName = types.StringValue(v)
 		}
-		if v, ok := vr["certificate_txt_value"]; ok {
-			value = v
+		if v, ok := vr["certificate_txt_value"]; ok && v != "" {
+			state.CertificateTxtValue = types.StringValue(v)
 		}
 	}
-	state.CertificateTxtName = types.StringValue(name)
-	state.CertificateTxtValue = types.StringValue(value)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
