@@ -17,7 +17,9 @@ Waiter resource that polls a status page's domain_config until the SSL certifica
 # are available for a status page with a custom domain configured via Cloudflare.
 #
 # Use this between creating the CNAME routing record and the TXT certificate
-# record to complete custom domain setup in a single terraform apply.
+# record to complete custom domain setup in a single terraform apply. See
+# https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain
+# for the full end-to-end flow.
 
 resource "statuspal_domain_ssl_records" "example" {
   organization_id       = "1"
