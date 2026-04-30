@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	statuspal "terraform-provider-statuspal/internal/client"
@@ -72,6 +74,9 @@ func (r *domainSslRecordsResource) Schema(_ context.Context, _ resource.SchemaRe
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(300),
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
 			},
 			"certificate_txt_name": schema.StringAttribute{
 				Description: "The DNS name for the TXT record required to issue the SSL certificate.",

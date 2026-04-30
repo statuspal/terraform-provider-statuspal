@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -672,6 +673,12 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 								Description: `The custom hostname (e.g. "status.acme.com"). Must be lowercase.`,
 								Optional:    true,
 								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.RegexMatches(
+										regexp.MustCompile(`^[^A-Z]*$`),
+										"must be lowercase",
+									),
+								},
 							},
 							"main_hostname": schema.StringAttribute{
 								Description: "The CNAME target to point your domain at.",
