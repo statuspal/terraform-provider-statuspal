@@ -58,6 +58,7 @@ type statusPageModel struct {
 	DisplayAbout                   types.Bool   `tfsdk:"display_about"`
 	CustomDomainEnabled            types.Bool   `tfsdk:"custom_domain_enabled"`
 	Domain                         types.String `tfsdk:"domain"`
+	DomainConfig                   types.Object `tfsdk:"domain_config"`
 	RestrictedIps                  types.String `tfsdk:"restricted_ips"`
 	MemberRestricted               types.Bool   `tfsdk:"member_restricted"`
 	ScheduledMaintenanceDays       types.Int64  `tfsdk:"scheduled_maintenance_days"`
@@ -208,7 +209,64 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
 						Optional:    true,
 						Computed:    true,
-						Default:     stringdefault.StaticString(""),
+						// No static default: the API view mirrors domain_config.domain
+						// onto this field, so a hard "" default produces a
+						// "Provider produced inconsistent result" error whenever a
+						// custom domain is configured via domain_config.
+					},
+					"domain_config": schema.SingleNestedAttribute{
+						MarkdownDescription: "Custom-domain configuration for the status page, backed by Cloudflare for SaaS or Bunny CDN. Set `provider` and `domain` to register a custom domain; the API populates the read-only fields (`main_hostname`, `validation_records`, `status`, …) once the upstream provider has registered the hostname. " +
+							"Use the nested `validation_records` to drive a DNS-provider resource (e.g. `cloudflare_record`) so a custom domain can be provisioned end-to-end with one `terraform apply`.",
+						Optional: true,
+						Computed: true,
+						Attributes: map[string]schema.Attribute{
+							"provider": schema.StringAttribute{
+								MarkdownDescription: "Which custom-domain backend to use. One of `cloudflare` or `bunny`. The legacy value `legacy_custom_domain` may appear in read state for status pages that pre-date the new flow but is not settable from Terraform.",
+								Optional:            true,
+								Computed:            true,
+								Validators: []validator.String{
+									stringvalidator.OneOf("cloudflare", "bunny"),
+								},
+							},
+							"domain": schema.StringAttribute{
+								Description: "The custom domain (e.g. `status.your-company.com`). Required when `provider` is set.",
+								Optional:    true,
+								Computed:    true,
+							},
+							"previous_domain": schema.StringAttribute{
+								Description: "The domain that was configured before the most recent change. Useful for tracking transitions.",
+								Computed:    true,
+							},
+							"main_hostname": schema.StringAttribute{
+								Description: "The CNAME target the user must point their domain at. Returned by Cloudflare for SaaS / Bunny once the upstream hostname is registered.",
+								Computed:    true,
+							},
+							"pullzone_id": schema.Int64Attribute{
+								Description: "Bunny pullzone id. Empty for non-Bunny providers.",
+								Computed:    true,
+							},
+							"previous_pullzone_id": schema.Int64Attribute{
+								Description: "The pullzone id used before the most recent change. Empty for non-Bunny providers.",
+								Computed:    true,
+							},
+							"status": schema.StringAttribute{
+								MarkdownDescription: "Current verification state. One of `disabled`, `configuring`, `failed_to_configure`, `active`.",
+								Computed:            true,
+							},
+							"validation_records": schema.MapAttribute{
+								MarkdownDescription: "DNS records the user must create to validate ownership and route traffic. Common keys are `hostname_cname_name`, `hostname_cname_value`, and (for Cloudflare) `hostname_txt_name` / `hostname_txt_value`. Wire these into your DNS provider's resource (e.g. `cloudflare_record`).",
+								ElementType:         types.StringType,
+								Computed:            true,
+							},
+							"external_id": schema.StringAttribute{
+								Description: "Internal identifier used by the upstream provider (Cloudflare custom_hostname id or Bunny domain). Mostly useful for debugging.",
+								Computed:    true,
+							},
+							"error": schema.StringAttribute{
+								MarkdownDescription: "Error message when `status` is `failed_to_configure`. Empty otherwise.",
+								Computed:            true,
+							},
+						},
 					},
 					"restricted_ips": schema.StringAttribute{
 						Description: `Your status page will be accessible only from this IPs (e.g. "1.1.1.1, 2.2.2.2").`,
@@ -860,6 +918,24 @@ func mapStatusPageModelToRequestBody(
 		}
 	}
 
+	// Build the domain_config payload only when the user has set the block in
+	// HCL. If absent (null/unknown), leave it nil so `omitempty` drops the field
+	// from the request and the backend leaves any existing domain_config alone.
+	// Note: explicit clearing through Terraform (removing the block from HCL on
+	// an existing resource) is not supported in this iteration — the
+	// `Optional + Computed` schema preserves state values when the block is
+	// absent. To clear, recreate the resource or use the StatusPal admin UI.
+	var domainConfigPayload *statuspal.DomainConfig
+	if !statusPage.DomainConfig.IsNull() && !statusPage.DomainConfig.IsUnknown() {
+		attrs := statusPage.DomainConfig.Attributes()
+		providerVal, _ := attrs["provider"].(types.String)
+		domainVal, _ := attrs["domain"].(types.String)
+		domainConfigPayload = &statuspal.DomainConfig{
+			Provider: providerVal.ValueString(),
+			Domain:   domainVal.ValueString(),
+		}
+	}
+
 	return &statuspal.StatusPage{
 		Name:                           statusPage.Name.ValueString(),
 		Url:                            statusPage.Url.ValueString(),
@@ -871,6 +947,7 @@ func mapStatusPageModelToRequestBody(
 		DisplayAbout:                   statusPage.DisplayAbout.ValueBool(),
 		CustomDomainEnabled:            statusPage.CustomDomainEnabled.ValueBool(),
 		Domain:                         statusPage.Domain.ValueString(),
+		DomainConfig:                   domainConfigPayload,
 		RestrictedIps:                  statusPage.RestrictedIps.ValueString(),
 		MemberRestricted:               statusPage.MemberRestricted.ValueBool(),
 		ScheduledMaintenanceDays:       statusPage.ScheduledMaintenanceDays.ValueInt64(),
@@ -935,6 +1012,19 @@ func mapStatusPageModelToRequestBody(
 	}
 }
 
+var domainConfigAttrTypes = map[string]attr.Type{
+	"provider":             types.StringType,
+	"domain":               types.StringType,
+	"previous_domain":      types.StringType,
+	"main_hostname":        types.StringType,
+	"pullzone_id":          types.Int64Type,
+	"previous_pullzone_id": types.Int64Type,
+	"status":               types.StringType,
+	"validation_records":   types.MapType{ElemType: types.StringType},
+	"external_id":          types.StringType,
+	"error":                types.StringType,
+}
+
 func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics *diag.Diagnostics) *statusPageModel {
 	// Define the translation object schema
 	translationSchema := map[string]attr.Type{
@@ -972,6 +1062,43 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		translations = convertedTranslations
 	}
 
+	// Build domain_config object from the API response. Null when the API
+	// returned no domain_config (i.e., no custom domain configured).
+	domainConfig := types.ObjectNull(domainConfigAttrTypes)
+	if statusPage.DomainConfig != nil {
+		validationRecords := types.MapNull(types.StringType)
+		if len(statusPage.DomainConfig.ValidationRecords) > 0 {
+			elements := make(map[string]attr.Value, len(statusPage.DomainConfig.ValidationRecords))
+			for k, v := range statusPage.DomainConfig.ValidationRecords {
+				elements[k] = types.StringValue(v)
+			}
+			mv, mvDiags := types.MapValue(types.StringType, elements)
+			diagnostics.Append(mvDiags...)
+			if diagnostics.HasError() {
+				return nil
+			}
+			validationRecords = mv
+		}
+
+		objValue, objDiags := types.ObjectValue(domainConfigAttrTypes, map[string]attr.Value{
+			"provider":             types.StringValue(statusPage.DomainConfig.Provider),
+			"domain":               types.StringValue(statusPage.DomainConfig.Domain),
+			"previous_domain":      types.StringValue(statusPage.DomainConfig.PreviousDomain),
+			"main_hostname":        types.StringValue(statusPage.DomainConfig.MainHostname),
+			"pullzone_id":          types.Int64Value(statusPage.DomainConfig.PullzoneID),
+			"previous_pullzone_id": types.Int64Value(statusPage.DomainConfig.PreviousPullzoneID),
+			"status":               types.StringValue(statusPage.DomainConfig.Status),
+			"validation_records":   validationRecords,
+			"external_id":          types.StringValue(statusPage.DomainConfig.ExternalID),
+			"error":                types.StringValue(statusPage.DomainConfig.Error),
+		})
+		diagnostics.Append(objDiags...)
+		if diagnostics.HasError() {
+			return nil
+		}
+		domainConfig = objValue
+	}
+
 	return &statusPageModel{
 		Name:                           types.StringValue(statusPage.Name),
 		Url:                            types.StringValue(statusPage.Url),
@@ -983,6 +1110,7 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		DisplayAbout:                   types.BoolValue(statusPage.DisplayAbout),
 		CustomDomainEnabled:            types.BoolValue(statusPage.CustomDomainEnabled),
 		Domain:                         types.StringValue(statusPage.Domain),
+		DomainConfig:                   domainConfig,
 		RestrictedIps:                  types.StringValue(statusPage.RestrictedIps),
 		MemberRestricted:               types.BoolValue(statusPage.MemberRestricted),
 		ScheduledMaintenanceDays:       types.Int64Value(statusPage.ScheduledMaintenanceDays),

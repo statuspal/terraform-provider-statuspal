@@ -194,7 +194,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -324,7 +324,7 @@ func TestAccStatusPageResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -412,6 +412,140 @@ func TestAccStatusPageResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+// TestAccStatusPageResource_DomainConfig exercises the writable `domain_config`
+// nested attribute: schema validation rejects unsupported providers, requests
+// include the user's provider/domain values, and responses populate the
+// computed sub-attributes (main_hostname, validation_records, status, ...).
+func TestAccStatusPageResource_DomainConfig(t *testing.T) {
+	mux := http.NewServeMux()
+
+	// Minimal status_page response shaped after the production API. Includes a
+	// fully-populated domain_config so we can assert end-to-end mapping of the
+	// computed sub-attributes.
+	responseBody := `{
+		"status_page": {
+			"name": "Domain Config Test",
+			"url": "domain-config.test",
+			"time_zone": "Europe/Berlin",
+			"subdomain": "domain-config-test",
+			"organization_id": 1,
+			"theme_selected": "default",
+			"link_color": "0c91c3",
+			"header_bg_color1": "009688",
+			"header_bg_color2": "0c91c3",
+			"header_fg_color": "ffffff",
+			"incident_header_color": "009688",
+			"status_ok_color": "48CBA5",
+			"status_minor_color": "FFA500",
+			"status_major_color": "e75a53",
+			"status_maintenance_color": "5378c1",
+			"current_incidents_position": "below_services",
+			"scheduled_maintenance_days": 7,
+			"history_limit_days": 90,
+			"uptime_graph_days": 90,
+			"minor_notification_hours": 6,
+			"major_notification_hours": 3,
+			"maintenance_notification_hours": 6,
+			"display_uptime_graph": true,
+			"display_calendar": true,
+			"feed_enabled": true,
+			"subscribers_enabled": true,
+			"info_notices_enabled": true,
+			"captcha_enabled": true,
+			"tweeting_enabled": true,
+			"inserted_at": "2026-04-29T10:00:00",
+			"updated_at": "2026-04-29T10:00:00",
+			"translations": {},
+			"domain": "status.acme.com",
+			"custom_domain_enabled": true,
+			"domain_config": {
+				"provider": "cloudflare",
+				"domain": "status.acme.com",
+				"main_hostname": "ssl.statuspal.io",
+				"status": "configuring",
+				"external_id": "abcd-1234",
+				"validation_records": {
+					"hostname_cname_name": "status.acme.com",
+					"hostname_cname_value": "ssl.statuspal.io"
+				}
+			}
+		}
+	}`
+
+	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf("Error writing create response: %v", err)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+	})
+
+	mux.HandleFunc("/orgs/1/status_pages/domain-config-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			if _, err := w.Write([]byte(`""`)); err != nil {
+				log.Printf("Error writing delete response: %v", err)
+			}
+			return
+		}
+		if _, err := w.Write([]byte(responseBody)); err != nil {
+			log.Printf("Error writing read response: %v", err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mockServer := httptest.NewServer(mux)
+	defer mockServer.Close()
+	providerConfig := providerConfig(&mockServer.URL)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Validator rejects providers other than cloudflare/bunny at plan time.
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Domain Config Test"
+						url       = "domain-config.test"
+						time_zone = "Europe/Berlin"
+						domain_config = {
+							provider = "fastly"
+							domain   = "status.acme.com"
+						}
+					}
+				}`,
+				ExpectError: regexp.MustCompile(`Attribute status_page\.domain_config\.provider value must be one of:`),
+			},
+			// Create with a Cloudflare-backed domain_config and verify the
+			// computed sub-attributes flow through from the API response.
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Domain Config Test"
+						url       = "domain-config.test"
+						time_zone = "Europe/Berlin"
+						domain_config = {
+							provider = "cloudflare"
+							domain   = "status.acme.com"
+						}
+					}
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "cloudflare"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "status.acme.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.main_hostname", "ssl.statuspal.io"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.status", "configuring"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.external_id", "abcd-1234"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_cname_name", "status.acme.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_cname_value", "ssl.statuspal.io"),
+				),
+			},
 		},
 	})
 }

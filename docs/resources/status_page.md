@@ -13,13 +13,47 @@ Manages a status page of the organization.
 ## Example Usage
 
 ```terraform
-# Manage example status page of the organization with ID 1.
+# Basic status page with no custom domain.
 resource "statuspal_status_page" "example" {
   organization_id = "1"
   status_page = {
     name      = "Example Terraform Status Page"
     url       = "example.com"
     time_zone = "Europe/Berlin"
+  }
+}
+
+# Status page with a Cloudflare-backed custom domain. After apply, read the
+# computed `domain_config.validation_records` to find the DNS records you need
+# to create on your DNS provider so Cloudflare can validate ownership and
+# issue a certificate.
+resource "statuspal_status_page" "with_cloudflare_domain" {
+  organization_id = "1"
+  status_page = {
+    name      = "Example with Cloudflare Custom Domain"
+    url       = "example.com"
+    time_zone = "Europe/Berlin"
+
+    domain_config = {
+      provider = "cloudflare"
+      domain   = "status.example.com"
+    }
+  }
+}
+
+# Status page with a Bunny CDN-backed custom domain. The required DNS record
+# (a single CNAME) is exposed via `domain_config.validation_records`.
+resource "statuspal_status_page" "with_bunny_domain" {
+  organization_id = "1"
+  status_page = {
+    name      = "Example with Bunny Custom Domain"
+    url       = "example.com"
+    time_zone = "Europe/Berlin"
+
+    domain_config = {
+      provider = "bunny"
+      domain   = "status.example.com"
+    }
   }
 }
 ```
@@ -65,6 +99,7 @@ Optional:
 - `display_calendar` (Boolean) Display uptime calendar at status page.
 - `display_uptime_graph` (Boolean) Display the uptime graph in the status page.
 - `domain` (String) Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.
+- `domain_config` (Attributes) Custom-domain configuration for the status page, backed by Cloudflare for SaaS or Bunny CDN. Set `provider` and `domain` to register a custom domain; the API populates the read-only fields (`main_hostname`, `validation_records`, `status`, …) once the upstream provider has registered the hostname. Use the nested `validation_records` to drive a DNS-provider resource (e.g. `cloudflare_record`) so a custom domain can be provisioned end-to-end with one `terraform apply`. (see [below for nested schema](#nestedatt--status_page--domain_config))
 - `email_confirmation_template` (String) Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_layout_template` (String) Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
@@ -136,6 +171,26 @@ Read-Only:
 - `inserted_at` (String) Datetime at which the status page was inserted.
 - `logo` (String) Logo url of the status page.
 - `updated_at` (String) Datetime at which the status page was last updated.
+
+<a id="nestedatt--status_page--domain_config"></a>
+### Nested Schema for `status_page.domain_config`
+
+Optional:
+
+- `domain` (String) The custom domain (e.g. `status.your-company.com`). Required when `provider` is set.
+- `provider` (String) Which custom-domain backend to use. One of `cloudflare` or `bunny`. The legacy value `legacy_custom_domain` may appear in read state for status pages that pre-date the new flow but is not settable from Terraform.
+
+Read-Only:
+
+- `error` (String) Error message when `status` is `failed_to_configure`. Empty otherwise.
+- `external_id` (String) Internal identifier used by the upstream provider (Cloudflare custom_hostname id or Bunny domain). Mostly useful for debugging.
+- `main_hostname` (String) The CNAME target the user must point their domain at. Returned by Cloudflare for SaaS / Bunny once the upstream hostname is registered.
+- `previous_domain` (String) The domain that was configured before the most recent change. Useful for tracking transitions.
+- `previous_pullzone_id` (Number) The pullzone id used before the most recent change. Empty for non-Bunny providers.
+- `pullzone_id` (Number) Bunny pullzone id. Empty for non-Bunny providers.
+- `status` (String) Current verification state. One of `disabled`, `configuring`, `failed_to_configure`, `active`.
+- `validation_records` (Map of String) DNS records the user must create to validate ownership and route traffic. Common keys are `hostname_cname_name`, `hostname_cname_value`, and (for Cloudflare) `hostname_txt_name` / `hostname_txt_value`. Wire these into your DNS provider's resource (e.g. `cloudflare_record`).
+
 
 <a id="nestedatt--status_page--translations"></a>
 ### Nested Schema for `status_page.translations`
