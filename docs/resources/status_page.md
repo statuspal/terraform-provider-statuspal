@@ -53,7 +53,7 @@ Optional:
 - `captcha_enabled` (Boolean) Enable captchas (this option is only available when the status page is member restricted).
 - `current_incidents_position` (String) The incident position displayed in the status page, it can be "below_services" and "above_services".
 - `custom_css` (String) We'll insert this content inside the `<style>` tag.
-- `custom_domain_enabled` (Boolean) Enable your custom domain with SSL.
+- `custom_domain_enabled` (Boolean, Deprecated) Enable your custom domain with SSL.
 - `custom_footer` (String) A custom footer for the status page (e.g. "`<footer>...</footer>`").
 - `custom_header` (String) A custom header for the status page (e.g. "`<header>...</header>`").
 - `custom_incident_types_enabled` (Boolean) Enable custom incident types.
@@ -64,7 +64,8 @@ Optional:
 - `display_about` (Boolean) Display about information.
 - `display_calendar` (Boolean) Display uptime calendar at status page.
 - `display_uptime_graph` (Boolean) Display the uptime graph in the status page.
-- `domain` (String) Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.
+- `domain` (String, Deprecated) Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.
+- `domain_config` (Attributes) Custom domain configuration for the status page. (see [below for nested schema](#nestedatt--status_page--domain_config))
 - `email_confirmation_template` (String) Custom confirmation email template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_layout_template` (String) Custom email layout template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
 - `email_notification_template` (String) Custom email notification template, see the documentation: [Custom email templates](https://docs.statuspal.io/platform/subscriptions-and-notifications/custom-email-templates).
@@ -136,6 +137,34 @@ Read-Only:
 - `inserted_at` (String) Datetime at which the status page was inserted.
 - `logo` (String) Logo url of the status page.
 - `updated_at` (String) Datetime at which the status page was last updated.
+
+<a id="nestedatt--status_page--domain_config"></a>
+### Nested Schema for `status_page.domain_config`
+
+Optional:
+
+- `domain` (String) The custom hostname (e.g. "status.acme.com"). Must be lowercase.
+- `provider` (String) Custom domain provider, either "cloudflare" or "bunny".
+
+Read-Only:
+
+- `error` (String) Error details when status is "failed_to_configure".
+- `external_id` (String) Upstream provider identifier, useful for debugging.
+- `main_hostname` (String) The CNAME target to point your domain at.
+- `pullzone_id` (Number) Bunny-specific pullzone ID.
+- `status` (String) Current verification state: "disabled", "configuring", "active", or "failed_to_configure".
+- `validation_records` (Attributes Map) DNS records required for domain setup. Keys: "cname" (CNAME routing record), "txt" (ACME SSL challenge — only present after CNAME is in DNS). (see [below for nested schema](#nestedatt--status_page--domain_config--validation_records))
+
+<a id="nestedatt--status_page--domain_config--validation_records"></a>
+### Nested Schema for `status_page.domain_config.validation_records`
+
+Read-Only:
+
+- `name` (String) DNS record name (hostname).
+- `type` (String) DNS record type (e.g. "CNAME", "TXT").
+- `value` (String) DNS record value.
+
+
 
 <a id="nestedatt--status_page--translations"></a>
 ### Nested Schema for `status_page.translations`
