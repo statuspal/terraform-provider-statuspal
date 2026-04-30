@@ -5,6 +5,12 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- Support for Terraform 1.2 and 1.3. Minimum supported Terraform version is now 1.4.
+
 ## [0.3.0] - 2024-11-26
 
 ### Added
