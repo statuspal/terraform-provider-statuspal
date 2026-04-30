@@ -27,24 +27,49 @@ variable "cloudflare_api_token" {
   sensitive = true
 }
 
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone ID for the domain you're testing against."
+}
+
+variable "org_id" {
+  description = "StatusPal organization ID."
+}
+
+variable "status_page_name" {
+  description = "Display name of the status page."
+  default     = "Terraform E2E Test"
+}
+
+variable "status_page_url" {
+  description = "Public URL of the company/site this status page is for."
+}
+
+variable "subdomain" {
+  description = "Status page subdomain on StatusPal."
+}
+
+variable "custom_domain" {
+  description = "Custom hostname to point at the status page (must be lowercase)."
+}
+
 resource "statuspal_status_page" "test" {
-  organization_id = "5883"
+  organization_id = var.org_id
   status_page = {
-    name      = "Claude Terraform E2E Test"
-    url       = "https://messuti.io"
+    name      = var.status_page_name
+    url       = var.status_page_url
     time_zone = "UTC"
-    subdomain = "claude-tf-e2e-4"
+    subdomain = var.subdomain
 
     domain_config = {
       provider = "cloudflare"
-      domain   = "claude-terraform-test-4.messuti.io"
+      domain   = var.custom_domain
     }
   }
 }
 
 # Step 1 — CNAME record (values available immediately from status page)
 resource "cloudflare_record" "cname" {
-  zone_id = "aba95479eb6a6e70b7e1224ed4c7f2e3"
+  zone_id = var.cloudflare_zone_id
   name    = statuspal_status_page.test.status_page.domain_config.validation_records["cname"].name
   type    = "CNAME"
   content = statuspal_status_page.test.status_page.domain_config.validation_records["cname"].value
@@ -54,7 +79,7 @@ resource "cloudflare_record" "cname" {
 
 # Step 2 — polls until Cloudflare generates the ACME TXT challenge (requires CNAME in DNS first)
 resource "statuspal_domain_ssl_records" "test" {
-  organization_id       = "5883"
+  organization_id       = var.org_id
   status_page_subdomain = statuspal_status_page.test.status_page.subdomain
   timeout_seconds       = 600
 
@@ -63,7 +88,7 @@ resource "statuspal_domain_ssl_records" "test" {
 
 # Step 3 — TXT record for SSL certificate (values computed after Step 2)
 resource "cloudflare_record" "txt" {
-  zone_id = "aba95479eb6a6e70b7e1224ed4c7f2e3"
+  zone_id = var.cloudflare_zone_id
   name    = statuspal_domain_ssl_records.test.certificate_txt_name
   type    = "TXT"
   content = statuspal_domain_ssl_records.test.certificate_txt_value
@@ -72,7 +97,7 @@ resource "cloudflare_record" "txt" {
 
 # Step 4 — waiter, blocks until domain is active
 resource "statuspal_custom_domain_validation" "test" {
-  organization_id       = "5883"
+  organization_id       = var.org_id
   status_page_subdomain = statuspal_status_page.test.status_page.subdomain
   timeout_seconds       = 600
 
