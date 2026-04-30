@@ -678,7 +678,7 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 								Computed:    true,
 							},
 							"validation_records": schema.MapNestedAttribute{
-								Description: `DNS records required for domain setup. Keys: "cname" (CNAME routing record), "txt" (ACME SSL challenge — only present after CNAME is in DNS).`,
+								Description: `DNS records required for domain setup. Keys: "cname" (CNAME routing record), "hostname_txt" (TXT record for hostname verification), "txt" (TXT record for ACME SSL challenge — only present after CNAME is in DNS). Not all keys are present at every lifecycle stage.`,
 								Computed:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
@@ -1048,6 +1048,7 @@ func mapStatusPageModelToRequestBody(
 // buildValidationRecords converts the flat API map into a map of objects keyed by record type.
 // Well-known prefixes are mapped to friendly keys and types:
 //   - hostname_cname → "cname", type "CNAME"
+//   - hostname_txt → "hostname_txt", type "TXT"
 //   - certificate_txt → "txt", type "TXT"
 //
 // All other _name/_value pairs use the raw prefix as the key with an empty type.
@@ -1055,6 +1056,7 @@ func buildValidationRecords(raw map[string]string) (types.Map, diag.Diagnostics)
 	vrElemType := types.ObjectType{AttrTypes: validationRecordAttrTypes}
 	wellKnown := map[string]struct{ key, recordType string }{
 		"hostname_cname":  {"cname", "CNAME"},
+		"hostname_txt":    {"hostname_txt", "TXT"},
 		"certificate_txt": {"txt", "TXT"},
 	}
 

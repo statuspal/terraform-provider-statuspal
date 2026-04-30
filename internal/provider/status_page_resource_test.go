@@ -309,7 +309,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.type", "CNAME"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "ssl-for-saas.example.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.name", "_cf-custom-hostname.status.terraform.test"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", "TXT"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.value", "some-verification-token"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),
@@ -458,7 +458,7 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.type", "CNAME"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "ssl-for-saas.example.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.name", "_cf-custom-hostname.status.terraform.test"),
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", "TXT"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.value", "some-verification-token"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),

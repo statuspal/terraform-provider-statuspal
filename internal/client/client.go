@@ -47,8 +47,10 @@ func NewClient(api_key *string, region *string, test_url *string) (*Client, erro
 		c.HostURL = *test_url
 	}
 
-	if override := os.Getenv("STATUSPAL_API_URL"); override != "" {
-		c.HostURL = override
+	if env != "TEST" {
+		if override := os.Getenv("STATUSPAL_API_URL"); override != "" {
+			c.HostURL = override
+		}
 	}
 
 	// If api_key is not provided, return empty client

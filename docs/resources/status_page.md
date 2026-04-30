@@ -153,7 +153,7 @@ Read-Only:
 - `main_hostname` (String) The CNAME target to point your domain at.
 - `pullzone_id` (Number) Bunny-specific pullzone ID.
 - `status` (String) Current verification state: "disabled", "configuring", "active", or "failed_to_configure".
-- `validation_records` (Attributes Map) DNS records required for domain setup. Keys: "cname" (CNAME routing record), "txt" (ACME SSL challenge — only present after CNAME is in DNS). (see [below for nested schema](#nestedatt--status_page--domain_config--validation_records))
+- `validation_records` (Attributes Map) DNS records required for domain setup. Keys: "cname" (CNAME routing record), "hostname_txt" (TXT record for hostname verification), "txt" (TXT record for ACME SSL challenge — only present after CNAME is in DNS). Not all keys are present at every lifecycle stage. (see [below for nested schema](#nestedatt--status_page--domain_config--validation_records))
 
 <a id="nestedatt--status_page--domain_config--validation_records"></a>
 ### Nested Schema for `status_page.domain_config.validation_records`
