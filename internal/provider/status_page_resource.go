@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -18,9 +19,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	statuspal "terraform-provider-statuspal/internal/client"
 )
+
+var validationRecordAttrTypes = map[string]attr.Type{
+	"name":  types.StringType,
+	"type":  types.StringType,
+	"value": types.StringType,
+}
+
+var domainConfigAttrTypes = map[string]attr.Type{
+	"provider":           types.StringType,
+	"domain":             types.StringType,
+	"main_hostname":      types.StringType,
+	"validation_records": types.MapType{ElemType: types.ObjectType{AttrTypes: validationRecordAttrTypes}},
+	"external_id":        types.StringType,
+	"status":             types.StringType,
+	"error":              types.StringType,
+	"pullzone_id":        types.Int64Type,
+}
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
@@ -46,6 +65,18 @@ type statusPageResourceModel struct {
 	StatusPage     statusPageModel `tfsdk:"status_page"`
 }
 
+// domainConfigModel maps domain_config schema data.
+type domainConfigModel struct {
+	CDNProvider       types.String `tfsdk:"provider"`
+	Domain            types.String `tfsdk:"domain"`
+	MainHostname      types.String `tfsdk:"main_hostname"`
+	ValidationRecords types.Map    `tfsdk:"validation_records"`
+	ExternalID        types.String `tfsdk:"external_id"`
+	Status            types.String `tfsdk:"status"`
+	Error             types.String `tfsdk:"error"`
+	PullzoneID        types.Int64  `tfsdk:"pullzone_id"`
+}
+
 // statusPageModel maps status_page schema data.
 type statusPageModel struct {
 	Name                           types.String `tfsdk:"name"`
@@ -58,6 +89,7 @@ type statusPageModel struct {
 	DisplayAbout                   types.Bool   `tfsdk:"display_about"`
 	CustomDomainEnabled            types.Bool   `tfsdk:"custom_domain_enabled"`
 	Domain                         types.String `tfsdk:"domain"`
+	DomainConfig                   types.Object `tfsdk:"domain_config"`
 	RestrictedIps                  types.String `tfsdk:"restricted_ips"`
 	MemberRestricted               types.Bool   `tfsdk:"member_restricted"`
 	ScheduledMaintenanceDays       types.Int64  `tfsdk:"scheduled_maintenance_days"`
@@ -200,15 +232,17 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Computed:    true,
 					},
 					"custom_domain_enabled": schema.BoolAttribute{
-						Description: "Enable your custom domain with SSL.",
-						Optional:    true,
-						Computed:    true,
+						Description:        "Enable your custom domain with SSL.",
+						DeprecationMessage: "Use domain_config instead.",
+						Optional:           true,
+						Computed:           true,
 					},
 					"domain": schema.StringAttribute{
-						Description: "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
-						Optional:    true,
-						Computed:    true,
-						Default:     stringdefault.StaticString(""),
+						Description:        "Configure your own domain to point to your status page (e.g. status.your-company.com), we generate and auto-renew its SSL certificate for you.",
+						DeprecationMessage: "Use domain_config.domain instead.",
+						Optional:           true,
+						Computed:           true,
+						Default:            stringdefault.StaticString(""),
 					},
 					"restricted_ips": schema.StringAttribute{
 						Description: `Your status page will be accessible only from this IPs (e.g. "1.1.1.1, 2.2.2.2").`,
@@ -622,6 +656,72 @@ func (r *statusPageResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						Description: "Datetime at which the status page was last updated.",
 						Computed:    true,
 					},
+					"domain_config": schema.SingleNestedAttribute{
+						Description: "Custom domain configuration for the status page.",
+						Optional:    true,
+						Computed:    true,
+						Attributes: map[string]schema.Attribute{
+							"provider": schema.StringAttribute{
+								Description: `Custom domain provider, either "cloudflare" or "bunny".`,
+								Optional:    true,
+								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOf("cloudflare", "bunny"),
+								},
+							},
+							"domain": schema.StringAttribute{
+								Description: `The custom hostname (e.g. "status.acme.com"). Must be lowercase.`,
+								Optional:    true,
+								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.RegexMatches(
+										regexp.MustCompile(`^[^A-Z]*$`),
+										"must be lowercase",
+									),
+								},
+							},
+							"main_hostname": schema.StringAttribute{
+								Description: "The CNAME target to point your domain at.",
+								Computed:    true,
+							},
+							"validation_records": schema.MapNestedAttribute{
+								Description: `DNS records required for domain setup. Keys: "cname" (CNAME routing record), "hostname_txt" (TXT record for hostname verification), "txt" (TXT record for ACME SSL challenge — only present after CNAME is in DNS). Not all keys are present at every lifecycle stage.`,
+								Computed:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"name": schema.StringAttribute{
+											Description: "DNS record name (hostname).",
+											Computed:    true,
+										},
+										"type": schema.StringAttribute{
+											Description: `DNS record type (e.g. "CNAME", "TXT").`,
+											Computed:    true,
+										},
+										"value": schema.StringAttribute{
+											Description: "DNS record value.",
+											Computed:    true,
+										},
+									},
+								},
+							},
+							"external_id": schema.StringAttribute{
+								Description: "Upstream provider identifier, useful for debugging.",
+								Computed:    true,
+							},
+							"status": schema.StringAttribute{
+								Description: `Current verification state: "disabled", "configuring", "active", or "failed_to_configure".`,
+								Computed:    true,
+							},
+							"error": schema.StringAttribute{
+								Description: `Error details when status is "failed_to_configure".`,
+								Computed:    true,
+							},
+							"pullzone_id": schema.Int64Attribute{
+								Description: "Bunny-specific pullzone ID.",
+								Computed:    true,
+							},
+						},
+					},
 				},
 			},
 		},
@@ -860,6 +960,22 @@ func mapStatusPageModelToRequestBody(
 		}
 	}
 
+	var domainConfig *statuspal.DomainConfig
+	if !statusPage.DomainConfig.IsNull() && !statusPage.DomainConfig.IsUnknown() {
+		var dc domainConfigModel
+		diags := statusPage.DomainConfig.As(*ctx, &dc, basetypes.ObjectAsOptions{})
+		diagnostics.Append(diags...)
+		if diagnostics.HasError() {
+			return nil
+		}
+		provider := strings.ToLower(dc.CDNProvider.ValueString())
+		domain := strings.ToLower(dc.Domain.ValueString())
+		domainConfig = &statuspal.DomainConfig{
+			CDNProvider: &provider,
+			Domain:      &domain,
+		}
+	}
+
 	return &statuspal.StatusPage{
 		Name:                           statusPage.Name.ValueString(),
 		Url:                            statusPage.Url.ValueString(),
@@ -871,6 +987,7 @@ func mapStatusPageModelToRequestBody(
 		DisplayAbout:                   statusPage.DisplayAbout.ValueBool(),
 		CustomDomainEnabled:            statusPage.CustomDomainEnabled.ValueBool(),
 		Domain:                         statusPage.Domain.ValueString(),
+		DomainConfig:                   domainConfig,
 		RestrictedIps:                  statusPage.RestrictedIps.ValueString(),
 		MemberRestricted:               statusPage.MemberRestricted.ValueBool(),
 		ScheduledMaintenanceDays:       statusPage.ScheduledMaintenanceDays.ValueInt64(),
@@ -935,7 +1052,115 @@ func mapStatusPageModelToRequestBody(
 	}
 }
 
+// buildValidationRecords converts the flat API map into a map of objects keyed by record type.
+// Well-known prefixes are mapped to friendly keys and types:
+//   - hostname_cname → "cname", type "CNAME"
+//   - hostname_txt → "hostname_txt", type "TXT"
+//   - certificate_txt → "txt", type "TXT"
+//
+// All other _name/_value pairs use the raw prefix as the key with an empty type.
+func buildValidationRecords(raw map[string]string) (types.Map, diag.Diagnostics) {
+	vrElemType := types.ObjectType{AttrTypes: validationRecordAttrTypes}
+	wellKnown := map[string]struct{ key, recordType string }{
+		"hostname_cname":  {"cname", "CNAME"},
+		"hostname_txt":    {"hostname_txt", "TXT"},
+		"certificate_txt": {"txt", "TXT"},
+	}
+
+	type record struct{ name, recordType, value string }
+	collected := map[string]*record{}
+
+	for rawKey, rawVal := range raw {
+		var prefix, field string
+		if strings.HasSuffix(rawKey, "_name") {
+			prefix = strings.TrimSuffix(rawKey, "_name")
+			field = "name"
+		} else if strings.HasSuffix(rawKey, "_value") {
+			prefix = strings.TrimSuffix(rawKey, "_value")
+			field = "value"
+		} else {
+			continue
+		}
+
+		key, recordType := prefix, ""
+		if meta, ok := wellKnown[prefix]; ok {
+			key, recordType = meta.key, meta.recordType
+		}
+
+		if _, ok := collected[key]; !ok {
+			collected[key] = &record{recordType: recordType}
+		}
+		if field == "name" {
+			collected[key].name = rawVal
+		} else {
+			collected[key].value = rawVal
+		}
+	}
+
+	elements := make(map[string]attr.Value, len(collected))
+	var allDiags diag.Diagnostics
+	for key, rec := range collected {
+		if rec.name == "" {
+			continue
+		}
+		obj, diags := types.ObjectValue(validationRecordAttrTypes, map[string]attr.Value{
+			"name":  types.StringValue(rec.name),
+			"type":  types.StringValue(rec.recordType),
+			"value": types.StringValue(rec.value),
+		})
+		allDiags.Append(diags...)
+		if allDiags.HasError() {
+			return types.MapNull(vrElemType), allDiags
+		}
+		elements[key] = obj
+	}
+
+	result, diags := types.MapValue(vrElemType, elements)
+	allDiags.Append(diags...)
+	return result, allDiags
+}
+
 func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics *diag.Diagnostics) *statusPageModel {
+	// Map domain_config
+	domainConfig := types.ObjectNull(domainConfigAttrTypes)
+	if statusPage.DomainConfig != nil {
+		dc := statusPage.DomainConfig
+
+		vrElemType := types.ObjectType{AttrTypes: validationRecordAttrTypes}
+		validationRecords := types.MapNull(vrElemType)
+		if dc.ValidationRecords != nil {
+			vr, diags := buildValidationRecords(dc.ValidationRecords)
+			diagnostics.Append(diags...)
+			if diagnostics.HasError() {
+				return nil
+			}
+			validationRecords = vr
+		}
+
+		var pullzoneID types.Int64
+		if dc.PullzoneID != nil {
+			pullzoneID = types.Int64Value(*dc.PullzoneID)
+		} else {
+			pullzoneID = types.Int64Null()
+		}
+
+		dcObj, diags := types.ObjectValue(domainConfigAttrTypes, map[string]attr.Value{
+			"provider":           types.StringValue(stringPtrOrEmpty(dc.CDNProvider)),
+			"domain":             types.StringValue(strings.ToLower(stringPtrOrEmpty(dc.Domain))),
+			"main_hostname":      types.StringValue(stringPtrOrEmpty(dc.MainHostname)),
+			"validation_records": validationRecords,
+			"external_id":        types.StringValue(stringPtrOrEmpty(dc.ExternalID)),
+			"status":             types.StringValue(stringPtrOrEmpty(dc.Status)),
+			"error":              types.StringValue(stringPtrOrEmpty(dc.Error)),
+			"pullzone_id":        pullzoneID,
+		})
+		diagnostics.Append(diags...)
+		if diagnostics.HasError() {
+			return nil
+		}
+		domainConfig = dcObj
+	}
+
 	// Define the translation object schema
 	translationSchema := map[string]attr.Type{
 		"public_company_name": types.StringType,
@@ -972,6 +1197,13 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		translations = convertedTranslations
 	}
 
+	// When domain_config is active, the API mirrors its domain into the legacy domain field.
+	// Keep domain empty to avoid conflicting with the planned value of "".
+	legacyDomain := statusPage.Domain
+	if statusPage.DomainConfig != nil {
+		legacyDomain = ""
+	}
+
 	return &statusPageModel{
 		Name:                           types.StringValue(statusPage.Name),
 		Url:                            types.StringValue(statusPage.Url),
@@ -982,7 +1214,8 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		About:                          types.StringValue(statusPage.About),
 		DisplayAbout:                   types.BoolValue(statusPage.DisplayAbout),
 		CustomDomainEnabled:            types.BoolValue(statusPage.CustomDomainEnabled),
-		Domain:                         types.StringValue(statusPage.Domain),
+		Domain:                         types.StringValue(legacyDomain),
+		DomainConfig:                   domainConfig,
 		RestrictedIps:                  types.StringValue(statusPage.RestrictedIps),
 		MemberRestricted:               types.BoolValue(statusPage.MemberRestricted),
 		ScheduledMaintenanceDays:       types.Int64Value(statusPage.ScheduledMaintenanceDays),
@@ -1050,4 +1283,11 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		InsertedAt:                     types.StringValue(statusPage.InsertedAt),
 		UpdatedAt:                      types.StringValue(statusPage.UpdatedAt),
 	}
+}
+
+func stringPtrOrEmpty(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

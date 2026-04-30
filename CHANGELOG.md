@@ -5,6 +5,21 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Custom domain support on `statuspal_status_page` via the new `domain_config`
+  block. Two new waiter resources, `statuspal_domain_ssl_records` and
+  `statuspal_custom_domain_validation`, orchestrate the SSL certificate
+  challenge and domain activation, enabling provisioning a custom domain in
+  a single `terraform apply`. See `examples/custom_domain/` for the full
+  end-to-end flow with Cloudflare.
+
+### Removed
+
+- Support for Terraform 1.2 and 1.3. Minimum supported Terraform version is now 1.4.
+
 ## [0.3.0] - 2024-11-26
 
 ### Added

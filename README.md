@@ -6,7 +6,7 @@ This a Terraform provider for interacting with [StatusPal API](https://www.statu
 
 ## Requirements
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.2
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.4
 - [Go](https://golang.org/doc/install) >= 1.22
 
 ## Building The Provider
@@ -36,6 +36,15 @@ Then commit the changes to `go.mod` and `go.sum`.
 ## Using the provider
 
 See the [statuspal Provider documentation](https://registry.terraform.io/providers/statuspal/statuspal/latest/docs).
+
+### Examples
+
+- [`examples/custom_domain/`](examples/custom_domain/) — provision a status
+  page with a custom domain in a single `terraform apply`. Wires together the
+  CNAME routing record, ACME TXT challenge, and domain activation end-to-end
+  using the `statuspal_status_page.domain_config` block plus the
+  `statuspal_domain_ssl_records` and `statuspal_custom_domain_validation`
+  waiter resources (with Cloudflare as the DNS provider).
 
 ## Developing the Provider
 

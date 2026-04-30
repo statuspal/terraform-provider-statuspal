@@ -1,0 +1,7 @@
+statuspal_api_key    = "<your-statuspal-api-key>"
+cloudflare_api_token = "<your-cloudflare-api-token>"
+cloudflare_zone_id   = "<cloudflare-zone-id-for-your-test-domain>"
+org_id               = "<your-statuspal-organization-id>"
+status_page_url      = "https://example.com"
+subdomain            = "tf-e2e-test"
+custom_domain        = "status-tf-test.example.com"

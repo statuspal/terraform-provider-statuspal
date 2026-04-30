@@ -276,6 +276,8 @@ func (p *statuspalProvider) Resources(_ context.Context) []func() resource.Resou
 		NewStatusPageResource,
 		NewServiceResource,
 		NewMetricResource,
+		NewDomainSslRecordsResource,
+		NewCustomDomainValidationResource,
 	}
 }
 
