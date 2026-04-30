@@ -100,7 +100,22 @@ func TestAccStatusPageResource(t *testing.T) {
 			"incident_header_color": "009688",
 			"reply_to_email": null,
 			"noindex": false,
-			"allowed_email_domains": "acme.corp\nbbc.com"
+			"allowed_email_domains": "acme.corp\nbbc.com",
+			"domain_config": {
+				"provider": "cloudflare",
+				"domain": "status.terraform.test",
+				"main_hostname": "ssl-for-saas.example.com",
+				"status": "configuring",
+				"error": null,
+				"external_id": "ext-abc123",
+				"pullzone_id": null,
+				"validation_records": {
+					"hostname_cname_name": "status.terraform.test",
+					"hostname_cname_value": "ssl-for-saas.example.com",
+					"hostname_txt_name": "_cf-custom-hostname.status.terraform.test",
+					"hostname_txt_value": "some-verification-token"
+				}
+			}
 		}
 	}`
 	updatedResponseBody := strings.Replace(responseBody, `"name": "Test Status Page from Terraform"`, `"name": "Edited Test Status Page from Terraform"`, 1)
@@ -189,12 +204,16 @@ func TestAccStatusPageResource(t *testing.T) {
 						}
 						allowed_email_domains = "acme.corp\nbbc.com"
 						public_company_name = "Public company name EN"
+						domain_config = {
+							provider = "cloudflare"
+							domain   = "status.terraform.test"
+						}
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -277,6 +296,21 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.allowed_email_domains", "acme.corp\nbbc.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-20T11:22:32"),
+					// Verify domain_config
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.%", "8"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "cloudflare"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.main_hostname", "ssl-for-saas.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.status", "configuring"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.error", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.external_id", "ext-abc123"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.name", "status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.type", "CNAME"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "ssl-for-saas.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.name", "_cf-custom-hostname.status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.value", "some-verification-token"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),
 				),
@@ -319,12 +353,16 @@ func TestAccStatusPageResource(t *testing.T) {
 						}
 						allowed_email_domains = "acme.corp\nbbc.com"
 						public_company_name = "Public company name EN"
+						domain_config = {
+							provider = "cloudflare"
+							domain   = "status.terraform.test"
+						}
 					}
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "organization_id", "1"),
 					// Verify status_page
-					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "76"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.%", "77"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.theme_selected", "default"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.scheduled_maintenance_days", "7"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.display_uptime_graph", "true"),
@@ -407,6 +445,21 @@ func TestAccStatusPageResource(t *testing.T) {
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.allowed_email_domains", "acme.corp\nbbc.com"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.inserted_at", "2024-04-15T11:20:35"),
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.updated_at", "2024-04-25T11:22:32"),
+					// Verify domain_config
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.%", "8"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "cloudflare"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.main_hostname", "ssl-for-saas.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.status", "configuring"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.error", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.external_id", "ext-abc123"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.%", "2"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.name", "status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.type", "CNAME"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "ssl-for-saas.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.name", "_cf-custom-hostname.status.terraform.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.type", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.hostname_txt.value", "some-verification-token"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("statuspal_status_page.test", "id", "placeholder"),
 				),

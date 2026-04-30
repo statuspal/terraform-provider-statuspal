@@ -1,5 +1,17 @@
 package statuspal
 
+// DomainConfig represents the custom domain configuration for a status page.
+type DomainConfig struct {
+	CDNProvider       *string           `json:"provider"`
+	Domain            *string           `json:"domain"`
+	MainHostname      *string           `json:"main_hostname"`
+	ValidationRecords map[string]string `json:"validation_records"`
+	ExternalID        *string           `json:"external_id"`
+	Status            *string           `json:"status"`
+	Error             *string           `json:"error"`
+	PullzoneID        *int64            `json:"pullzone_id"`
+}
+
 // StatusPage struct.
 type StatusPage struct {
 	Name                           string                 `json:"name"`
@@ -12,6 +24,7 @@ type StatusPage struct {
 	DisplayAbout                   bool                   `json:"display_about"`
 	CustomDomainEnabled            bool                   `json:"custom_domain_enabled"`
 	Domain                         string                 `json:"domain"`
+	DomainConfig                   *DomainConfig          `json:"domain_config,omitempty"`
 	RestrictedIps                  string                 `json:"restricted_ips"`
 	MemberRestricted               bool                   `json:"member_restricted"`
 	ScheduledMaintenanceDays       int64                  `json:"scheduled_maintenance_days"`
