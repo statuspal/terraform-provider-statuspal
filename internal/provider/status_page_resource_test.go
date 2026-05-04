@@ -578,10 +578,10 @@ func TestAccStatusPageResource_LegacyDomain(t *testing.T) {
 	})
 	mux.HandleFunc("/orgs/1/status_pages/legacy-test", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodDelete {
-			w.Write([]byte(`""`))
+			_, _ = w.Write([]byte(`""`))
 			return
 		}
-		w.Write([]byte(legacyResponse))
+		_, _ = w.Write([]byte(legacyResponse))
 	})
 
 	mockServer := httptest.NewServer(mux)
@@ -732,33 +732,38 @@ func TestAccStatusPageResource_LegacyToCloudFlareMigration(t *testing.T) {
 	currentResponse := legacyResponse
 
 	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(currentResponse))
+		_, _ = w.Write([]byte(currentResponse))
 	})
 	mux.HandleFunc("/orgs/1/status_pages/migrate-test", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodDelete {
-			w.Write([]byte(`""`))
+			_, _ = w.Write([]byte(`""`))
 			return
 		}
 		if r.Method == http.MethodPut {
-			body, _ := io.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			var payload struct {
 				StatusPage struct {
 					DomainConfig json.RawMessage `json:"domain_config"`
 				} `json:"status_page"`
 			}
-			json.Unmarshal(body, &payload)
+			if err := json.Unmarshal(body, &payload); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 
 			// Detect the clearing call: domain_config is absent (null/omitted)
 			if payload.StatusPage.DomainConfig == nil || string(payload.StatusPage.DomainConfig) == "null" {
 				clearCallCount.Add(1)
-				// After clearing, return the legacy response (clear acknowledged)
-				w.Write([]byte(legacyResponse))
+				_, _ = w.Write([]byte(legacyResponse))
 				return
 			}
-			// The real update with cloudflare provider
 			currentResponse = cloudflareResponse
 		}
-		w.Write([]byte(currentResponse))
+		_, _ = w.Write([]byte(currentResponse))
 	})
 
 	mockServer := httptest.NewServer(mux)
