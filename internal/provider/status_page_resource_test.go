@@ -1,14 +1,19 @@
 package provider
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccStatusPageResource(t *testing.T) {
@@ -465,6 +470,355 @@ func TestAccStatusPageResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+// TestAccStatusPageResource_LegacyDomain verifies that creating a status page with
+// the deprecated domain + custom_domain_enabled fields works when the API converts
+// them into domain_config with provider "legacy_custom_domain" and returns domain "".
+func TestAccStatusPageResource_LegacyDomain(t *testing.T) {
+	mux := http.NewServeMux()
+
+	legacyResponse := `{
+		"status_page": {
+			"name": "Legacy Domain Test",
+			"url": "legacy.test",
+			"time_zone": "UTC",
+			"subdomain": "legacy-test",
+			"domain": "",
+			"custom_domain_enabled": true,
+			"domain_config": {
+				"provider": "legacy_custom_domain",
+				"domain": "status.legacy.test",
+				"main_hostname": null,
+				"status": "active",
+				"error": null,
+				"external_id": null,
+				"pullzone_id": null,
+				"validation_records": {}
+			},
+			"theme_selected": "default",
+			"scheduled_maintenance_days": 7,
+			"display_uptime_graph": true,
+			"inserted_at": "2024-06-01T10:00:00",
+			"updated_at": "2024-06-01T10:00:00",
+			"header_fg_color": "ffffff",
+			"history_limit_days": 90,
+			"head_code": null,
+			"support_email": null,
+			"locked_when_maintenance": false,
+			"custom_footer": null,
+			"custom_incident_types_enabled": false,
+			"slack_subscriptions_enabled": false,
+			"date_format": null,
+			"maintenance_notification_hours": 6,
+			"twitter_public_screen_name": null,
+			"header_logo_text": null,
+			"member_restricted": false,
+			"status_ok_color": "48CBA5",
+			"uptime_graph_days": 90,
+			"subscribers_enabled": true,
+			"display_about": false,
+			"translations": {},
+			"tweet_by_default": false,
+			"display_calendar": true,
+			"email_templates_enabled": false,
+			"google_calendar_enabled": false,
+			"link_color": "0c91c3",
+			"email_layout_template": null,
+			"status_major_color": "e75a53",
+			"custom_header": null,
+			"date_format_enforce_everywhere": false,
+			"time_format": null,
+			"header_bg_color1": "009688",
+			"incident_link_color": null,
+			"bg_image": null,
+			"logo": null,
+			"favicon": null,
+			"custom_css": null,
+			"current_incidents_position": "below_services",
+			"custom_js": null,
+			"minor_notification_hours": 6,
+			"mattermost_notifications_enabled": false,
+			"info_notices_enabled": true,
+			"captcha_enabled": true,
+			"about": null,
+			"google_chat_notifications_enabled": false,
+			"discord_notifications_enabled": false,
+			"status_minor_color": "FFA500",
+			"tweeting_enabled": true,
+			"sms_notifications_enabled": false,
+			"zoom_notifications_enabled": false,
+			"notify_by_default": false,
+			"hide_watermark": false,
+			"enable_auto_translations": false,
+			"restricted_ips": null,
+			"feed_enabled": true,
+			"header_bg_color2": "0c91c3",
+			"public_company_name": null,
+			"notification_email": null,
+			"email_notification_template": null,
+			"teams_notifications_enabled": false,
+			"status_maintenance_color": "5378c1",
+			"email_confirmation_template": null,
+			"calendar_enabled": false,
+			"major_notification_hours": 3,
+			"incident_header_color": "009688",
+			"reply_to_email": null,
+			"noindex": false,
+			"allowed_email_domains": null
+		}
+	}`
+
+	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := w.Write([]byte(legacyResponse)); err != nil {
+			log.Printf("Error writing response: %v", err)
+		}
+	})
+	mux.HandleFunc("/orgs/1/status_pages/legacy-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			_, _ = w.Write([]byte(`""`))
+			return
+		}
+		_, _ = w.Write([]byte(legacyResponse))
+	})
+
+	mockServer := httptest.NewServer(mux)
+	defer mockServer.Close()
+	providerConfig := providerConfig(&mockServer.URL)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Legacy Domain Test"
+						url       = "legacy.test"
+						time_zone = "UTC"
+						domain                = "status.legacy.test"
+						custom_domain_enabled = true
+					}
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// The provider should echo domain_config.domain back into the legacy domain field
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain", "status.legacy.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.custom_domain_enabled", "true"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "legacy_custom_domain"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "status.legacy.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.status", "active"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccStatusPageResource_LegacyToCloudFlareMigration verifies that migrating from
+// a legacy_custom_domain to cloudflare sends a clearing API call before the real update.
+func TestAccStatusPageResource_LegacyToCloudFlareMigration(t *testing.T) {
+	var clearCallCount atomic.Int32
+
+	mux := http.NewServeMux()
+
+	legacyResponse := `{
+		"status_page": {
+			"name": "Migration Test",
+			"url": "migrate.test",
+			"time_zone": "UTC",
+			"subdomain": "migrate-test",
+			"domain": "",
+			"custom_domain_enabled": true,
+			"domain_config": {
+				"provider": "legacy_custom_domain",
+				"domain": "status.migrate.test",
+				"main_hostname": null,
+				"status": "active",
+				"error": null,
+				"external_id": null,
+				"pullzone_id": null,
+				"validation_records": {}
+			},
+			"theme_selected": "default",
+			"scheduled_maintenance_days": 7,
+			"display_uptime_graph": true,
+			"inserted_at": "2024-06-01T10:00:00",
+			"updated_at": "2024-06-01T10:00:00",
+			"header_fg_color": "ffffff",
+			"history_limit_days": 90,
+			"head_code": null,
+			"support_email": null,
+			"locked_when_maintenance": false,
+			"custom_footer": null,
+			"custom_incident_types_enabled": false,
+			"slack_subscriptions_enabled": false,
+			"date_format": null,
+			"maintenance_notification_hours": 6,
+			"twitter_public_screen_name": null,
+			"header_logo_text": null,
+			"member_restricted": false,
+			"status_ok_color": "48CBA5",
+			"uptime_graph_days": 90,
+			"subscribers_enabled": true,
+			"display_about": false,
+			"translations": {},
+			"tweet_by_default": false,
+			"display_calendar": true,
+			"email_templates_enabled": false,
+			"google_calendar_enabled": false,
+			"link_color": "0c91c3",
+			"email_layout_template": null,
+			"status_major_color": "e75a53",
+			"custom_header": null,
+			"date_format_enforce_everywhere": false,
+			"time_format": null,
+			"header_bg_color1": "009688",
+			"incident_link_color": null,
+			"bg_image": null,
+			"logo": null,
+			"favicon": null,
+			"custom_css": null,
+			"current_incidents_position": "below_services",
+			"custom_js": null,
+			"minor_notification_hours": 6,
+			"mattermost_notifications_enabled": false,
+			"info_notices_enabled": true,
+			"captcha_enabled": true,
+			"about": null,
+			"google_chat_notifications_enabled": false,
+			"discord_notifications_enabled": false,
+			"status_minor_color": "FFA500",
+			"tweeting_enabled": true,
+			"sms_notifications_enabled": false,
+			"zoom_notifications_enabled": false,
+			"notify_by_default": false,
+			"hide_watermark": false,
+			"enable_auto_translations": false,
+			"restricted_ips": null,
+			"feed_enabled": true,
+			"header_bg_color2": "0c91c3",
+			"public_company_name": null,
+			"notification_email": null,
+			"email_notification_template": null,
+			"teams_notifications_enabled": false,
+			"status_maintenance_color": "5378c1",
+			"email_confirmation_template": null,
+			"calendar_enabled": false,
+			"major_notification_hours": 3,
+			"incident_header_color": "009688",
+			"reply_to_email": null,
+			"noindex": false,
+			"allowed_email_domains": null
+		}
+	}`
+
+	cloudflareResponse := strings.Replace(legacyResponse,
+		`"provider": "legacy_custom_domain"`,
+		`"provider": "cloudflare"`, 1)
+	cloudflareResponse = strings.Replace(cloudflareResponse,
+		`"status": "active"`,
+		`"status": "configuring"`, 1)
+	cloudflareResponse = strings.Replace(cloudflareResponse,
+		`"validation_records": {}`,
+		`"validation_records": {
+			"hostname_cname_name": "status.migrate.test",
+			"hostname_cname_value": "domains-proxied.statuspal.io"
+		}`, 1)
+	cloudflareResponse = strings.Replace(cloudflareResponse,
+		`"custom_domain_enabled": true`,
+		`"custom_domain_enabled": false`, 1)
+
+	currentResponse := legacyResponse
+
+	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(currentResponse))
+	})
+	mux.HandleFunc("/orgs/1/status_pages/migrate-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			_, _ = w.Write([]byte(`""`))
+			return
+		}
+		if r.Method == http.MethodPut {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			var payload struct {
+				StatusPage struct {
+					DomainConfig json.RawMessage `json:"domain_config"`
+				} `json:"status_page"`
+			}
+			if err := json.Unmarshal(body, &payload); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			// Detect the clearing call: domain_config is absent (null/omitted)
+			if payload.StatusPage.DomainConfig == nil || string(payload.StatusPage.DomainConfig) == "null" {
+				clearCallCount.Add(1)
+				_, _ = w.Write([]byte(legacyResponse))
+				return
+			}
+			currentResponse = cloudflareResponse
+		}
+		_, _ = w.Write([]byte(currentResponse))
+	})
+
+	mockServer := httptest.NewServer(mux)
+	defer mockServer.Close()
+	providerConfig := providerConfig(&mockServer.URL)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1: Create with legacy domain
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Migration Test"
+						url       = "migrate.test"
+						time_zone = "UTC"
+						domain                = "status.migrate.test"
+						custom_domain_enabled = true
+					}
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "legacy_custom_domain"),
+				),
+			},
+			// Step 2: Migrate to cloudflare — the provider should send a clearing call first
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Migration Test"
+						url       = "migrate.test"
+						time_zone = "UTC"
+						domain_config = {
+							provider = "cloudflare"
+							domain   = "status.migrate.test"
+						}
+					}
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain", ""),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "cloudflare"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "status.migrate.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.status", "configuring"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.name", "status.migrate.test"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "domains-proxied.statuspal.io"),
+				),
+			},
+		},
+		// Verify the clearing call was made during the migration step
+		CheckDestroy: func(s *terraform.State) error {
+			if clearCallCount.Load() == 0 {
+				return fmt.Errorf("expected a clearing API call during legacy-to-cloudflare migration, but none was made")
+			}
+			return nil
 		},
 	})
 }
