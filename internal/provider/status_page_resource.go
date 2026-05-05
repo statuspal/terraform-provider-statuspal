@@ -836,9 +836,29 @@ func (r *statusPageResource) Update(ctx context.Context, req resource.UpdateRequ
 		statusPage.Subdomain = state.StatusPage.Subdomain.ValueString()
 	}
 
-	// Update existing status page
 	organizationID := plan.OrganizationID.ValueString()
 	subdomain := state.StatusPage.Subdomain.ValueString()
+
+	// When migrating from a legacy custom domain to cloudflare/bunny, the backend
+	// requires the legacy domain to be cleared first — otherwise CloudFlare's SSL
+	// for SaaS fails to generate ACME challenges. Detect this transition and send
+	// a clearing update before the real one.
+	if statusPage.DomainConfig != nil && needsLegacyDomainClear(&ctx, &state.StatusPage, statusPage.DomainConfig) {
+		clearPage := *statusPage
+		clearPage.DomainConfig = nil
+		clearPage.Domain = ""
+		clearPage.CustomDomainEnabled = false
+		_, err := r.client.UpdateStatusPage(&clearPage, &organizationID, &subdomain)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error clearing legacy domain before migration",
+				"Could not clear legacy domain config, unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+
+	// Update existing status page
 	updatedStatusPage, err := r.client.UpdateStatusPage(statusPage, &organizationID, &subdomain)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -935,6 +955,30 @@ func (r *statusPageResource) Configure(
 	}
 
 	r.client = client
+}
+
+// needsLegacyDomainClear returns true when the state has a legacy_custom_domain
+// provider and the plan switches to cloudflare or bunny. The backend requires the
+// legacy domain to be cleared first for CloudFlare SSL for SaaS to work.
+func needsLegacyDomainClear(ctx *context.Context, stateStatusPage *statusPageModel, plannedDomainConfig *statuspal.DomainConfig) bool {
+	if stateStatusPage.DomainConfig.IsNull() || stateStatusPage.DomainConfig.IsUnknown() {
+		return false
+	}
+
+	var stateDC domainConfigModel
+	diags := stateStatusPage.DomainConfig.As(*ctx, &stateDC, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return false
+	}
+
+	stateProvider := strings.ToLower(stateDC.CDNProvider.ValueString())
+	plannedProvider := ""
+	if plannedDomainConfig.CDNProvider != nil {
+		plannedProvider = strings.ToLower(*plannedDomainConfig.CDNProvider)
+	}
+
+	return stateProvider == "legacy_custom_domain" &&
+		(plannedProvider == "cloudflare" || plannedProvider == "bunny")
 }
 
 func mapStatusPageModelToRequestBody(
@@ -1197,11 +1241,17 @@ func mapResponseToStatusPageModel(statusPage *statuspal.StatusPage, diagnostics 
 		translations = convertedTranslations
 	}
 
-	// When domain_config is active, the API mirrors its domain into the legacy domain field.
-	// Keep domain empty to avoid conflicting with the planned value of "".
+	// The API converts legacy domain into domain_config with provider "legacy_custom_domain".
+	// When that happens, echo back domain_config.domain so it matches the user's configured
+	// legacy domain value. For non-legacy providers (cloudflare, bunny), the user used
+	// domain_config directly, so keep the legacy field empty.
 	legacyDomain := statusPage.Domain
 	if statusPage.DomainConfig != nil {
-		legacyDomain = ""
+		if statusPage.DomainConfig.CDNProvider != nil && *statusPage.DomainConfig.CDNProvider == "legacy_custom_domain" && statusPage.DomainConfig.Domain != nil {
+			legacyDomain = strings.ToLower(*statusPage.DomainConfig.Domain)
+		} else {
+			legacyDomain = ""
+		}
 	}
 
 	return &statusPageModel{

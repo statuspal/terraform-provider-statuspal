@@ -5,6 +5,19 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-05-04
+
+### Fixed
+
+- Legacy domain provisioning no longer produces a "Provider produced inconsistent
+  result after apply" error. The API now returns the domain inside `domain_config`
+  instead of the deprecated `domain` field; the provider maps it back correctly.
+
+- Migrating from a legacy custom domain to CloudFlare/Bunny now works in a single
+  `terraform apply`. The provider automatically clears the legacy domain before
+  provisioning the new `domain_config`, which is required for CloudFlare's SSL
+  certificate generation.
+
 ## [0.4.0] - 2026-04-30
 
 ### Added
