@@ -3,12 +3,14 @@
 page_title: "statuspal_domain_ssl_records Resource - statuspal"
 subcategory: ""
 description: |-
-  Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op.
+  Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op. **This resource is only needed for Cloudflare custom domains.** Bunny CDN handles SSL automatically and does not require certificate challenge records — see the [Bunny example](https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain_bunny) for the simpler flow.
 ---
 
 # statuspal_domain_ssl_records (Resource)
 
 Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op.
+
+~> **Note:** This resource is only needed for **Cloudflare** custom domains. Bunny CDN handles SSL automatically and does not require certificate challenge records. See the [Bunny custom domain example](https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain_bunny) for the simpler flow.
 
 ## Example Usage
 
@@ -16,10 +18,11 @@ Waiter resource that polls a status page's domain_config until the SSL certifica
 # Waiter resource that polls until the SSL certificate DNS challenge records
 # are available for a status page with a custom domain configured via Cloudflare.
 #
-# Use this between creating the CNAME routing record and the TXT certificate
-# record to complete custom domain setup in a single terraform apply. See
-# https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain
-# for the full end-to-end flow.
+# This resource is NOT needed for Bunny custom domains — Bunny handles SSL
+# automatically. Use this between creating the CNAME routing record and the
+# TXT certificate record to complete custom domain setup in a single terraform
+# apply. See https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain
+# for the full Cloudflare end-to-end flow.
 
 resource "statuspal_domain_ssl_records" "example" {
   organization_id       = "1"
