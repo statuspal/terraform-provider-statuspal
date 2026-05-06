@@ -5,6 +5,15 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-05-06
+
+### Fixed
+
+- Bunny custom domain provisioning now works in a single `terraform apply`. The
+  provider polls the API until the Bunny pull zone is ready and the CNAME value
+  is available, instead of returning an empty value that caused DNS record
+  creation to fail.
+
 ## [0.4.1] - 2026-05-04
 
 ### Fixed

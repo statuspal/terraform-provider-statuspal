@@ -822,3 +822,174 @@ func TestAccStatusPageResource_LegacyToCloudFlareMigration(t *testing.T) {
 		},
 	})
 }
+
+// TestAccStatusPageResource_BunnyDomain verifies that creating a status page with
+// provider="bunny" polls until the CNAME value is populated (Bunny pull zone
+// creation is asynchronous) and stores the correct validation records in state.
+func TestAccStatusPageResource_BunnyDomain(t *testing.T) {
+	var pollCount atomic.Int32
+
+	bunnyResponseNoCNAME := `{
+		"status_page": {
+			"name": "Bunny Domain Test",
+			"url": "bunny.test",
+			"time_zone": "UTC",
+			"subdomain": "bunny-test",
+			"domain": "bunny-test.example.com",
+			"custom_domain_enabled": true,
+			"domain_config": {
+				"provider": "bunny",
+				"domain": "bunny-test.example.com",
+				"main_hostname": null,
+				"status": "configuring",
+				"error": null,
+				"external_id": null,
+				"pullzone_id": null,
+				"validation_records": {
+					"hostname_cname_name": "bunny-test.example.com",
+					"hostname_cname_value": ""
+				}
+			},
+			"theme_selected": "default",
+			"scheduled_maintenance_days": 7,
+			"display_uptime_graph": true,
+			"inserted_at": "2024-06-01T10:00:00",
+			"updated_at": "2024-06-01T10:00:00",
+			"header_fg_color": "ffffff",
+			"history_limit_days": 90,
+			"head_code": null,
+			"support_email": null,
+			"locked_when_maintenance": false,
+			"custom_footer": null,
+			"custom_incident_types_enabled": false,
+			"slack_subscriptions_enabled": false,
+			"date_format": null,
+			"maintenance_notification_hours": 6,
+			"twitter_public_screen_name": null,
+			"header_logo_text": null,
+			"member_restricted": false,
+			"status_ok_color": "48CBA5",
+			"uptime_graph_days": 90,
+			"subscribers_enabled": true,
+			"display_about": false,
+			"translations": {},
+			"tweet_by_default": false,
+			"display_calendar": true,
+			"email_templates_enabled": false,
+			"google_calendar_enabled": false,
+			"link_color": "0c91c3",
+			"email_layout_template": null,
+			"status_major_color": "e75a53",
+			"custom_header": null,
+			"date_format_enforce_everywhere": false,
+			"time_format": null,
+			"header_bg_color1": "009688",
+			"incident_link_color": null,
+			"bg_image": null,
+			"logo": null,
+			"favicon": null,
+			"custom_css": null,
+			"current_incidents_position": "below_services",
+			"custom_js": null,
+			"minor_notification_hours": 6,
+			"mattermost_notifications_enabled": false,
+			"info_notices_enabled": true,
+			"captcha_enabled": true,
+			"about": null,
+			"google_chat_notifications_enabled": false,
+			"discord_notifications_enabled": false,
+			"status_minor_color": "FFA500",
+			"tweeting_enabled": true,
+			"sms_notifications_enabled": false,
+			"zoom_notifications_enabled": false,
+			"notify_by_default": false,
+			"hide_watermark": false,
+			"enable_auto_translations": false,
+			"restricted_ips": null,
+			"feed_enabled": true,
+			"header_bg_color2": "0c91c3",
+			"public_company_name": null,
+			"notification_email": null,
+			"email_notification_template": null,
+			"teams_notifications_enabled": false,
+			"status_maintenance_color": "5378c1",
+			"email_confirmation_template": null,
+			"calendar_enabled": false,
+			"major_notification_hours": 3,
+			"incident_header_color": "009688",
+			"reply_to_email": null,
+			"noindex": false,
+			"allowed_email_domains": null
+		}
+	}`
+
+	bunnyResponseWithCNAME := strings.Replace(bunnyResponseNoCNAME,
+		`"hostname_cname_value": ""`,
+		`"hostname_cname_value": "statuspal-eu-12345.b-cdn.net"`, 1)
+	bunnyResponseWithCNAME = strings.Replace(bunnyResponseWithCNAME,
+		`"main_hostname": null`,
+		`"main_hostname": "statuspal-eu-12345.b-cdn.net"`, 1)
+	bunnyResponseWithCNAME = strings.Replace(bunnyResponseWithCNAME,
+		`"pullzone_id": null`,
+		`"pullzone_id": 12345`, 1)
+	bunnyResponseWithCNAME = strings.Replace(bunnyResponseWithCNAME,
+		`"external_id": null`,
+		`"external_id": "bunny-test.example.com"`, 1)
+
+	mux := http.NewServeMux()
+
+	// POST /orgs/1/status_pages — returns response without CNAME value (pull zone not ready)
+	mux.HandleFunc("/orgs/1/status_pages", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(bunnyResponseNoCNAME))
+	})
+	// GET/PUT/DELETE /orgs/1/status_pages/bunny-test — simulates async pull zone creation
+	mux.HandleFunc("/orgs/1/status_pages/bunny-test", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete {
+			_, _ = w.Write([]byte(`""`))
+			return
+		}
+		if r.Method == http.MethodGet {
+			pollCount.Add(1)
+		}
+		// Always return the populated response for GET/PUT (simulates pull zone ready after first poll)
+		_, _ = w.Write([]byte(bunnyResponseWithCNAME))
+	})
+
+	mockServer := httptest.NewServer(mux)
+	defer mockServer.Close()
+	providerConfig := providerConfig(&mockServer.URL)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: *providerConfig + `resource "statuspal_status_page" "test" {
+					organization_id = "1"
+					status_page = {
+						name      = "Bunny Domain Test"
+						url       = "bunny.test"
+						time_zone = "UTC"
+						domain_config = {
+							provider = "bunny"
+							domain   = "bunny-test.example.com"
+						}
+					}
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.provider", "bunny"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.domain", "bunny-test.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.main_hostname", "statuspal-eu-12345.b-cdn.net"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.pullzone_id", "12345"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.name", "bunny-test.example.com"),
+					resource.TestCheckResourceAttr("statuspal_status_page.test", "status_page.domain_config.validation_records.cname.value", "statuspal-eu-12345.b-cdn.net"),
+				),
+			},
+		},
+		CheckDestroy: func(s *terraform.State) error {
+			if pollCount.Load() == 0 {
+				return fmt.Errorf("expected polling for Bunny CNAME value, but no GET requests were made")
+			}
+			return nil
+		},
+	})
+}
