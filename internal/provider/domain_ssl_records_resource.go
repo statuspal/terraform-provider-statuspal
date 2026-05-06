@@ -55,7 +55,8 @@ func (r *domainSslRecordsResource) Schema(_ context.Context, _ resource.SchemaRe
 		Description: "Waiter resource that polls a status page's domain_config until the SSL certificate " +
 			"challenge DNS records become available, then exposes them as computed attributes. " +
 			"Use this between creating the CNAME routing record and the TXT certificate record " +
-			"to enable a single-apply custom domain flow. Destroying this resource is a no-op.",
+			"to enable a single-apply custom domain flow. Destroying this resource is a no-op. " +
+			"This resource is only needed for Cloudflare custom domains — Bunny handles SSL automatically.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Placeholder identifier attribute.",

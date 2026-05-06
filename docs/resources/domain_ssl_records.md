@@ -3,14 +3,12 @@
 page_title: "statuspal_domain_ssl_records Resource - statuspal"
 subcategory: ""
 description: |-
-  Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op. **This resource is only needed for Cloudflare custom domains.** Bunny CDN handles SSL automatically and does not require certificate challenge records — see the [Bunny example](https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain_bunny) for the simpler flow.
+  Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op. This resource is only needed for Cloudflare custom domains — Bunny handles SSL automatically.
 ---
 
 # statuspal_domain_ssl_records (Resource)
 
-Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op.
-
-~> **Note:** This resource is only needed for **Cloudflare** custom domains. Bunny CDN handles SSL automatically and does not require certificate challenge records. See the [Bunny custom domain example](https://github.com/statuspal/terraform-provider-statuspal/tree/main/examples/custom_domain_bunny) for the simpler flow.
+Waiter resource that polls a status page's domain_config until the SSL certificate challenge DNS records become available, then exposes them as computed attributes. Use this between creating the CNAME routing record and the TXT certificate record to enable a single-apply custom domain flow. Destroying this resource is a no-op. This resource is only needed for Cloudflare custom domains — Bunny handles SSL automatically.
 
 ## Example Usage
 
