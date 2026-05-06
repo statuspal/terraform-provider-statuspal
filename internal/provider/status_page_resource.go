@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -755,6 +756,19 @@ func (r *statusPageResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	// Bunny pull zone creation is asynchronous — poll until the CNAME value is available.
+	if newStatusPage.DomainConfig != nil && newStatusPage.DomainConfig.CDNProvider != nil &&
+		strings.ToLower(*newStatusPage.DomainConfig.CDNProvider) == "bunny" {
+		newStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, newStatusPage.Subdomain, 60*time.Second)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error waiting for Bunny pull zone",
+				"Bunny pull zone creation did not complete: "+err.Error(),
+			)
+			return
+		}
+	}
+
 	// Map response body to schema and populate Computed attribute values
 	newStatusPageModel := mapResponseToStatusPageModel(newStatusPage, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -868,6 +882,23 @@ func (r *statusPageResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	// Bunny pull zone creation is asynchronous — poll until the CNAME value is available.
+	if updatedStatusPage.DomainConfig != nil && updatedStatusPage.DomainConfig.CDNProvider != nil &&
+		strings.ToLower(*updatedStatusPage.DomainConfig.CDNProvider) == "bunny" {
+		updatedSubdomain := updatedStatusPage.Subdomain
+		if updatedSubdomain == "" {
+			updatedSubdomain = subdomain
+		}
+		updatedStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, updatedSubdomain, 60*time.Second)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error waiting for Bunny pull zone",
+				"Bunny pull zone creation did not complete: "+err.Error(),
+			)
+			return
+		}
+	}
+
 	// Map response body to schema and populate Computed attribute values
 	updatedStatusPageModel := mapResponseToStatusPageModel(updatedStatusPage, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -979,6 +1010,42 @@ func needsLegacyDomainClear(ctx *context.Context, stateStatusPage *statusPageMod
 
 	return stateProvider == "legacy_custom_domain" &&
 		(plannedProvider == "cloudflare" || plannedProvider == "bunny")
+}
+
+// pollBunnyValidationRecords polls GetStatusPage until the Bunny pull zone is
+// configured and the CNAME value is populated. Bunny pull zone creation is
+// asynchronous, so the initial response may have an empty CNAME value.
+func pollBunnyValidationRecords(
+	client *statuspal.Client,
+	orgID, subdomain string,
+	timeout time.Duration,
+) (*statuspal.StatusPage, error) {
+	deadline := time.Now().Add(timeout)
+	for {
+		sp, err := client.GetStatusPage(&orgID, &subdomain)
+		if err != nil {
+			return nil, err
+		}
+		if sp.DomainConfig == nil {
+			return sp, nil
+		}
+		status := ""
+		if sp.DomainConfig.Status != nil {
+			status = *sp.DomainConfig.Status
+		}
+		if status == "failed_to_configure" {
+			return sp, nil
+		}
+		if vr := sp.DomainConfig.ValidationRecords; vr != nil {
+			if v, ok := vr["hostname_cname_value"]; ok && v != "" {
+				return sp, nil
+			}
+		}
+		if time.Now().After(deadline) {
+			return sp, fmt.Errorf("timed out waiting for Bunny pull zone CNAME value after %s", timeout)
+		}
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func mapStatusPageModelToRequestBody(
