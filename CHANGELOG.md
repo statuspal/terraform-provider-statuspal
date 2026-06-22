@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the pull zone is created asynchronously, the provider now waits up to 10 minutes
   (previously 60 seconds) for the CNAME value to become available, which prevents
   the status page's custom domain from being left in a disabled state.
+- The Bunny pull zone poll now honors cancellation: a cancelled `terraform apply`
+  or provider shutdown exits the poll promptly instead of blocking until the
+  timeout elapses.
 
 ## [0.4.2] - 2026-05-06
 

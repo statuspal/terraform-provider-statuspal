@@ -770,7 +770,7 @@ func (r *statusPageResource) Create(ctx context.Context, req resource.CreateRequ
 	// Bunny pull zone creation is asynchronous — poll until the CNAME value is available.
 	if newStatusPage.DomainConfig != nil && newStatusPage.DomainConfig.CDNProvider != nil &&
 		strings.ToLower(*newStatusPage.DomainConfig.CDNProvider) == "bunny" {
-		newStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, newStatusPage.Subdomain, bunnyPullZoneTimeout)
+		newStatusPage, err = pollBunnyValidationRecords(ctx, r.client, organizationID, newStatusPage.Subdomain, bunnyPullZoneTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for Bunny pull zone",
@@ -900,7 +900,7 @@ func (r *statusPageResource) Update(ctx context.Context, req resource.UpdateRequ
 		if updatedSubdomain == "" {
 			updatedSubdomain = subdomain
 		}
-		updatedStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, updatedSubdomain, bunnyPullZoneTimeout)
+		updatedStatusPage, err = pollBunnyValidationRecords(ctx, r.client, organizationID, updatedSubdomain, bunnyPullZoneTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for Bunny pull zone",
@@ -1027,12 +1027,19 @@ func needsLegacyDomainClear(ctx *context.Context, stateStatusPage *statusPageMod
 // configured and the CNAME value is populated. Bunny pull zone creation is
 // asynchronous, so the initial response may have an empty CNAME value.
 func pollBunnyValidationRecords(
+	ctx context.Context,
 	client *statuspal.Client,
 	orgID, subdomain string,
 	timeout time.Duration,
 ) (*statuspal.StatusPage, error) {
 	deadline := time.Now().Add(timeout)
 	for {
+		// Exit promptly if the apply was cancelled (e.g. Ctrl+C) or the provider
+		// is shutting down, rather than blocking until the full timeout elapses.
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+
 		sp, err := client.GetStatusPage(&orgID, &subdomain)
 		if err != nil {
 			return nil, err
@@ -1055,7 +1062,12 @@ func pollBunnyValidationRecords(
 		if time.Now().After(deadline) {
 			return sp, fmt.Errorf("timed out waiting for Bunny pull zone CNAME value after %s", timeout)
 		}
-		time.Sleep(bunnyPullZonePollInterval)
+
+		select {
+		case <-ctx.Done():
+			return sp, ctx.Err()
+		case <-time.After(bunnyPullZonePollInterval):
+		}
 	}
 }
 
