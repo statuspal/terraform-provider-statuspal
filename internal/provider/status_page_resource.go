@@ -25,6 +25,17 @@ import (
 	statuspal "terraform-provider-statuspal/internal/client"
 )
 
+const (
+	// Bunny pull zone creation is asynchronous: the backend enqueues a job that
+	// calls Bunny and only then writes back the CNAME value. That work can take
+	// well over a minute (the backend's own Bunny calls have multi-minute
+	// timeouts), so we poll generously. A short timeout here causes the apply to
+	// fail and leave the custom domain in a disabled state even though the
+	// backend completes the setup moments later.
+	bunnyPullZonePollInterval = 2 * time.Second
+	bunnyPullZoneTimeout      = 10 * time.Minute
+)
+
 var validationRecordAttrTypes = map[string]attr.Type{
 	"name":  types.StringType,
 	"type":  types.StringType,
@@ -759,7 +770,7 @@ func (r *statusPageResource) Create(ctx context.Context, req resource.CreateRequ
 	// Bunny pull zone creation is asynchronous — poll until the CNAME value is available.
 	if newStatusPage.DomainConfig != nil && newStatusPage.DomainConfig.CDNProvider != nil &&
 		strings.ToLower(*newStatusPage.DomainConfig.CDNProvider) == "bunny" {
-		newStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, newStatusPage.Subdomain, 60*time.Second)
+		newStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, newStatusPage.Subdomain, bunnyPullZoneTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for Bunny pull zone",
@@ -889,7 +900,7 @@ func (r *statusPageResource) Update(ctx context.Context, req resource.UpdateRequ
 		if updatedSubdomain == "" {
 			updatedSubdomain = subdomain
 		}
-		updatedStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, updatedSubdomain, 60*time.Second)
+		updatedStatusPage, err = pollBunnyValidationRecords(r.client, organizationID, updatedSubdomain, bunnyPullZoneTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for Bunny pull zone",
@@ -1044,7 +1055,7 @@ func pollBunnyValidationRecords(
 		if time.Now().After(deadline) {
 			return sp, fmt.Errorf("timed out waiting for Bunny pull zone CNAME value after %s", timeout)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(bunnyPullZonePollInterval)
 	}
 }
 

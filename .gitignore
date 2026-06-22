@@ -38,3 +38,8 @@ website/vendor
 
 # Local-only e2e test harness (not for the repo)
 e2e-test-update/
+e2e-test-bunny/
+e2e-test-legacy-to-custom/
+
+# Compiled provider binary (output of `go build .`)
+/terraform-provider-statuspal
