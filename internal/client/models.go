@@ -1,15 +1,22 @@
 package statuspal
 
 // DomainConfig represents the custom domain configuration for a status page.
+//
+// Only `provider` and `domain` are client-controllable. The remaining fields are
+// server-managed (computed) and must NOT be sent on create/update — `omitempty`
+// keeps nil pointers out of the request body so a re-apply doesn't transmit them
+// as `null`, which the backend would otherwise persist and wipe the live linkage
+// (see NXT-813). `omitempty` only affects marshalling; response unmarshalling is
+// unchanged.
 type DomainConfig struct {
 	CDNProvider       *string           `json:"provider"`
 	Domain            *string           `json:"domain"`
-	MainHostname      *string           `json:"main_hostname"`
-	ValidationRecords map[string]string `json:"validation_records"`
-	ExternalID        *string           `json:"external_id"`
-	Status            *string           `json:"status"`
-	Error             *string           `json:"error"`
-	PullzoneID        *int64            `json:"pullzone_id"`
+	MainHostname      *string           `json:"main_hostname,omitempty"`
+	ValidationRecords map[string]string `json:"validation_records,omitempty"`
+	ExternalID        *string           `json:"external_id,omitempty"`
+	Status            *string           `json:"status,omitempty"`
+	Error             *string           `json:"error,omitempty"`
+	PullzoneID        *int64            `json:"pullzone_id,omitempty"`
 }
 
 // StatusPage struct.

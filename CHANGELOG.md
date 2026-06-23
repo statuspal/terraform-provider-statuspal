@@ -5,6 +5,17 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-06-23
+
+### Fixed
+
+- The provider no longer sends the server-managed `domain_config` fields
+  (`main_hostname`, `pullzone_id`, `external_id`, `status`, `validation_records`,
+  `error`) as `null` on update. Re-applying a status page with an active custom
+  domain previously transmitted these computed fields as `null`, which could wipe
+  the live Bunny/Cloudflare linkage on the StatusPal side and leave the domain
+  disabled. They are now omitted from the request body.
+
 ## [0.4.3] - 2026-06-22
 
 ### Fixed
