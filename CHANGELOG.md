@@ -5,6 +5,19 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-06-22
+
+### Fixed
+
+- Bunny custom domain provisioning no longer fails with a "timed out waiting for
+  Bunny pull zone CNAME value after 1m0s" error during `terraform apply`. Because
+  the pull zone is created asynchronously, the provider now waits up to 10 minutes
+  (previously 60 seconds) for the CNAME value to become available, which prevents
+  the status page's custom domain from being left in a disabled state.
+- The Bunny pull zone poll now honors cancellation: a cancelled `terraform apply`
+  or provider shutdown exits the poll promptly instead of blocking until the
+  timeout elapses.
+
 ## [0.4.2] - 2026-05-06
 
 ### Fixed
