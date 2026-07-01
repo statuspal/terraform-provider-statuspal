@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `custom_domain_enabled` and `domain` attributes on `statuspal_status_page`
   now carry an explicit deprecation notice: legacy custom domains are no longer
   supported by the StatusPal API. Configure custom domains through the
-  `domain_config` block (CloudFlare/Bunny) instead. These attributes are also now
+  `domain_config` block (Cloudflare/Bunny) instead. These attributes are also now
   marked deprecated on the `statuspal_status_pages` data source, and will be
   removed in a future release.
 
