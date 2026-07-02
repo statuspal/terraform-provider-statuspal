@@ -5,6 +5,17 @@ All notable changes of the StatusPal Terraform provider will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] - 2026-07-01
+
+### Deprecated
+
+- The `custom_domain_enabled` and `domain` attributes on `statuspal_status_page`
+  now carry an explicit deprecation notice: legacy custom domains are no longer
+  supported by the StatusPal API. Configure custom domains through the
+  `domain_config` block (Cloudflare/Bunny) instead. These attributes are also now
+  marked deprecated on the `statuspal_status_pages` data source, and will be
+  removed in a future release.
+
 ## [0.4.4] - 2026-06-23
 
 ### Fixed
