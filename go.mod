@@ -1,8 +1,7 @@
 module terraform-provider-statuspal
 
 go 1.22.7
-
-toolchain go1.22.9
+toolchain go1.23.7
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.20.1
@@ -11,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.26.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
-	golang.org/x/time v0.10.0
+	golang.org/x/time v0.11.0
 )
 
 require (
